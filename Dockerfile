@@ -1,33 +1,24 @@
-# Use OpenJDK 17
-FROM openjdk:17-jdk-slim as build
-
-# Set working directory
-WORKDIR /app
-
-# Copy Maven files
-COPY pom.xml .
-COPY mvnw .
-COPY .mvn .mvn
-
-# Copy source code
-COPY src src
-
-# Give execute permission to mvnw
-RUN chmod +x mvnw
-
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Run the application
-FROM openjdk:17-jdk-slim
+# Stage 1: Build with Maven
+FROM maven:3.9.5-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-# Copy the JAR file from build stage
+# Copy everything
+COPY . .
+
+# Build the JAR (skip tests for faster build)
+RUN mvn clean package -DskipTests
+
+# Stage 2: Run with JRE only (smaller image)
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+# Copy the built JAR
 COPY --from=build /app/target/*.jar app.jar
 
 # Expose port
 EXPOSE 8090
 
-# Run the application
+# Start the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
