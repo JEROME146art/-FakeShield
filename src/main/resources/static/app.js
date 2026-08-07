@@ -1,9 +1,10 @@
 // ================================
 // FakeShield Frontend Application
-// Connects to Spring Boot Backend
+// With Text + Image Analysis
 // ================================
 
 const API_BASE_URL = '/api';
+let selectedImage = null;
 
 // ================================
 // Initialize on Page Load
@@ -13,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStatistics();
     loadRecentNews();
     animateHeroStats();
+    setupDragAndDrop();
 
-    // Auto-refresh dashboard every 30 seconds
     setInterval(() => {
         loadStatistics();
         loadRecentNews();
@@ -22,108 +23,178 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ================================
-// Smooth Scroll Functions
+// Tab Switching
+// ================================
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+
+    // Hide result card when switching tabs
+    document.getElementById('resultCard').style.display = 'none';
+}
+
+// ================================
+// Smooth Scroll
 // ================================
 function scrollToAnalyzer() {
-    document.getElementById('analyzer').scrollIntoView({
-        behavior: 'smooth'
-    });
+    document.getElementById('analyzer').scrollIntoView({ behavior: 'smooth' });
 }
 
 function scrollToDashboard() {
-    document.getElementById('dashboard').scrollIntoView({
-        behavior: 'smooth'
+    document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ================================
+// IMAGE UPLOAD - Drag & Drop
+// ================================
+function setupDragAndDrop() {
+    const uploadArea = document.getElementById('uploadArea');
+    if (!uploadArea) return;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.remove('dragover');
+        });
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleImageFile(files[0]);
+        }
     });
 }
 
 // ================================
-// MAIN: Analyze News
+// Handle Image Selection
 // ================================
-async function analyzeNews() {
-    const title = document.getElementById('newsTitle').value.trim();
-    const content = document.getElementById('newsContent').value.trim();
-    const sourceUrl = document.getElementById('sourceUrl').value.trim();
-    const platform = document.getElementById('platform').value;
+function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        handleImageFile(file);
+    }
+}
 
-    // Validation
-    if (!title) {
-        showToast('⚠️ Please enter a news headline', 'error');
-        document.getElementById('newsTitle').focus();
+function handleImageFile(file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        showToast('⚠️ Please select an image file', 'error');
         return;
     }
 
-    // Show loading state
-    setLoadingState(true);
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('⚠️ File size must be less than 10MB', 'error');
+        return;
+    }
 
-    // Hide previous result
+    selectedImage = file;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('previewImage').src = e.target.result;
+        document.getElementById('previewName').textContent = file.name;
+        document.getElementById('previewSize').textContent =
+            `Size: ${(file.size / 1024).toFixed(2)} KB | Type: ${file.type}`;
+
+        document.getElementById('uploadContent').style.display = 'none';
+        document.getElementById('previewContent').style.display = 'block';
+        document.getElementById('btnAnalyzeImage').disabled = false;
+    };
+    reader.readAsDataURL(file);
+
+    showToast('✅ Image loaded successfully', 'success');
+}
+
+// ================================
+// Remove Selected Image
+// ================================
+function removeImage(event) {
+    event.stopPropagation();
+    selectedImage = null;
+    document.getElementById('imageInput').value = '';
+    document.getElementById('uploadContent').style.display = 'block';
+    document.getElementById('previewContent').style.display = 'none';
+    document.getElementById('btnAnalyzeImage').disabled = true;
+    document.getElementById('resultCard').style.display = 'none';
+}
+
+// ================================
+// Analyze Image
+// ================================
+async function analyzeImage() {
+    if (!selectedImage) {
+        showToast('⚠️ Please select an image first', 'error');
+        return;
+    }
+
+    // Show loading
+    document.getElementById('btnImageText').style.display = 'none';
+    document.getElementById('btnImageLoader').style.display = 'flex';
+    document.getElementById('btnAnalyzeImage').disabled = true;
     document.getElementById('resultCard').style.display = 'none';
 
     try {
-        console.log('📡 Sending request to backend...');
+        const formData = new FormData();
+        formData.append('file', selectedImage);
 
-        const response = await fetch(`${API_BASE_URL}/news/analyze`, {
+        console.log('📤 Uploading image for analysis...');
+
+        const response = await fetch(`${API_BASE_URL}/images/analyze`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: title,
-                content: content,
-                sourceUrl: sourceUrl,
-                platform: platform
-            })
+            body: formData
         });
 
         if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            const error = await response.json();
+            throw new Error(error.error || `Server error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('✅ Response received:', data);
+        console.log('✅ Image analysis result:', data);
 
-        displayResults(data);
-        showToast('✅ Analysis complete!', 'success');
-
-        // Refresh dashboard
-        setTimeout(() => {
-            loadStatistics();
-            loadRecentNews();
-        }, 1000);
+        displayImageResults(data);
+        showToast('✅ Image analysis complete!', 'success');
 
     } catch (error) {
-        console.error('❌ Analysis error:', error);
-        showToast('❌ Analysis failed. Is backend running?', 'error');
+        console.error('❌ Image analysis error:', error);
+        showToast('❌ ' + error.message, 'error');
     } finally {
-        setLoadingState(false);
+        document.getElementById('btnImageText').style.display = 'flex';
+        document.getElementById('btnImageLoader').style.display = 'none';
+        document.getElementById('btnAnalyzeImage').disabled = false;
     }
 }
 
 // ================================
-// Set Loading State
+// Display Image Results
 // ================================
-function setLoadingState(loading) {
-    const btnText = document.getElementById('btnText');
-    const btnLoader = document.getElementById('btnLoader');
-    const btn = document.getElementById('btnAnalyze');
-
-    if (loading) {
-        btnText.style.display = 'none';
-        btnLoader.style.display = 'flex';
-        btn.disabled = true;
-    } else {
-        btnText.style.display = 'flex';
-        btnLoader.style.display = 'none';
-        btn.disabled = false;
-    }
-}
-
-// ================================
-// Display Results
-// ================================
-function displayResults(data) {
+function displayImageResults(data) {
     const resultCard = document.getElementById('resultCard');
 
-    // Status configuration
     const statusMap = {
         'REAL': { icon: '✅', color: '#00D68F' },
         'FAKE': { icon: '❌', color: '#FF4757' },
@@ -133,70 +204,46 @@ function displayResults(data) {
 
     const statusInfo = statusMap[data.status] || statusMap['UNVERIFIED'];
 
-    // Update status
     document.getElementById('statusIcon').textContent = statusInfo.icon;
     document.getElementById('statusText').textContent = data.statusDisplay;
     document.getElementById('statusText').style.color = statusInfo.color;
 
-    // Animate score
     const score = Math.round(data.credibilityScore);
     animateScore(score, statusInfo.color);
 
-    // Display breakdown
-    if (data.analysisDetails) {
-        displayBreakdown(data.analysisDetails);
+    // Show extracted text
+    const extractedSection = document.getElementById('extractedTextSection');
+    const extractedBox = document.getElementById('extractedTextBox');
 
-        // Display explanation
-        const explanationText = data.analysisDetails.explanation ||
-            'Analysis complete. See breakdown above for details.';
-        document.getElementById('explanationText').textContent = explanationText;
+    if (data.extractedText && data.extractedText.trim().length > 0) {
+        extractedSection.style.display = 'block';
+        extractedBox.textContent = data.extractedText;
+    } else {
+        extractedSection.style.display = 'block';
+        extractedBox.textContent = 'No text detected in image';
     }
 
-    // Show result card
+    // Display image-specific breakdown
+    displayImageBreakdown(data);
+
+    document.getElementById('explanationText').textContent =
+        data.explanation || 'Analysis complete.';
+
     resultCard.style.display = 'block';
-    resultCard.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ================================
-// Display Score Breakdown
+// Display Image Breakdown
 // ================================
-function displayBreakdown(details) {
+function displayImageBreakdown(data) {
     const breakdownGrid = document.getElementById('breakdownGrid');
 
     const metrics = [
-        {
-            label: 'ML Analysis',
-            value: details.mlScore || 0,
-            icon: '🤖'
-        },
-        {
-            label: 'NLP Analysis',
-            value: details.nlpScore || 0,
-            icon: '📝'
-        },
-        {
-            label: 'Source Check',
-            value: details.sourceScore || 0,
-            icon: '🔗'
-        },
-        {
-            label: 'Clickbait',
-            value: details.clickbaitScore || 0,
-            icon: '🎯'
-        },
-        {
-            label: 'Grammar',
-            value: details.grammarScore || 0,
-            icon: '✍️'
-        },
-        {
-            label: 'Fact Check',
-            value: details.factCheckScore || 0,
-            icon: '✔️'
-        }
+        { label: 'Visual Analysis', value: data.visualScore || 0, icon: '👁️' },
+        { label: 'Metadata Check', value: data.metadataScore || 0, icon: '📋' },
+        { label: 'OCR Quality', value: data.ocrScore || 0, icon: '🔍' },
+        { label: 'Text Content', value: data.textScore || 0, icon: '📝' }
     ];
 
     breakdownGrid.innerHTML = metrics.map(metric => {
@@ -221,7 +268,6 @@ function displayBreakdown(details) {
         `;
     }).join('');
 
-    // Animate bars after render
     setTimeout(() => {
         document.querySelectorAll('.breakdown-bar-fill').forEach(bar => {
             bar.style.width = bar.dataset.width;
@@ -230,7 +276,142 @@ function displayBreakdown(details) {
 }
 
 // ================================
-// Animate Score Circle
+// TEXT ANALYSIS (Existing)
+// ================================
+async function analyzeNews() {
+    const title = document.getElementById('newsTitle').value.trim();
+    const content = document.getElementById('newsContent').value.trim();
+    const sourceUrl = document.getElementById('sourceUrl').value.trim();
+    const platform = document.getElementById('platform').value;
+
+    if (!title) {
+        showToast('⚠️ Please enter a news headline', 'error');
+        document.getElementById('newsTitle').focus();
+        return;
+    }
+
+    setLoadingState(true);
+    document.getElementById('resultCard').style.display = 'none';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/news/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content, sourceUrl, platform })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        displayResults(data);
+        showToast('✅ Analysis complete!', 'success');
+
+        setTimeout(() => {
+            loadStatistics();
+            loadRecentNews();
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ Analysis error:', error);
+        showToast('❌ Analysis failed. Is backend running?', 'error');
+    } finally {
+        setLoadingState(false);
+    }
+}
+
+function setLoadingState(loading) {
+    const btnText = document.getElementById('btnText');
+    const btnLoader = document.getElementById('btnLoader');
+    const btn = document.getElementById('btnAnalyze');
+
+    if (loading) {
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'flex';
+        btn.disabled = true;
+    } else {
+        btnText.style.display = 'flex';
+        btnLoader.style.display = 'none';
+        btn.disabled = false;
+    }
+}
+
+function displayResults(data) {
+    const resultCard = document.getElementById('resultCard');
+
+    const statusMap = {
+        'REAL': { icon: '✅', color: '#00D68F' },
+        'FAKE': { icon: '❌', color: '#FF4757' },
+        'SUSPICIOUS': { icon: '⚠️', color: '#FFA500' },
+        'UNVERIFIED': { icon: '❓', color: '#6c757d' }
+    };
+
+    const statusInfo = statusMap[data.status] || statusMap['UNVERIFIED'];
+
+    document.getElementById('statusIcon').textContent = statusInfo.icon;
+    document.getElementById('statusText').textContent = data.statusDisplay;
+    document.getElementById('statusText').style.color = statusInfo.color;
+
+    const score = Math.round(data.credibilityScore);
+    animateScore(score, statusInfo.color);
+
+    // Hide extracted text section for text analysis
+    document.getElementById('extractedTextSection').style.display = 'none';
+
+    if (data.analysisDetails) {
+        displayBreakdown(data.analysisDetails);
+        const explanationText = data.analysisDetails.explanation || 'Analysis complete.';
+        document.getElementById('explanationText').textContent = explanationText;
+    }
+
+    resultCard.style.display = 'block';
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function displayBreakdown(details) {
+    const breakdownGrid = document.getElementById('breakdownGrid');
+
+    const metrics = [
+        { label: 'ML Analysis', value: details.mlScore || 0, icon: '🤖' },
+        { label: 'NLP Analysis', value: details.nlpScore || 0, icon: '📝' },
+        { label: 'Source Check', value: details.sourceScore || 0, icon: '🔗' },
+        { label: 'Clickbait', value: details.clickbaitScore || 0, icon: '🎯' },
+        { label: 'Grammar', value: details.grammarScore || 0, icon: '✍️' },
+        { label: 'Fact Check', value: details.factCheckScore || 0, icon: '✔️' }
+    ];
+
+    breakdownGrid.innerHTML = metrics.map(metric => {
+        const value = Math.round(metric.value);
+        const color = getScoreColor(value);
+        return `
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <span class="breakdown-icon">${metric.icon}</span>
+                    <span class="breakdown-label">${metric.label}</span>
+                </div>
+                <div class="breakdown-value" style="color: ${color}">
+                    ${value}%
+                </div>
+                <div class="breakdown-bar">
+                    <div class="breakdown-bar-fill" 
+                         style="background: ${color}"
+                         data-width="${value}%">
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    setTimeout(() => {
+        document.querySelectorAll('.breakdown-bar-fill').forEach(bar => {
+            bar.style.width = bar.dataset.width;
+        });
+    }, 100);
+}
+
+// ================================
+// Animate Score
 // ================================
 function animateScore(targetScore, color) {
     const scoreValue = document.getElementById('scoreValue');
@@ -244,27 +425,21 @@ function animateScore(targetScore, color) {
 
     const interval = setInterval(() => {
         currentScore += increment;
-
         if (currentScore >= targetScore) {
             currentScore = targetScore;
             clearInterval(interval);
         }
-
         scoreValue.textContent = currentScore;
-
         const offset = circumference - (currentScore / 100) * circumference;
         circle.style.strokeDashoffset = offset;
     }, 25);
 }
 
-// ================================
-// Get Score Color
-// ================================
 function getScoreColor(score) {
-    if (score >= 75) return '#00D68F'; // Green
-    if (score >= 50) return '#FFA500'; // Orange
-    if (score >= 25) return '#FF9F43'; // Yellow-orange
-    return '#FF4757';                   // Red
+    if (score >= 75) return '#00D68F';
+    if (score >= 50) return '#FFA500';
+    if (score >= 25) return '#FF9F43';
+    return '#FF4757';
 }
 
 // ================================
@@ -273,19 +448,12 @@ function getScoreColor(score) {
 async function loadStatistics() {
     try {
         const response = await fetch(`${API_BASE_URL}/news/statistics`);
-
-        if (!response.ok) {
-            throw new Error('Failed to load statistics');
-        }
+        if (!response.ok) throw new Error('Failed to load statistics');
 
         const stats = await response.json();
-        console.log('📊 Statistics:', stats);
 
-        // Update hero stats
         animateNumber('heroTotal', stats.total || 0);
         animateNumber('heroFake', stats.fake || 0);
-
-        // Update dashboard
         animateNumber('dashTotal', stats.total || 0);
         animateNumber('dashFake', stats.fake || 0);
         animateNumber('dashReal', stats.real || 0);
@@ -296,21 +464,14 @@ async function loadStatistics() {
     }
 }
 
-// ================================
-// Load Recent News
-// ================================
 async function loadRecentNews() {
     const tbody = document.getElementById('newsTableBody');
 
     try {
         const response = await fetch(`${API_BASE_URL}/news/all`);
-
-        if (!response.ok) {
-            throw new Error('Failed to load news');
-        }
+        if (!response.ok) throw new Error('Failed to load news');
 
         const newsList = await response.json();
-        console.log('📰 News loaded:', newsList.length);
 
         if (!newsList || newsList.length === 0) {
             tbody.innerHTML = `
@@ -351,16 +512,13 @@ async function loadRecentNews() {
         tbody.innerHTML = `
             <tr>
                 <td colspan="4" class="empty-state">
-                    ⚠️ Cannot connect to backend. Make sure Spring Boot is running.
+                    ⚠️ Cannot connect to backend.
                 </td>
             </tr>
         `;
     }
 }
 
-// ================================
-// Animate Number Counter
-// ================================
 function animateNumber(elementId, target) {
     const element = document.getElementById(elementId);
     if (!element) return;
@@ -389,34 +547,21 @@ function animateNumber(elementId, target) {
     }, 30);
 }
 
-// ================================
-// Animate Hero Stats
-// ================================
 function animateHeroStats() {
-    setTimeout(() => {
-        loadStatistics();
-    }, 500);
+    setTimeout(() => loadStatistics(), 500);
 }
 
 // ================================
-// Share Result
+// Actions
 // ================================
 function shareResult() {
     const status = document.getElementById('statusText').textContent;
     const score = document.getElementById('scoreValue').textContent;
-    const title = document.getElementById('newsTitle').value;
 
-    const text = `🛡️ FakeShield Analysis:\n\n` +
-        `📰 "${title}"\n\n` +
-        `📊 Credibility Score: ${score}%\n` +
-        `⚠️ Status: ${status}\n\n` +
-        `🔗 Check your news at: ${window.location.origin}`;
+    const text = `🛡️ FakeShield Analysis:\n📊 Score: ${score}%\n⚠️ Status: ${status}\n\n🔗 ${window.location.origin}`;
 
     if (navigator.share) {
-        navigator.share({
-            title: 'FakeShield Analysis Result',
-            text: text
-        }).catch(err => console.log('Share cancelled'));
+        navigator.share({ title: 'FakeShield Result', text: text });
     } else {
         navigator.clipboard.writeText(text)
             .then(() => showToast('✅ Copied to clipboard!', 'success'))
@@ -424,49 +569,28 @@ function shareResult() {
     }
 }
 
-// ================================
-// Copy Result
-// ================================
 function copyResult() {
     const status = document.getElementById('statusText').textContent;
     const score = document.getElementById('scoreValue').textContent;
-    const title = document.getElementById('newsTitle').value;
     const explanation = document.getElementById('explanationText').textContent;
 
-    const report = `╔═══════════════════════════════════╗\n` +
-        `      FAKESHIELD ANALYSIS REPORT      \n` +
-        `╚═══════════════════════════════════╝\n\n` +
-        `Title: ${title}\n\n` +
-        `Credibility Score: ${score}%\n` +
-        `Status: ${status}\n\n` +
-        `Analysis Details:\n${explanation}\n\n` +
-        `Generated by FakeShield\n` +
-        `${new Date().toLocaleString()}`;
+    const report = `FAKESHIELD ANALYSIS REPORT\n\nScore: ${score}%\nStatus: ${status}\n\nDetails:\n${explanation}\n\nGenerated: ${new Date().toLocaleString()}`;
 
     navigator.clipboard.writeText(report)
-        .then(() => showToast('📋 Report copied to clipboard!', 'success'))
-        .catch(() => showToast('❌ Failed to copy report', 'error'));
+        .then(() => showToast('📋 Report copied!', 'success'))
+        .catch(() => showToast('❌ Failed to copy', 'error'));
 }
 
-// ================================
-// Analyze Another
-// ================================
 function analyzeAnother() {
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('newsTitle').value = '';
     document.getElementById('newsContent').value = '';
     document.getElementById('sourceUrl').value = '';
     document.getElementById('platform').value = '';
-    document.getElementById('newsTitle').focus();
-
-    document.getElementById('analyzer').scrollIntoView({
-        behavior: 'smooth'
-    });
+    removeImage(new Event('click'));
+    document.getElementById('analyzer').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ================================
-// Toast Notification
-// ================================
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
@@ -474,32 +598,11 @@ function showToast(message, type = 'info') {
     toastMessage.textContent = message;
     toast.className = `toast show ${type}`;
 
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3500);
+    setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-// ================================
-// Escape HTML (Security)
-// ================================
 function escapeHtml(text) {
     if (!text) return '';
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
-
-// ================================
-// Handle Enter Key in Title
-// ================================
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && e.target.id === 'newsTitle') {
-        e.preventDefault();
-        document.getElementById('newsContent').focus();
-    }
-});
