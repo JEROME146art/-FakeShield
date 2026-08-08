@@ -10,7 +10,7 @@
 <body>
 
 <!-- ================================
-     NAVBAR
+     NAVBAR (WITH LANGUAGE SWITCHER)
 ================================ -->
 <nav class="navbar">
     <div class="nav-brand">
@@ -22,6 +22,40 @@
         <a href="#dashboard">Dashboard</a>
         <a href="#how-it-works">How It Works</a>
         <a href="#about">About</a>
+
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+            <button class="lang-btn" onclick="toggleLangDropdown()">
+                <span id="currentLang">🌍 EN</span>
+                <span class="lang-arrow">▼</span>
+            </button>
+            <div class="lang-dropdown" id="langDropdown">
+                <div class="lang-option" onclick="changeLanguage('en', '🇬🇧', 'English')">
+                    🇬🇧 English
+                </div>
+                <div class="lang-option" onclick="changeLanguage('ta', '🇮🇳', 'Tamil')">
+                    🇮🇳 தமிழ் (Tamil)
+                </div>
+                <div class="lang-option" onclick="changeLanguage('hi', '🇮🇳', 'Hindi')">
+                    🇮🇳 हिन्दी (Hindi)
+                </div>
+                <div class="lang-option" onclick="changeLanguage('es', '🇪🇸', 'Spanish')">
+                    🇪🇸 Español
+                </div>
+                <div class="lang-option" onclick="changeLanguage('fr', '🇫🇷', 'French')">
+                    🇫🇷 Français
+                </div>
+                <div class="lang-option" onclick="changeLanguage('de', '🇩🇪', 'German')">
+                    🇩🇪 Deutsch
+                </div>
+                <div class="lang-option" onclick="changeLanguage('zh', '🇨🇳', 'Chinese')">
+                    🇨🇳 中文
+                </div>
+                <div class="lang-option" onclick="changeLanguage('ar', '🇸🇦', 'Arabic')">
+                    🇸🇦 العربية
+                </div>
+            </div>
+        </div>
     </div>
 </nav>
 

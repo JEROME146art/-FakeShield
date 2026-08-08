@@ -89,7 +89,19 @@
             <artifactId>commons-imaging</artifactId>
             <version>1.0-alpha3</version>
         </dependency>
+        <!-- Language Detection -->
+        <dependency>
+            <groupId>com.optimaize.languagedetector</groupId>
+            <artifactId>language-detector</artifactId>
+            <version>0.6</version>
+        </dependency>
 
+        <!-- Google Translate API (Free tier) -->
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
         <!-- Commons IO for file handling -->
         <dependency>
             <groupId>commons-io</groupId>

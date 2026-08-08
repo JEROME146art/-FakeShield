@@ -7,6 +7,193 @@ const API_BASE_URL = '/api';
 let selectedImage = null;
 
 // ================================
+// LANGUAGE SUPPORT
+// ================================
+let currentLanguage = localStorage.getItem('language') || 'en';
+let currentLangEmoji = localStorage.getItem('langEmoji') || '🇬🇧';
+
+// Translations dictionary
+const translations = {
+    en: {
+        analyze: 'Analyze',
+        dashboard: 'Dashboard',
+        howItWorks: 'How It Works',
+        about: 'About',
+        analyzeNews: 'Analyze News',
+        textAnalysis: '📝 Text Analysis',
+        imageAnalysis: '🖼️ Image Analysis',
+        headline: 'News Headline',
+        content: 'News Content',
+        analyzeButton: '🤖 Analyze Text',
+        uploadTitle: 'Drop Image Here or Click to Upload',
+        analyzing: 'Analyzing...',
+        realNews: 'Real News',
+        fakeNews: 'Fake News',
+        suspicious: 'Suspicious'
+    },
+    ta: {
+        analyze: 'பகுப்பாய்வு',
+        dashboard: 'டாஷ்போர்டு',
+        howItWorks: 'எப்படி வேலை செய்கிறது',
+        about: 'பற்றி',
+        analyzeNews: 'செய்தி பகுப்பாய்வு',
+        textAnalysis: '📝 உரை பகுப்பாய்வு',
+        imageAnalysis: '🖼️ படம் பகுப்பாய்வு',
+        headline: 'செய்தி தலைப்பு',
+        content: 'செய்தி உள்ளடக்கம்',
+        analyzeButton: '🤖 உரையை பகுப்பாய்வு செய்',
+        uploadTitle: 'படத்தை இங்கே விடுங்கள்',
+        analyzing: 'பகுப்பாய்வு...',
+        realNews: 'உண்மையான செய்தி',
+        fakeNews: 'போலி செய்தி',
+        suspicious: 'சந்தேகத்திற்குரிய'
+    },
+    hi: {
+        analyze: 'विश्लेषण',
+        dashboard: 'डैशबोर्ड',
+        howItWorks: 'यह कैसे काम करता है',
+        about: 'बारे में',
+        analyzeNews: 'समाचार विश्लेषण',
+        textAnalysis: '📝 पाठ विश्लेषण',
+        imageAnalysis: '🖼️ छवि विश्लेषण',
+        headline: 'समाचार शीर्षक',
+        content: 'समाचार सामग्री',
+        analyzeButton: '🤖 पाठ का विश्लेषण करें',
+        uploadTitle: 'छवि यहाँ छोड़ें',
+        analyzing: 'विश्लेषण कर रहा है...',
+        realNews: 'असली समाचार',
+        fakeNews: 'फर्जी खबर',
+        suspicious: 'संदिग्ध'
+    },
+    es: {
+        analyze: 'Analizar',
+        dashboard: 'Panel',
+        howItWorks: 'Cómo funciona',
+        about: 'Acerca de',
+        analyzeNews: 'Analizar Noticias',
+        textAnalysis: '📝 Análisis de Texto',
+        imageAnalysis: '🖼️ Análisis de Imagen',
+        headline: 'Titular',
+        content: 'Contenido',
+        analyzeButton: '🤖 Analizar Texto',
+        uploadTitle: 'Suelta la imagen aquí',
+        analyzing: 'Analizando...',
+        realNews: 'Noticias Reales',
+        fakeNews: 'Noticias Falsas',
+        suspicious: 'Sospechoso'
+    },
+    fr: {
+        analyze: 'Analyser',
+        dashboard: 'Tableau de bord',
+        howItWorks: 'Comment ça marche',
+        about: 'À propos',
+        analyzeNews: 'Analyser les nouvelles',
+        textAnalysis: '📝 Analyse de texte',
+        imageAnalysis: '🖼️ Analyse d\'image',
+        headline: 'Titre',
+        content: 'Contenu',
+        analyzeButton: '🤖 Analyser le texte',
+        uploadTitle: 'Déposez l\'image ici',
+        analyzing: 'Analyse en cours...',
+        realNews: 'Vraies nouvelles',
+        fakeNews: 'Fausses nouvelles',
+        suspicious: 'Suspect'
+    },
+    de: {
+        analyze: 'Analysieren',
+        dashboard: 'Dashboard',
+        howItWorks: 'Wie es funktioniert',
+        about: 'Über',
+        analyzeNews: 'Nachrichten analysieren',
+        textAnalysis: '📝 Textanalyse',
+        imageAnalysis: '🖼️ Bildanalyse',
+        headline: 'Schlagzeile',
+        content: 'Inhalt',
+        analyzeButton: '🤖 Text analysieren',
+        uploadTitle: 'Bild hier ablegen',
+        analyzing: 'Analysiere...',
+        realNews: 'Echte Nachrichten',
+        fakeNews: 'Falsche Nachrichten',
+        suspicious: 'Verdächtig'
+    }
+};
+
+function toggleLangDropdown() {
+    const dropdown = document.getElementById('langDropdown');
+    const btn = document.querySelector('.lang-btn');
+    dropdown.classList.toggle('show');
+    btn.classList.toggle('active');
+}
+
+function changeLanguage(code, emoji, name) {
+    currentLanguage = code;
+    currentLangEmoji = emoji;
+
+    localStorage.setItem('language', code);
+    localStorage.setItem('langEmoji', emoji);
+
+    document.getElementById('currentLang').textContent = `${emoji} ${code.toUpperCase()}`;
+
+    // Close dropdown
+    document.getElementById('langDropdown').classList.remove('show');
+    document.querySelector('.lang-btn').classList.remove('active');
+
+    // Apply translations
+    applyTranslations();
+
+    // Show notification
+    showToast(`✅ Language changed to ${name}`, 'success');
+}
+
+function applyTranslations() {
+    const t = translations[currentLanguage] || translations.en;
+
+    // Update nav links
+    const navLinks = document.querySelectorAll('.nav-links a');
+    if (navLinks[0]) navLinks[0].textContent = t.analyze;
+    if (navLinks[1]) navLinks[1].textContent = t.dashboard;
+    if (navLinks[2]) navLinks[2].textContent = t.howItWorks;
+    if (navLinks[3]) navLinks[3].textContent = t.about;
+
+    // Update tab buttons
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    if (tabBtns[0]) tabBtns[0].textContent = t.textAnalysis;
+    if (tabBtns[1]) tabBtns[1].textContent = t.imageAnalysis;
+
+    // Update analyze button
+    const btnText = document.getElementById('btnText');
+    if (btnText) btnText.textContent = t.analyzeButton;
+
+    // Update upload title
+    const uploadTitle = document.querySelector('.upload-area h3');
+    if (uploadTitle) uploadTitle.textContent = t.uploadTitle;
+
+    // Update section header
+    const analyzerHeader = document.querySelector('#analyzer .section-header h2');
+    if (analyzerHeader) analyzerHeader.textContent = t.analyzeNews;
+
+    // Update form labels
+    const labels = document.querySelectorAll('#tab-text .form-group label');
+    if (labels[0]) labels[0].innerHTML = t.headline + ' <span class="required">*</span>';
+    if (labels[1]) labels[1].textContent = t.content;
+}
+
+// Initialize language on page load
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('currentLang').textContent = `${currentLangEmoji} ${currentLanguage.toUpperCase()}`;
+    applyTranslations();
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.language-switcher')) {
+        const dropdown = document.getElementById('langDropdown');
+        const btn = document.querySelector('.lang-btn');
+        if (dropdown) dropdown.classList.remove('show');
+        if (btn) btn.classList.remove('active');
+    }
+});
+// ================================
 // Initialize on Page Load
 // ================================
 document.addEventListener('DOMContentLoaded', () => {

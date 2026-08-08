@@ -23,8 +23,7 @@ public class NewsController {
     private NewsAnalysisService newsAnalysisService;
 
     // ================================
-    // POST: Analyze News
-    // URL: POST http://localhost:8080/api/news/analyze
+    // POST: Analyze News (WITH LANGUAGE SUPPORT!)
     // ================================
     @PostMapping("/analyze")
     public ResponseEntity<?> analyzeNews(@RequestBody NewsRequest request) {
@@ -44,7 +43,8 @@ public class NewsController {
                     .author(request.getAuthor())
                     .build();
 
-            News analyzedNews = newsAnalysisService.analyzeNews(news);
+            // Use language-aware analysis!
+            News analyzedNews = newsAnalysisService.analyzeNewsWithLanguage(news);
             return ResponseEntity.ok(buildResponse(analyzedNews));
 
         } catch (Exception e) {
@@ -56,7 +56,6 @@ public class NewsController {
 
     // ================================
     // GET: Get News by ID
-    // URL: GET http://localhost:8080/api/news/1
     // ================================
     @GetMapping("/{id}")
     public ResponseEntity<?> getNewsById(@PathVariable Long id) {
@@ -73,7 +72,6 @@ public class NewsController {
 
     // ================================
     // GET: Get All News
-    // URL: GET http://localhost:8080/api/news/all
     // ================================
     @GetMapping("/all")
     public ResponseEntity<List<Map<String, Object>>> getAllNews() {
@@ -89,7 +87,6 @@ public class NewsController {
 
     // ================================
     // GET: Get News by Status
-    // URL: GET http://localhost:8080/api/news/status/FAKE
     // ================================
     @GetMapping("/status/{status}")
     public ResponseEntity<?> getNewsByStatus(@PathVariable String status) {
@@ -114,7 +111,6 @@ public class NewsController {
 
     // ================================
     // GET: Search News
-    // URL: GET http://localhost:8080/api/news/search?keyword=covid
     // ================================
     @GetMapping("/search")
     public ResponseEntity<List<Map<String, Object>>> searchNews(
@@ -132,7 +128,6 @@ public class NewsController {
 
     // ================================
     // GET: Statistics
-    // URL: GET http://localhost:8080/api/news/statistics
     // ================================
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Long>> getStatistics() {
@@ -141,7 +136,6 @@ public class NewsController {
 
     // ================================
     // DELETE: Delete News
-    // URL: DELETE http://localhost:8080/api/news/1
     // ================================
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNews(@PathVariable Long id) {

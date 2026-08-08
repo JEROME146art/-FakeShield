@@ -24,9 +24,10 @@ public class NewsAnalysisService {
     @Autowired
     private NewsRepository newsRepository;
 
-    // OOP: Polymorphism
-    // List of BaseDetector (parent type)
-    // holds all different detector objects
+    @Autowired
+    private LanguageService languageService;
+
+    // OOP: Polymorphism - List of BaseDetector holds all detectors
     private List<BaseDetector> detectors;
 
     // ================================
@@ -42,6 +43,52 @@ public class NewsAnalysisService {
     }
 
     // ================================
+    // MAIN METHOD - Analyze News with Language Support
+    // ================================
+    public News analyzeNewsWithLanguage(News news) {
+        // Detect language
+        String text = (news.getTitle() != null ? news.getTitle() : "") + " " +
+                (news.getContent() != null ? news.getContent() : "");
+
+        String detectedLang = languageService.detectLanguage(text);
+        String languageName = languageService.getLanguageName(detectedLang);
+
+        System.out.println("================================");
+        System.out.println("🌍 Language Detected: " + languageName + " (" + detectedLang + ")");
+        System.out.println("================================");
+
+        // If not English, translate for analysis
+        if (!detectedLang.equals("en")) {
+            String originalTitle = news.getTitle();
+            String originalContent = news.getContent();
+
+            System.out.println("🔄 Translating to English for analysis...");
+
+            String translatedTitle = languageService.translateText(
+                    news.getTitle(), detectedLang, "en");
+            String translatedContent = news.getContent() != null ?
+                    languageService.translateText(news.getContent(), detectedLang, "en") : "";
+
+            System.out.println("📝 Original: " + originalTitle);
+            System.out.println("📝 Translated: " + translatedTitle);
+
+            // Analyze translated version
+            news.setTitle(translatedTitle);
+            news.setContent(translatedContent);
+
+            News analyzed = analyzeNews(news);
+
+            // Restore original text but keep analysis results
+            analyzed.setTitle(originalTitle + " [Translated from " + languageName + "]");
+            analyzed.setContent(originalContent);
+
+            return analyzed;
+        }
+
+        return analyzeNews(news);
+    }
+
+    // ================================
     // MAIN METHOD - Analyze News
     // ================================
     public News analyzeNews(News news) {
@@ -51,8 +98,7 @@ public class NewsAnalysisService {
         Map<String, Double> scores = new HashMap<>();
         StringBuilder explanations = new StringBuilder();
 
-        // OOP: Polymorphism
-        // Each detector has DIFFERENT implementation
+        // OOP: Polymorphism - Each detector has DIFFERENT implementation
         // but we call the SAME method analyze()
         for (BaseDetector detector : detectors) {
             double score = detector.analyze(news);
