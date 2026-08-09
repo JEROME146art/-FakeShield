@@ -9,21 +9,16 @@
 </head>
 <body>
 
-<!-- ================================
-     NAVBAR (WITH LANGUAGE SWITCHER)
-================================ -->
-<nav class="navbar">
-    <div class="nav-brand">
-        <span class="shield-icon">🛡️</span>
-        <span class="brand-name">FakeShield</span>
-    </div>
-    <div class="nav-links">
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="shield-icon">🛡️</span>
+            <span class="brand-name">FakeShield</span>
+        </div>
         <a href="#analyzer">Analyze</a>
         <a href="#dashboard">Dashboard</a>
         <a href="#how-it-works">How It Works</a>
         <a href="#about">About</a>
 
-        <!-- Language Switcher -->
         <div class="language-switcher">
             <button class="lang-btn" onclick="toggleLangDropdown()">
                 <span id="currentLang">🌍 EN</span>
@@ -48,544 +43,394 @@
                 <div class="lang-option" onclick="changeLanguage('de', '🇩🇪', 'German')">
                     🇩🇪 Deutsch
                 </div>
-                <div class="lang-option" onclick="changeLanguage('zh', '🇨🇳', 'Chinese')">
-                    🇨🇳 中文
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">
+                <span class="pulse-dot"></span>
+                AI-Powered Detection
+            </div>
+            <h1>Detect Fake News<br><span class="gradient-text">In Seconds</span></h1>
+            <p class="hero-subtitle">
+                Advanced AI analyzes news articles, URLs, and images in real-time.
+            </p>
+            <div class="hero-buttons">
+                <button class="btn-primary" onclick="scrollToAnalyzer()">
+                    🔍 Analyze Now
+                </button>
+                <button class="btn-secondary" onclick="scrollToDashboard()">
+                    📊 View Dashboard
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" id="heroTotal">0</span>
+                    <span class="stat-label">Articles Analyzed</span>
                 </div>
-                <div class="lang-option" onclick="changeLanguage('ar', '🇸🇦', 'Arabic')">
-                    🇸🇦 العربية
+                <div class="stat">
+                    <span class="stat-number" id="heroFake">0</span>
+                    <span class="stat-label">Fake News Detected</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">94%</span>
+                    <span class="stat-label">Accuracy Rate</span>
                 </div>
             </div>
         </div>
-    </div>
-</nav>
-
-<!-- ================================
-     HERO SECTION
-================================ -->
-<section class="hero">
-    <div class="hero-content">
-        <div class="badge">
-            <span class="pulse-dot"></span>
-            AI-Powered Detection
-        </div>
-        <h1>Detect Fake News<br><span class="gradient-text">In Seconds</span></h1>
-        <p class="hero-subtitle">
-            Advanced AI analyzes news articles from social media in real-time.
-            Protect yourself from misinformation with our multi-layer detection system.
-        </p>
-        <div class="hero-buttons">
-            <button class="btn-primary" onclick="scrollToAnalyzer()">
-                🔍 Analyze Now
-            </button>
-            <button class="btn-secondary" onclick="scrollToDashboard()">
-                📊 View Dashboard
-            </button>
-        </div>
-        <div class="hero-stats">
-            <div class="stat">
-                <span class="stat-number" id="heroTotal">0</span>
-                <span class="stat-label">Articles Analyzed</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number" id="heroFake">0</span>
-                <span class="stat-label">Fake News Detected</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number">94%</span>
-                <span class="stat-label">Accuracy Rate</span>
-            </div>
-        </div>
-    </div>
-    <div class="hero-visual">
-        <div class="floating-card card-real">
-            <span class="card-icon">✅</span>
-            <div>
-                <div class="card-title">Verified Real</div>
-                <div class="card-score">92%</div>
-            </div>
-        </div>
-        <div class="floating-card card-suspicious">
-            <span class="card-icon">⚠️</span>
-            <div>
-                <div class="card-title">Suspicious</div>
-                <div class="card-score">54%</div>
-            </div>
-        </div>
-        <div class="floating-card card-fake">
-            <span class="card-icon">❌</span>
-            <div>
-                <div class="card-title">Fake News</div>
-                <div class="card-score">18%</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ================================
-     ANALYZER SECTION (WITH IMAGE UPLOAD)
-================================ -->
-<section id="analyzer" class="analyzer-section">
-    <div class="container">
-        <div class="section-header">
-            <h2>Analyze News</h2>
-            <p>Check text articles or upload images to detect fake news</p>
-        </div>
-
-        <!-- TABS -->
-        <div class="analyzer-tabs">
-            <button class="tab-btn active" data-tab="text" onclick="switchTab('text')">
-                📝 Text Analysis
-            </button>
-            <button class="tab-btn" data-tab="image" onclick="switchTab('image')">
-                🖼️ Image Analysis
-            </button>
-        </div>
-
-        <!-- TEXT ANALYSIS TAB -->
-        <div id="tab-text" class="tab-content active">
-            <div class="analyzer-card">
-                <div class="form-group">
-                    <label>News Headline <span class="required">*</span></label>
-                    <input
-                            type="text"
-                            id="newsTitle"
-                            placeholder="Enter the news headline here..."
-                    >
+        <div class="hero-visual">
+            <div class="floating-card card-real">
+                <span class="card-icon">✅</span>
+                <div>
+                    <div class="card-title">Verified Real</div>
+                    <div class="card-score">92%</div>
                 </div>
-
-                <div class="form-group">
-                    <label>News Content</label>
-                    <textarea
-                            id="newsContent"
-                            rows="6"
-                            placeholder="Paste the full article content here..."
-                    ></textarea>
+            </div>
+            <div class="floating-card card-suspicious">
+                <span class="card-icon">⚠️</span>
+                <div>
+                    <div class="card-title">Suspicious</div>
+                    <div class="card-score">54%</div>
                 </div>
+            </div>
+            <div class="floating-card card-fake">
+                <span class="card-icon">❌</span>
+                <div>
+                    <div class="card-title">Fake News</div>
+                    <div class="card-score">18%</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="form-row">
+    <section id="analyzer" class="analyzer-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Analyze News</h2>
+                <p>Check text, URLs, or upload images to detect fake news</p>
+            </div>
+
+            <div class="analyzer-tabs">
+                <button class="tab-btn active" onclick="switchTab('text', this)">
+                    📝 Text Analysis
+                </button>
+                <button class="tab-btn" onclick="switchTab('url', this)">
+                    🔗 URL Analysis
+                </button>
+                <button class="tab-btn" onclick="switchTab('image', this)">
+                    🖼️ Image Analysis
+                </button>
+            </div>
+
+            <div id="tab-text" class="tab-content active">
+                <div class="analyzer-card">
                     <div class="form-group">
-                        <label>Source URL</label>
-                        <input
-                                type="url"
-                                id="sourceUrl"
-                                placeholder="https://example.com/article"
-                        >
+                        <label>News Headline <span class="required">*</span></label>
+                        <input type="text" id="newsTitle" placeholder="Enter the news headline here...">
                     </div>
                     <div class="form-group">
-                        <label>Platform</label>
-                        <select id="platform">
-                            <option value="">Select Platform</option>
-                            <option value="Twitter">Twitter / X</option>
-                            <option value="Facebook">Facebook</option>
-                            <option value="Instagram">Instagram</option>
-                            <option value="WhatsApp">WhatsApp</option>
-                            <option value="YouTube">YouTube</option>
-                            <option value="News Website">News Website</option>
-                            <option value="Other">Other</option>
-                        </select>
+                        <label>News Content</label>
+                        <textarea id="newsContent" rows="6" placeholder="Paste the full article content here..."></textarea>
                     </div>
-                </div>
-
-                <button class="btn-analyze" id="btnAnalyze" onclick="analyzeNews()">
-                    <span id="btnText">🤖 Analyze Text</span>
-                    <span id="btnLoader" style="display:none">
-                        <span class="loader"></span> Analyzing...
-                    </span>
-                </button>
-            </div>
-        </div>
-
-        <!-- IMAGE ANALYSIS TAB -->
-        <div id="tab-image" class="tab-content">
-            <div class="analyzer-card">
-                <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
-                    <div class="upload-content" id="uploadContent">
-                        <div class="upload-icon">📸</div>
-                        <h3>Drop Image Here or Click to Upload</h3>
-                        <p>Supports: JPG, PNG, GIF, WEBP (Max 10MB)</p>
-                        <p class="upload-hint">
-                            Perfect for: Social media screenshots, News images, Memes with text
-                        </p>
-                    </div>
-                    <div class="preview-content" id="previewContent" style="display:none;">
-                        <img id="previewImage" src="" alt="Preview">
-                        <div class="preview-info">
-                            <p id="previewName"></p>
-                            <p id="previewSize"></p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Source URL</label>
+                            <input type="url" id="sourceUrl" placeholder="https://example.com/article">
                         </div>
-                        <button class="btn-remove" onclick="removeImage(event)">
-                            ❌ Remove
-                        </button>
-                    </div>
-                    <input
-                            type="file"
-                            id="imageInput"
-                            accept="image/*"
-                            style="display:none;"
-                            onchange="handleImageSelect(event)"
-                    >
-                </div>
-
-                <div class="image-features">
-                    <div class="feature-item">
-                        <span class="feature-icon">🔍</span>
-                        <span>OCR Text Extraction</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">📊</span>
-                        <span>Visual Analysis</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">🎯</span>
-                        <span>Metadata Check</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">✨</span>
-                        <span>AI-Powered</span>
-                    </div>
-                </div>
-
-                <button class="btn-analyze" id="btnAnalyzeImage" onclick="analyzeImage()" disabled>
-                    <span id="btnImageText">🖼️ Analyze Image</span>
-                    <span id="btnImageLoader" style="display:none">
-                        <span class="loader"></span> Analyzing Image...
-                    </span>
-                </button>
-            </div>
-        </div>
-
-        <!-- RESULT CARD -->
-        <div class="result-card" id="resultCard" style="display:none">
-            <div class="result-header">
-                <div class="result-status">
-                    <div class="status-icon-large" id="statusIcon">✅</div>
-                    <div>
-                        <div class="status-label">Analysis Result</div>
-                        <div class="status-text" id="statusText">Real News</div>
-                    </div>
-                </div>
-                <div class="credibility-score">
-                    <div class="score-circle">
-                        <svg width="140" height="140" viewBox="0 0 140 140">
-                            <circle cx="70" cy="70" r="60"
-                                    fill="none"
-                                    stroke="#1A2035"
-                                    stroke-width="12"
-                            />
-                            <circle cx="70" cy="70" r="60"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="12"
-                                    stroke-dasharray="377"
-                                    stroke-dashoffset="377"
-                                    id="scoreCircle"
-                                    transform="rotate(-90 70 70)"
-                                    stroke-linecap="round"
-                            />
-                        </svg>
-                        <div class="score-text">
-                            <span id="scoreValue">0</span><span class="percent">%</span>
+                        <div class="form-group">
+                            <label>Platform</label>
+                            <select id="platform">
+                                <option value="">Select Platform</option>
+                                <option value="Twitter">Twitter / X</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                                <option value="YouTube">YouTube</option>
+                                <option value="News Website">News Website</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="score-label">Credibility Score</div>
+                    <button class="btn-analyze" id="btnAnalyze" onclick="analyzeNews()">
+                        <span id="btnText">🤖 Analyze Text</span>
+                        <span id="btnLoader" style="display:none">
+                            <span class="loader"></span> Analyzing...
+                        </span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Extracted Text (only for image analysis) -->
-            <div class="extracted-text-section" id="extractedTextSection" style="display:none;">
-                <h3>📝 Extracted Text from Image</h3>
-                <div class="extracted-text-box" id="extractedTextBox">
-                    No text extracted
-                </div>
-            </div>
-
-            <div class="score-breakdown">
-                <h3>📊 Analysis Breakdown</h3>
-                <div class="breakdown-grid" id="breakdownGrid">
-                    <!-- Filled by JavaScript -->
-                </div>
-            </div>
-
-            <div class="explanation-section">
-                <h3>💡 Detailed Analysis</h3>
-                <div class="explanation-text" id="explanationText">
-                    Analysis details will appear here...
-                </div>
-            </div>
-
-            <div class="result-actions">
-                <button class="btn-action btn-share" onclick="shareResult()">
-                    📤 Share Result
-                </button>
-                <button class="btn-action btn-copy" onclick="copyResult()">
-                    📋 Copy Report
-                </button>
-                <button class="btn-action btn-again" onclick="analyzeAnother()">
-                    🔄 Analyze Another
-                </button>
-            </div>
-        </div>
-    </div>
-</section>
-
-        <!-- ================================
-             RESULT CARD (hidden initially)
-        ================================ -->
-        <div class="result-card" id="resultCard" style="display:none">
-            <div class="result-header">
-                <div class="result-status">
-                    <div class="status-icon-large" id="statusIcon">✅</div>
-                    <div>
-                        <div class="status-label">Analysis Result</div>
-                        <div class="status-text" id="statusText">Real News</div>
+            <div id="tab-url" class="tab-content">
+                <div class="analyzer-card">
+                    <div class="form-group">
+                        <label>📎 News Article URL <span class="required">*</span></label>
+                        <input type="url" id="urlInput" placeholder="https://example.com/news-article" class="url-input">
                     </div>
-                </div>
-                <div class="credibility-score">
-                    <div class="score-circle">
-                        <svg width="140" height="140" viewBox="0 0 140 140">
-                            <circle cx="70" cy="70" r="60"
-                                    fill="none"
-                                    stroke="#1A2035"
-                                    stroke-width="12"
-                            />
-                            <circle cx="70" cy="70" r="60"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="12"
-                                    stroke-dasharray="377"
-                                    stroke-dashoffset="377"
-                                    id="scoreCircle"
-                                    transform="rotate(-90 70 70)"
-                                    stroke-linecap="round"
-                            />
-                        </svg>
-                        <div class="score-text">
-                            <span id="scoreValue">0</span><span class="percent">%</span>
+                    <div class="url-info">
+                        <div class="url-info-item">
+                            <span class="url-info-icon">🌐</span>
+                            <div>
+                                <strong>Auto-Fetch</strong>
+                                <p>We'll fetch the article automatically</p>
+                            </div>
+                        </div>
+                        <div class="url-info-item">
+                            <span class="url-info-icon">🔍</span>
+                            <div>
+                                <strong>Deep Analysis</strong>
+                                <p>Complete credibility check</p>
+                            </div>
+                        </div>
+                        <div class="url-info-item">
+                            <span class="url-info-icon">⚡</span>
+                            <div>
+                                <strong>Instant Results</strong>
+                                <p>Get results in seconds</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="score-label">Credibility Score</div>
+                    <div class="supported-sites">
+                        <p>✅ Works with: BBC, CNN, Reuters, Times of India, and any news website</p>
+                    </div>
+                    <button class="btn-analyze" id="btnAnalyzeUrl" onclick="analyzeUrl()">
+                        <span id="btnUrlText">🔗 Analyze URL</span>
+                        <span id="btnUrlLoader" style="display:none">
+                            <span class="loader"></span> Fetching & Analyzing...
+                        </span>
+                    </button>
                 </div>
             </div>
 
-            <div class="score-breakdown">
-                <h3>📊 Analysis Breakdown</h3>
-                <div class="breakdown-grid" id="breakdownGrid">
-                    <!-- Filled by JavaScript -->
+            <div id="tab-image" class="tab-content">
+                <div class="analyzer-card">
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
+                        <div class="upload-content" id="uploadContent">
+                            <div class="upload-icon">📸</div>
+                            <h3>Drop Image Here or Click to Upload</h3>
+                            <p>Supports: JPG, PNG, GIF, WEBP (Max 10MB)</p>
+                            <p class="upload-hint">
+                                Perfect for: Social media screenshots, News images, Memes with text
+                            </p>
+                        </div>
+                        <div class="preview-content" id="previewContent" style="display:none;">
+                            <img id="previewImage" src="" alt="Preview">
+                            <div class="preview-info">
+                                <p id="previewName"></p>
+                                <p id="previewSize"></p>
+                            </div>
+                            <button class="btn-remove" onclick="removeImage(event)">
+                                ❌ Remove
+                            </button>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
+                    </div>
+                    <div class="image-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">🔍</span>
+                            <span>OCR Text Extraction</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📊</span>
+                            <span>Visual Analysis</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🎯</span>
+                            <span>Metadata Check</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✨</span>
+                            <span>AI-Powered</span>
+                        </div>
+                    </div>
+                    <button class="btn-analyze" id="btnAnalyzeImage" onclick="analyzeImage()" disabled>
+                        <span id="btnImageText">🖼️ Analyze Image</span>
+                        <span id="btnImageLoader" style="display:none">
+                            <span class="loader"></span> Analyzing Image...
+                        </span>
+                    </button>
                 </div>
             </div>
 
-            <div class="explanation-section">
-                <h3>💡 Detailed Analysis</h3>
-                <div class="explanation-text" id="explanationText">
-                    Analysis details will appear here...
+            <div class="result-card" id="resultCard" style="display:none">
+                <div class="result-header">
+                    <div class="result-status">
+                        <div class="status-icon-large" id="statusIcon">✅</div>
+                        <div>
+                            <div class="status-label">Analysis Result</div>
+                            <div class="status-text" id="statusText">Real News</div>
+                        </div>
+                    </div>
+                    <div class="credibility-score">
+                        <div class="score-circle">
+                            <svg width="140" height="140" viewBox="0 0 140 140">
+                                <circle cx="70" cy="70" r="60" fill="none" stroke="#1A2035" stroke-width="12"/>
+                                <circle cx="70" cy="70" r="60" fill="none" stroke="currentColor" stroke-width="12" stroke-dasharray="377" stroke-dashoffset="377" id="scoreCircle" transform="rotate(-90 70 70)" stroke-linecap="round"/>
+                            </svg>
+                            <div class="score-text">
+                                <span id="scoreValue">0</span><span class="percent">%</span>
+                            </div>
+                        </div>
+                        <div class="score-label">Credibility Score</div>
+                    </div>
+                </div>
+
+                <div class="extracted-text-section" id="extractedTextSection" style="display:none;">
+                    <h3>📝 Extracted Information</h3>
+                    <div class="extracted-text-box" id="extractedTextBox">
+                        No text extracted
+                    </div>
+                </div>
+
+                <div class="score-breakdown">
+                    <h3>📊 Analysis Breakdown</h3>
+                    <div class="breakdown-grid" id="breakdownGrid"></div>
+                </div>
+
+                <div class="explanation-section">
+                    <h3>💡 Detailed Analysis</h3>
+                    <div class="explanation-text" id="explanationText">
+                        Analysis details will appear here...
+                    </div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn-action btn-share" onclick="shareResult()">
+                        📤 Share Result
+                    </button>
+                    <button class="btn-action btn-copy" onclick="copyResult()">
+                        📋 Copy Report
+                    </button>
+                    <button class="btn-action btn-again" onclick="analyzeAnother()">
+                        🔄 Analyze Another
+                    </button>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="result-actions">
-                <button class="btn-action btn-share" onclick="shareResult()">
-                    📤 Share Result
-                </button>
-                <button class="btn-action btn-copy" onclick="copyResult()">
-                    📋 Copy Report
-                </button>
-                <button class="btn-action btn-again" onclick="analyzeAnother()">
-                    🔄 Analyze Another
-                </button>
+    <section id="dashboard" class="dashboard-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Live Dashboard</h2>
+                <p>Real-time tracking of analyzed news</p>
+            </div>
+            <div class="dashboard-grid">
+                <div class="dashboard-card card-total">
+                    <div class="card-icon-large">📊</div>
+                    <div class="card-stat" id="dashTotal">0</div>
+                    <div class="card-label">Total Analyzed</div>
+                </div>
+                <div class="dashboard-card card-fake">
+                    <div class="card-icon-large">❌</div>
+                    <div class="card-stat" id="dashFake">0</div>
+                    <div class="card-label">Fake News</div>
+                </div>
+                <div class="dashboard-card card-real">
+                    <div class="card-icon-large">✅</div>
+                    <div class="card-stat" id="dashReal">0</div>
+                    <div class="card-label">Real News</div>
+                </div>
+                <div class="dashboard-card card-suspicious">
+                    <div class="card-icon-large">⚠️</div>
+                    <div class="card-stat" id="dashSuspicious">0</div>
+                    <div class="card-label">Suspicious</div>
+                </div>
+            </div>
+            <div class="recent-news-card">
+                <div class="recent-news-header">
+                    <h3>📰 Recently Analyzed</h3>
+                    <button class="btn-refresh" onclick="loadRecentNews()">
+                        🔄 Refresh
+                    </button>
+                </div>
+                <div class="news-table-wrapper">
+                    <table class="news-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Platform</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="newsTableBody">
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    No news analyzed yet.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+    </section>
+
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How FakeShield Works</h2>
+                <p>Multi-layer AI detection in 4 simple steps</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number">01</div>
+                    <div class="step-icon">📝</div>
+                    <h3>Submit Content</h3>
+                    <p>Paste text, URL, or upload image</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">02</div>
+                    <div class="step-icon">🤖</div>
+                    <h3>AI Analysis</h3>
+                    <p>Multiple algorithms analyze content</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">03</div>
+                    <div class="step-icon">📊</div>
+                    <h3>Get Score</h3>
+                    <p>Receive detailed credibility score</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">04</div>
+                    <div class="step-icon">🛡️</div>
+                    <h3>Stay Safe</h3>
+                    <p>Share and stop misinformation</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="about" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">🛡️ FakeShield</div>
+                    <p>Fighting misinformation with AI technology.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <a href="#analyzer">Analyzer</a>
+                    <a href="#dashboard">Dashboard</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Technology</h4>
+                    <a href="#">Spring Boot</a>
+                    <a href="#">Java</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 FakeShield | Java OOPS Project</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
     </div>
-</section>
 
-<!-- ================================
-     DASHBOARD SECTION
-================================ -->
-<section id="dashboard" class="dashboard-section">
-    <div class="container">
-        <div class="section-header">
-            <h2>Live Dashboard</h2>
-            <p>Real-time tracking of analyzed news across all platforms</p>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="dashboard-card card-total">
-                <div class="card-icon-large">📊</div>
-                <div class="card-stat" id="dashTotal">0</div>
-                <div class="card-label">Total Analyzed</div>
-            </div>
-            <div class="dashboard-card card-fake">
-                <div class="card-icon-large">❌</div>
-                <div class="card-stat" id="dashFake">0</div>
-                <div class="card-label">Fake News</div>
-            </div>
-            <div class="dashboard-card card-real">
-                <div class="card-icon-large">✅</div>
-                <div class="card-stat" id="dashReal">0</div>
-                <div class="card-label">Real News</div>
-            </div>
-            <div class="dashboard-card card-suspicious">
-                <div class="card-icon-large">⚠️</div>
-                <div class="card-stat" id="dashSuspicious">0</div>
-                <div class="card-label">Suspicious</div>
-            </div>
-        </div>
-
-        <div class="recent-news-card">
-            <div class="recent-news-header">
-                <h3>📰 Recently Analyzed</h3>
-                <button class="btn-refresh" onclick="loadRecentNews()">
-                    🔄 Refresh
-                </button>
-            </div>
-            <div class="news-table-wrapper">
-                <table class="news-table">
-                    <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Platform</th>
-                        <th>Score</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                    <tbody id="newsTableBody">
-                    <tr>
-                        <td colspan="4" class="empty-state">
-                            No news analyzed yet. Try analyzing one above!
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ================================
-     HOW IT WORKS SECTION
-================================ -->
-<section id="how-it-works" class="how-it-works">
-    <div class="container">
-        <div class="section-header">
-            <h2>How FakeShield Works</h2>
-            <p>Advanced multi-layer AI detection in 4 simple steps</p>
-        </div>
-
-        <div class="steps-grid">
-            <div class="step">
-                <div class="step-number">01</div>
-                <div class="step-icon">📝</div>
-                <h3>Submit Content</h3>
-                <p>Paste the news article, headline, or URL you want to verify</p>
-            </div>
-            <div class="step">
-                <div class="step-number">02</div>
-                <div class="step-icon">🤖</div>
-                <h3>AI Analysis</h3>
-                <p>Our AI runs 6 detection algorithms simultaneously</p>
-            </div>
-            <div class="step">
-                <div class="step-number">03</div>
-                <div class="step-icon">📊</div>
-                <h3>Get Score</h3>
-                <p>Receive detailed credibility score with full breakdown</p>
-            </div>
-            <div class="step">
-                <div class="step-number">04</div>
-                <div class="step-icon">🛡️</div>
-                <h3>Stay Safe</h3>
-                <p>Share results and help stop misinformation spread</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ================================
-     FEATURES SECTION
-================================ -->
-<section class="features-section">
-    <div class="container">
-        <div class="section-header">
-            <h2>Powerful Features</h2>
-            <p>Everything you need to detect misinformation</p>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3>Clickbait Detection</h3>
-                <p>Identifies sensational headlines and manipulative language patterns</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">💭</div>
-                <h3>Sentiment Analysis</h3>
-                <p>Detects emotional manipulation and biased language</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔗</div>
-                <h3>Source Verification</h3>
-                <p>Checks credibility of news sources against verified database</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">✍️</div>
-                <h3>Grammar Analysis</h3>
-                <p>Evaluates writing quality and journalistic standards</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🧠</div>
-                <h3>ML Classification</h3>
-                <p>Machine learning model trained on thousands of articles</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">✔️</div>
-                <h3>Fact Checking</h3>
-                <p>Cross-references claims with reliable data sources</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ================================
-     FOOTER
-================================ -->
-<footer id="about" class="footer">
-    <div class="container">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <div class="footer-logo">🛡️ FakeShield</div>
-                <p>Fighting misinformation with AI technology.<br>
-                    Built with Java Spring Boot + OOP Principles.</p>
-            </div>
-            <div class="footer-links">
-                <h4>Product</h4>
-                <a href="#analyzer">Analyzer</a>
-                <a href="#dashboard">Dashboard</a>
-                <a href="#how-it-works">How It Works</a>
-            </div>
-            <div class="footer-links">
-                <h4>Technology</h4>
-                <a href="#">Spring Boot</a>
-                <a href="#">H2 Database</a>
-                <a href="#">REST API</a>
-            </div>
-            <div class="footer-links">
-                <h4>Project</h4>
-                <a href="#">OOPS Concepts</a>
-                <a href="#">Design Patterns</a>
-                <a href="#">Documentation</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2024 FakeShield | Java OOPS Project | Made with ❤️</p>
-        </div>
-    </div>
-</footer>
-
-<!-- ================================
-     TOAST NOTIFICATION
-================================ -->
-<div class="toast" id="toast">
-    <span id="toastMessage"></span>
-</div>
-
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
