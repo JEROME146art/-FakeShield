@@ -1,25 +1,47 @@
 package com.fakeshield.service;
 
 import com.fakeshield.model.News;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
+@ConditionalOnProperty(name = "telegram.bot.enabled", havingValue = "true", matchIfMissing = false)
 public class TelegramBotService extends TelegramLongPollingBot {
 
-    @Value("${telegram.bot.token}")
+    @Value("${telegram.bot.token:}")
     private String botToken;
 
-    @Value("${telegram.bot.username}")
+    @Value("${telegram.bot.username:}")
     private String botUsername;
 
     @Autowired
     private NewsAnalysisService newsAnalysisService;
+
+    // ✅ Auto-register bot on startup
+    @PostConstruct
+    public void registerBot() {
+        try {
+            if (botToken == null || botToken.isEmpty()) {
+                System.err.println("⚠️ Telegram Bot Token is missing! Bot NOT started.");
+                return;
+            }
+
+            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+            botsApi.registerBot(this);
+            System.out.println("✅ Telegram Bot registered successfully: @" + botUsername);
+        } catch (TelegramApiException e) {
+            System.err.println("❌ Failed to register Telegram Bot: " + e.getMessage());
+        }
+    }
 
     @Override
     public String getBotUsername() {
@@ -120,21 +142,17 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
     private void analyzeAndReply(long chatId, String text) {
-        // Send "analyzing" message first
         sendMessage(chatId, "🔍 *Analyzing your text...*\nPlease wait 2-3 seconds ⏳");
 
         try {
-            // Create News object
             News news = new News.Builder()
                     .title(text.length() > 100 ? text.substring(0, 100) : text)
                     .content(text)
                     .platform("Telegram Bot")
                     .build();
 
-            // Analyze
             News analyzed = newsAnalysisService.analyzeNewsWithLanguage(news);
 
-            // Build reply
             String reply = buildAnalysisReply(analyzed);
             sendMessage(chatId, reply);
 
@@ -191,57 +209,4 @@ public class TelegramBotService extends TelegramLongPollingBot {
         reply.append(getVerdict(status)).append("\n\n");
 
         reply.append("━━━━━━━━━━━━━━━━━━━━━━\n\n");
-        reply.append("*🌐 Full Analysis:*\n");
-        reply.append("fakeshield-production-f214.up.railway.app\n\n");
-        reply.append("*📤 Share this bot:*\n");
-        reply.append("@").append(botUsername).append("\n\n");
-        reply.append("_Send another news to analyze!_");
-
-        return reply.toString();
-    }
-
-    private String formatScore(double score) {
-        int rounded = (int) Math.round(score);
-        String emoji;
-        if (rounded >= 75) emoji = "🟢";
-        else if (rounded >= 50) emoji = "🟡";
-        else emoji = "🔴";
-        return emoji + " " + rounded + "%";
-    }
-
-    private String getCredibilityBar(double score) {
-        int filled = (int) (score / 10);
-        StringBuilder bar = new StringBuilder();
-        for (int i = 0; i < 10; i++) {
-            if (i < filled) bar.append("█");
-            else bar.append("░");
-        }
-        return bar.toString();
-    }
-
-    private String getVerdict(String status) {
-        switch (status) {
-            case "REAL":
-                return "✅ This appears to be legitimate news with good credibility indicators.";
-            case "FAKE":
-                return "❌ WARNING: This shows strong signs of being fake news. DO NOT share!";
-            case "SUSPICIOUS":
-                return "⚠️ CAUTION: This content has some red flags. Verify from reliable sources before sharing.";
-            default:
-                return "❓ Cannot determine credibility. Please provide more context.";
-        }
-    }
-
-    private void sendMessage(long chatId, String text) {
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText(text);
-        message.setParseMode("Markdown");
-
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            System.err.println("Error sending message: " + e.getMessage());
-        }
-    }
-}
+        reply.append("*🌐 Full
