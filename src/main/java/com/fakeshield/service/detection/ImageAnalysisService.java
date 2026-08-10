@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -22,14 +23,29 @@ import java.util.Optional;
 @Service
 public class ImageAnalysisService {
 
+    private static final int MAX_DIMENSION = 800; // Resize to save memory
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
     @Autowired
     private ImageAnalysisRepository imageAnalysisRepository;
+
+    // Cache file bytes ONCE
+    private byte[] cachedBytes;
 
     // ================================
     // Main Analysis Method
     // ================================
     public ImageAnalysis analyzeImage(MultipartFile file) throws Exception {
         long startTime = System.currentTimeMillis();
+
+        // ✅ File size check
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File too large. Max 5MB allowed.");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
 
         ImageAnalysis analysis = new ImageAnalysis();
         analysis.setFilename(file.getOriginalFilename());
@@ -38,91 +54,161 @@ public class ImageAnalysisService {
 
         StringBuilder explanation = new StringBuilder();
 
-        // Run all analyses
-        double visualScore = analyzeVisual(file, explanation);
-        double metadataScore = analyzeMetadata(file, explanation);
-        String extractedText = extractTextFromImage(file, explanation);
-        analysis.setExtractedText(extractedText);
-        double textScore = analyzeExtractedText(extractedText, explanation);
-        double ocrScore = analyzeOCRQuality(extractedText, explanation);
+        // ✅ Read file bytes ONCE, cache it
+        cachedBytes = file.getBytes();
 
-        // Calculate overall score (weighted)
-        double overallScore = (visualScore * 0.20) +
-                (metadataScore * 0.20) +
-                (textScore * 0.35) +
-                (ocrScore * 0.25);
+        // ✅ Load + resize image ONCE
+        BufferedImage resizedImage = loadAndResize();
 
-        analysis.setVisualScore(visualScore);
-        analysis.setMetadataScore(metadataScore);
-        analysis.setTextAnalysisScore(textScore);
-        analysis.setOcrScore(ocrScore);
-        analysis.setCredibilityScore(overallScore);
-        analysis.setExplanation(explanation.toString());
+        // ✅ Save resized image to temp file (much smaller than original)
+        File tempFile = saveResizedToTemp(resizedImage);
 
-        NewsStatus status = determineStatus(overallScore);
-        analysis.setStatus(status);
+        try {
+            // Run all analyses using cached data
+            double visualScore = analyzeVisual(resizedImage, explanation);
+            double metadataScore = analyzeMetadata(file, explanation);
+            String extractedText = extractTextFromImage(tempFile, explanation);
+            analysis.setExtractedText(extractedText);
+            double textScore = analyzeExtractedText(extractedText, explanation);
+            double ocrScore = analyzeOCRQuality(extractedText, explanation);
 
-        long processingTime = System.currentTimeMillis() - startTime;
-        analysis.setProcessingTimeMs(processingTime);
+            // Calculate overall score
+            double overallScore = (visualScore * 0.20) +
+                    (metadataScore * 0.20) +
+                    (textScore * 0.35) +
+                    (ocrScore * 0.25);
 
-        ImageAnalysis saved = imageAnalysisRepository.save(analysis);
+            analysis.setVisualScore(visualScore);
+            analysis.setMetadataScore(metadataScore);
+            analysis.setTextAnalysisScore(textScore);
+            analysis.setOcrScore(ocrScore);
+            analysis.setCredibilityScore(overallScore);
+            analysis.setExplanation(explanation.toString());
 
-        System.out.println("================================");
-        System.out.println("✅ Image Analyzed!");
-        System.out.println("File          : " + saved.getFilename());
-        System.out.println("Extracted text: " + (extractedText.length() > 50 ?
-                extractedText.substring(0, 50) + "..." : extractedText));
-        System.out.println("Score         : " + overallScore);
-        System.out.println("Status        : " + status);
-        System.out.println("Time          : " + processingTime + "ms");
-        System.out.println("================================");
+            NewsStatus status = determineStatus(overallScore);
+            analysis.setStatus(status);
 
-        return saved;
+            long processingTime = System.currentTimeMillis() - startTime;
+            analysis.setProcessingTimeMs(processingTime);
+
+            ImageAnalysis saved = imageAnalysisRepository.save(analysis);
+
+            System.out.println("✅ Image Analyzed: " + saved.getFilename() +
+                    " | Score: " + overallScore + " | Status: " + status +
+                    " | Time: " + processingTime + "ms");
+
+            return saved;
+
+        } finally {
+            // ✅ CRITICAL: Free memory
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
+            if (resizedImage != null) {
+                resizedImage.flush();
+            }
+            cachedBytes = null;
+            System.gc(); // Suggest garbage collection
+        }
+    }
+
+    // ================================
+    // Load and Resize Image (MEMORY SAVER)
+    // ================================
+    private BufferedImage loadAndResize() throws Exception {
+        BufferedImage original = ImageIO.read(new ByteArrayInputStream(cachedBytes));
+        if (original == null) {
+            throw new IllegalArgumentException("Invalid image file");
+        }
+
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        // If already small, return as-is
+        if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+            return original;
+        }
+
+        // Calculate new dimensions
+        double scale = Math.min(
+                (double) MAX_DIMENSION / width,
+                (double) MAX_DIMENSION / height
+        );
+        int newWidth = (int) (width * scale);
+        int newHeight = (int) (height * scale);
+
+        // Create resized image
+        BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = resized.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+        g.drawImage(original, 0, 0, newWidth, newHeight, null);
+        g.dispose();
+
+        // ✅ Free original image immediately
+        original.flush();
+
+        return resized;
+    }
+
+    // ================================
+    // Save Resized Image to Temp File
+    // ================================
+    private File saveResizedToTemp(BufferedImage image) throws Exception {
+        File tempFile = File.createTempFile("resized_", ".png");
+        ImageIO.write(image, "png", tempFile);
+        return tempFile;
     }
 
     // ================================
     // Extract Text using Tesseract OCR
     // ================================
-    private String extractTextFromImage(MultipartFile file, StringBuilder explanation) {
+    private String extractTextFromImage(File tempFile, StringBuilder explanation) {
         String extractedText = "";
-        File tempFile = null;
 
         try {
-            // Save uploaded file temporarily
-            tempFile = File.createTempFile("upload_", "_" + file.getOriginalFilename());
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                fos.write(file.getBytes());
-            }
-
-            // Configure Tesseract
             Tesseract tesseract = new Tesseract();
 
             // Try multiple common paths for tessdata
             String[] possiblePaths = {
-                    "/usr/share/tesseract-ocr/4.00/tessdata",  // Linux (Ubuntu/Debian)
-                    "/usr/share/tesseract-ocr/tessdata",       // Linux alternative
-                    "/usr/local/share/tessdata",               // Mac
-                    "C:\\Program Files\\Tesseract-OCR\\tessdata", // Windows
-                    "./tessdata"                               // Local
+                    "/usr/share/tesseract-ocr/4.00/tessdata",
+                    "/usr/share/tesseract-ocr/5/tessdata",
+                    "/usr/share/tesseract-ocr/tessdata",
+                    "/usr/share/tessdata",
+                    "/usr/local/share/tessdata",
+                    "C:\\Program Files\\Tesseract-OCR\\tessdata",
+                    "./tessdata"
             };
 
+            boolean pathFound = false;
             for (String path : possiblePaths) {
                 if (new File(path).exists()) {
                     tesseract.setDatapath(path);
+                    pathFound = true;
                     break;
                 }
             }
 
+            if (!pathFound) {
+                explanation.append("\n• OCR Extraction:\n");
+                explanation.append("  - Tesseract data path not found\n");
+                return "";
+            }
+
             tesseract.setLanguage("eng");
 
-            // Perform OCR
+            // ✅ Memory-friendly settings
+            tesseract.setPageSegMode(3); // Automatic page segmentation
+            tesseract.setOcrEngineMode(1); // Neural nets LSTM engine only
+
             extractedText = tesseract.doOCR(tempFile);
             extractedText = extractedText.trim();
 
             explanation.append("\n• OCR Extraction:\n");
             if (extractedText.isEmpty()) {
                 explanation.append("  - No text detected in image\n");
-                extractedText = "";
             } else {
                 explanation.append("  - Extracted ").append(extractedText.length()).append(" characters\n");
                 explanation.append("  - Preview: \"")
@@ -139,24 +225,18 @@ public class ImageAnalysisService {
             explanation.append("\n• OCR Extraction:\n");
             explanation.append("  - Error: ").append(e.getMessage()).append("\n");
             extractedText = "";
-        } finally {
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
-            }
         }
 
         return extractedText;
     }
 
     // ================================
-    // Visual Analysis
+    // Visual Analysis (uses cached image)
     // ================================
-    private double analyzeVisual(MultipartFile file, StringBuilder explanation) {
+    private double analyzeVisual(BufferedImage image, StringBuilder explanation) {
         double score = 80.0;
 
         try {
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream(file.getBytes()));
-
             if (image == null) {
                 explanation.append("• Visual: Cannot read image. ");
                 return 20.0;
@@ -238,7 +318,7 @@ public class ImageAnalysisService {
     }
 
     // ================================
-    // Extracted Text Analysis
+    // Text Analysis
     // ================================
     private double analyzeExtractedText(String text, StringBuilder explanation) {
         double score = 60.0;
@@ -252,7 +332,6 @@ public class ImageAnalysisService {
 
         String lowerText = text.toLowerCase();
 
-        // Fake news indicators
         String[] fakeIndicators = {
                 "breaking", "shocking", "you won't believe",
                 "doctors hate", "conspiracy", "cover up",
@@ -260,7 +339,6 @@ public class ImageAnalysisService {
                 "click here", "urgent", "leaked"
         };
 
-        // Real news indicators
         String[] realIndicators = {
                 "according to", "reuters", "associated press",
                 "study shows", "research", "official statement",
@@ -286,7 +364,6 @@ public class ImageAnalysisService {
             }
         }
 
-        // Check excessive caps
         long capsCount = text.chars().filter(Character::isUpperCase).count();
         double capsRatio = (double) capsCount / text.length();
         if (capsRatio > 0.5 && text.length() > 20) {
@@ -294,7 +371,6 @@ public class ImageAnalysisService {
             explanation.append("  - WARNING: Excessive capitalization\n");
         }
 
-        // Check excessive punctuation
         long exclamationCount = text.chars().filter(c -> c == '!').count();
         if (exclamationCount > 5) {
             score -= 10;
@@ -327,13 +403,11 @@ public class ImageAnalysisService {
         explanation.append("  - Characters: ").append(length).append("\n");
         explanation.append("  - Words: ").append(wordCount).append("\n");
 
-        // Very short text is suspicious
         if (length < 20) {
             score -= 15;
             explanation.append("  - WARNING: Very little text extracted\n");
         }
 
-        // Very long text with good OCR is good
         if (length > 200 && wordCount > 30) {
             score += 15;
             explanation.append("  - Good amount of readable text\n");
