@@ -22,3 +22,15 @@ Thumbs.db
 
 # Environment files
 .env
+# Sensitive files
+.env
+*.env
+application-local.properties
+application-secret.properties
+
+# IDE
+.idea/
+*.iml
+
+# Build
+target/
