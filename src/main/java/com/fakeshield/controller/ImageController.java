@@ -3,12 +3,10 @@ package com.fakeshield.controller;
 import com.fakeshield.model.ImageAnalysis;
 import com.fakeshield.service.ImageAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,65 +21,66 @@ public class ImageController {
     private ImageAnalysisService imageAnalysisService;
 
     // ================================
-    // POST: Upload and Analyze Image
-    // URL: POST /api/images/analyze
+    // Analyze uploaded image
     // ================================
     @PostMapping("/analyze")
     public ResponseEntity<?> analyzeImage(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Please select an image file"));
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Please select a file to upload");
+                return ResponseEntity.badRequest().body(error);
             }
 
+            // Validate file type
             String contentType = file.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Only image files are allowed"));
-            }
-
-            if (file.getSize() > 10 * 1024 * 1024) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "File size must be less than 10MB"));
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "File must be an image");
+                return ResponseEntity.badRequest().body(error);
             }
 
             ImageAnalysis analysis = imageAnalysisService.analyzeImage(file);
-            return ResponseEntity.ok(buildResponse(analysis));
+            return ResponseEntity.ok(analysis);
 
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Analysis failed: " + e.getMessage()));
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Analysis failed: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(error);
         }
     }
 
     // ================================
-    // GET: All Images
+    // Get all analyzed images
     // ================================
-    @GetMapping("/all")
-    public ResponseEntity<List<Map<String, Object>>> getAllImages() {
-        List<ImageAnalysis> images = imageAnalysisService.getAllImages();
-        List<Map<String, Object>> response = new ArrayList<>();
-        for (ImageAnalysis image : images) {
-            response.add(buildResponse(image));
-        }
-        return ResponseEntity.ok(response);
+    @GetMapping
+    public ResponseEntity<List<ImageAnalysis>> getAllImages() {
+        return ResponseEntity.ok(imageAnalysisService.getAllImages());
     }
 
     // ================================
-    // GET: Image by ID
+    // Get image by ID
     // ================================
     @GetMapping("/{id}")
     public ResponseEntity<?> getImageById(@PathVariable Long id) {
-        Optional<ImageAnalysis> image = imageAnalysisService.getImageById(id);
-        if (image.isPresent()) {
-            return ResponseEntity.ok(buildResponse(image.get()));
+        Optional<ImageAnalysis> analysis = imageAnalysisService.getImageById(id);
+
+        if (analysis.isPresent()) {
+            return ResponseEntity.ok(analysis.get());
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Image not found");
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Image not found"));
     }
 
     // ================================
-    // GET: Statistics
+    // Get statistics
     // ================================
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Long>> getStatistics() {
@@ -89,41 +88,19 @@ public class ImageController {
     }
 
     // ================================
-    // DELETE: Delete Image
+    // Delete image analysis
     // ================================
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteImage(@PathVariable Long id) {
-        Optional<ImageAnalysis> image = imageAnalysisService.getImageById(id);
-        if (image.isPresent()) {
+        try {
             imageAnalysisService.deleteImage(id);
-            return ResponseEntity.ok(Map.of("message", "Image deleted"));
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Image deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Image not found"));
-    }
-
-    // ================================
-    // Build Response
-    // ================================
-    private Map<String, Object> buildResponse(ImageAnalysis analysis) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", analysis.getId());
-        response.put("filename", analysis.getFilename());
-        response.put("fileSize", analysis.getFileSize());
-        response.put("imageType", analysis.getImageType());
-        response.put("extractedText", analysis.getExtractedText());
-        response.put("credibilityScore",
-                Math.round(analysis.getCredibilityScore() * 10.0) / 10.0);
-        response.put("status", analysis.getStatus().name());
-        response.put("statusDisplay", analysis.getStatus().getDisplayName());
-        response.put("statusColor", analysis.getStatus().getColorCode());
-        response.put("textScore", analysis.getTextAnalysisScore());
-        response.put("metadataScore", analysis.getMetadataScore());
-        response.put("visualScore", analysis.getVisualScore());
-        response.put("ocrScore", analysis.getOcrScore());
-        response.put("explanation", analysis.getExplanation());
-        response.put("uploadedAt", analysis.getUploadedAt().toString());
-        response.put("processingMs", analysis.getProcessingTimeMs());
-        return response;
     }
 }
