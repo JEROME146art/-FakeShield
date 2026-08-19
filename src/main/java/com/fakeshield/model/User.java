@@ -1,9 +1,11 @@
 package com.fakeshield.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -13,70 +15,44 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(min = 3, max = 50)
     @Column(unique = true, nullable = false)
     private String username;
 
+    @NotBlank
+    @Email
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank
+    @Size(min = 6)
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "full_name")
+    private String fullName;
+
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Column(nullable = false)
+    private Role role = Role.USER;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "total_submissions")
-    private int totalSubmissions;
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
-    @Column(name = "reputation_points")
-    private int reputationPoints;
+    // Constructors
+    public User() {}
 
-    @Column(name = "is_verified")
-    private boolean isVerified;
-
-    @OneToMany(mappedBy = "submittedBy", cascade = CascadeType.ALL)
-    private List<News> submittedNews = new ArrayList<>();
-
-    // ================================
-    // Enum inside User class
-    // OOP - Encapsulation
-    // ================================
-    public enum UserRole {
-        ADMIN, MODERATOR, JOURNALIST, USER
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
-    // ================================
-    // Constructor
-    // ================================
-    public User() {
-        this.createdAt = LocalDateTime.now();
-        this.role = UserRole.USER;
-        this.reputationPoints = 0;
-        this.isVerified = false;
-        this.totalSubmissions = 0;
-    }
-
-    // ================================
-    // Business Methods
-    // ================================
-    public void incrementSubmissions() {
-        this.totalSubmissions++;
-    }
-
-    public void updateReputation(boolean correctSubmission) {
-        if (correctSubmission) {
-            this.reputationPoints += 10;
-        } else {
-            this.reputationPoints = Math.max(0, this.reputationPoints - 5);
-        }
-    }
-
-    // ================================
     // Getters and Setters
-    // ================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -89,26 +65,20 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public int getTotalSubmissions() { return totalSubmissions; }
-    public void setTotalSubmissions(int totalSubmissions) {
-        this.totalSubmissions = totalSubmissions;
-    }
+    public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 
-    public int getReputationPoints() { return reputationPoints; }
-    public void setReputationPoints(int reputationPoints) {
-        this.reputationPoints = reputationPoints;
-    }
-
-    public boolean isVerified() { return isVerified; }
-    public void setVerified(boolean verified) { isVerified = verified; }
-
-    public List<News> getSubmittedNews() { return submittedNews; }
-    public void setSubmittedNews(List<News> submittedNews) {
-        this.submittedNews = submittedNews;
+    // Enum for user roles
+    public enum Role {
+        USER, ADMIN
     }
 }

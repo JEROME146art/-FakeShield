@@ -3,16 +3,16 @@ package com.fakeshield.controller;
 import com.fakeshield.model.User;
 import com.fakeshield.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 @CrossOrigin(origins = "*")
 public class UserController {
 
@@ -20,119 +20,205 @@ public class UserController {
     private UserService userService;
 
     // ================================
-    // POST: Register
-    // URL: POST http://localhost:8080/api/users/register
+    // Get Current Logged-in User
     // ================================
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
         try {
-            User user = userService.registerUser(
-                    request.getUsername(),
-                    request.getEmail(),
-                    request.getPassword()
-            );
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Registration successful!",
-                    "userId", user.getId(),
-                    "username", user.getUsername(),
-                    "email", user.getEmail()
-            ));
-
+            User user = userService.getCurrentUser();
+            return ResponseEntity.ok(userService.getUserProfile(user.getId()));
         } catch (Exception e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 
     // ================================
-    // POST: Login
-    // URL: POST http://localhost:8080/api/users/login
-    // ================================
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Optional<User> userOpt = userService.login(
-                request.getEmail(),
-                request.getPassword()
-        );
-
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            return ResponseEntity.ok(Map.of(
-                    "message", "Login successful!",
-                    "userId", user.getId(),
-                    "username", user.getUsername(),
-                    "role", user.getRole().name()
-            ));
-        }
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Invalid email or password"));
-    }
-
-    // ================================
-    // GET: All Users
-    // URL: GET http://localhost:8080/api/users/all
-    // ================================
-    @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
-
-    // ================================
-    // GET: Leaderboard
-    // URL: GET http://localhost:8080/api/users/leaderboard
-    // ================================
-    @GetMapping("/leaderboard")
-    public ResponseEntity<List<Map<String, Object>>> getLeaderboard() {
-        return ResponseEntity.ok(userService.getLeaderboard());
-    }
-
-    // ================================
-    // GET: User by ID
-    // URL: GET http://localhost:8080/api/users/1
+    // Get User Profile by ID
     // ================================
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
+        try {
+            Map<String, Object> profile = userService.getUserProfile(id);
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "User not found"));
     }
 
     // ================================
-    // Inner Request Classes
+    // Update Profile
     // ================================
-    public static class RegisterRequest {
-        private String username;
-        private String email;
-        private String password;
-
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> updates) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            User updated = userService.updateProfile(currentUser.getId(), updates);
+            return ResponseEntity.ok(userService.getUserProfile(updated.getId()));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
-    public static class LoginRequest {
-        private String email;
-        private String password;
+    // ================================
+    // Change Password
+    // ================================
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> passwords) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            String oldPassword = passwords.get("oldPassword");
+            String newPassword = passwords.get("newPassword");
 
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
+            if (oldPassword == null || newPassword == null) {
+                throw new RuntimeException("Old and new passwords are required");
+            }
 
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+            userService.changePassword(currentUser.getId(), oldPassword, newPassword);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Password changed successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // ================================
+    // Delete Account
+    // ================================
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAccount() {
+        try {
+            User currentUser = userService.getCurrentUser();
+            userService.deleteUser(currentUser.getId());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Account deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // ================================
+    // Check Username Availability
+    // ================================
+    @GetMapping("/check-username")
+    public ResponseEntity<?> checkUsername(@RequestParam String username) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("username", username);
+        response.put("available", !userService.usernameExists(username));
+        return ResponseEntity.ok(response);
+    }
+
+    // ================================
+    // Check Email Availability
+    // ================================
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("email", email);
+        response.put("available", !userService.emailExists(email));
+        return ResponseEntity.ok(response);
+    }
+
+    // ================================
+    // ADMIN ENDPOINTS
+    // ================================
+
+    // Get all users (Admin only)
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Get user statistics (Admin only)
+    @GetMapping("/admin/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getStatistics() {
+        try {
+            Map<String, Object> stats = userService.getUserStatistics();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Promote user to admin
+    @PostMapping("/admin/promote/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> promoteToAdmin(@PathVariable Long userId) {
+        try {
+            User user = userService.promoteToAdmin(userId);
+            return ResponseEntity.ok(userService.getUserProfile(user.getId()));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Demote admin to user
+    @PostMapping("/admin/demote/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> demoteToUser(@PathVariable Long userId) {
+        try {
+            User user = userService.demoteToUser(userId);
+            return ResponseEntity.ok(userService.getUserProfile(user.getId()));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Delete user (Admin only)
+    @DeleteMapping("/admin/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteUserByAdmin(@PathVariable Long userId) {
+        try {
+            userService.deleteUser(userId);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "User deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Search users (Admin only)
+    @GetMapping("/admin/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> searchUsers(@RequestParam String keyword) {
+        try {
+            List<User> users = userService.searchUsers(keyword);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 }

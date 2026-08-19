@@ -2,10 +2,14 @@ package com.fakeshield.service;
 
 import com.fakeshield.model.ImageAnalysis;
 import com.fakeshield.model.NewsStatus;
+import com.fakeshield.model.User;
 import com.fakeshield.repository.ImageAnalysisRepository;
+import com.fakeshield.repository.UserRepository;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,7 +18,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +32,10 @@ public class ImageAnalysisService {
     @Autowired
     private ImageAnalysisRepository imageAnalysisRepository;
 
-    // Cache file bytes ONCE
+    @Autowired
+    private UserRepository userRepository;
+
+    // Cache file bytes ONCE per request
     private byte[] cachedBytes;
 
     // ================================
@@ -72,7 +78,7 @@ public class ImageAnalysisService {
             double textScore = analyzeExtractedText(extractedText, explanation);
             double ocrScore = analyzeOCRQuality(extractedText, explanation);
 
-            // Calculate overall score
+            // Calculate overall score (weighted)
             double overallScore = (visualScore * 0.20) +
                     (metadataScore * 0.20) +
                     (textScore * 0.35) +
@@ -91,11 +97,26 @@ public class ImageAnalysisService {
             long processingTime = System.currentTimeMillis() - startTime;
             analysis.setProcessingTimeMs(processingTime);
 
+            // ✅ NEW: Link to logged-in user (if any)
+            User currentUser = getCurrentUser();
+            if (currentUser != null) {
+                analysis.setUser(currentUser);
+                System.out.println("👤 Analysis linked to user: " + currentUser.getUsername());
+            } else {
+                System.out.println("👥 Guest analysis (not linked to any user)");
+            }
+
+            // Save to database
             ImageAnalysis saved = imageAnalysisRepository.save(analysis);
 
-            System.out.println("✅ Image Analyzed: " + saved.getFilename() +
-                    " | Score: " + overallScore + " | Status: " + status +
-                    " | Time: " + processingTime + "ms");
+            System.out.println("================================");
+            System.out.println("✅ Image Analyzed!");
+            System.out.println("File          : " + saved.getFilename());
+            System.out.println("User          : " + (currentUser != null ? currentUser.getUsername() : "Guest"));
+            System.out.println("Score         : " + overallScore);
+            System.out.println("Status        : " + status);
+            System.out.println("Time          : " + processingTime + "ms");
+            System.out.println("================================");
 
             return saved;
 
@@ -109,6 +130,27 @@ public class ImageAnalysisService {
             }
             cachedBytes = null;
             System.gc(); // Suggest garbage collection
+        }
+    }
+
+    // ================================
+    // ✅ NEW: Get Current Logged-in User (or null if guest)
+    // ================================
+    private User getCurrentUser() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+            if (auth == null || !auth.isAuthenticated()
+                    || "anonymousUser".equals(auth.getPrincipal())) {
+                return null; // Guest user
+            }
+
+            String username = auth.getName();
+            return userRepository.findByUsername(username).orElse(null);
+
+        } catch (Exception e) {
+            System.err.println("⚠️ Could not get current user: " + e.getMessage());
+            return null;
         }
     }
 
@@ -447,5 +489,59 @@ public class ImageAnalysisService {
 
     public void deleteImage(Long id) {
         imageAnalysisRepository.deleteById(id);
+    }
+
+    // ================================
+    // ✅ NEW: User-specific methods
+    // ================================
+
+    /**
+     * Get all analyses for a specific user
+     */
+    public List<ImageAnalysis> getUserAnalyses(User user) {
+        return imageAnalysisRepository.findByUserOrderByIdDesc(user);
+    }
+
+    /**
+     * Get analysis count for a specific user
+     */
+    public Long getUserAnalysisCount(User user) {
+        return imageAnalysisRepository.countByUser(user);
+    }
+
+    /**
+     * Get user's statistics
+     */
+    public Map<String, Long> getUserStatistics(User user) {
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("total", imageAnalysisRepository.countByUser(user));
+        stats.put("real", imageAnalysisRepository.countByUserAndStatus(user, NewsStatus.REAL));
+        stats.put("fake", imageAnalysisRepository.countByUserAndStatus(user, NewsStatus.FAKE));
+        stats.put("suspicious", imageAnalysisRepository.countByUserAndStatus(user, NewsStatus.SUSPICIOUS));
+        return stats;
+    }
+
+    /**
+     * Delete analysis (only if owned by user or admin)
+     */
+    public boolean deleteUserAnalysis(Long analysisId, User user) {
+        Optional<ImageAnalysis> analysisOpt = imageAnalysisRepository.findById(analysisId);
+
+        if (analysisOpt.isEmpty()) {
+            return false;
+        }
+
+        ImageAnalysis analysis = analysisOpt.get();
+
+        // Check if user owns this analysis
+        if (analysis.getUser() == null || !analysis.getUser().getId().equals(user.getId())) {
+            // Not owner, check if admin
+            if (user.getRole() != User.Role.ADMIN) {
+                return false;
+            }
+        }
+
+        imageAnalysisRepository.delete(analysis);
+        return true;
     }
 }

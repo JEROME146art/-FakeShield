@@ -3,6 +3,103 @@ const API_BASE_URL = '/api';
 let selectedImage = null;
 
 // ================================
+// User Authentication
+// ================================
+
+function getToken() {
+    return localStorage.getItem('token');
+}
+
+function getUser() {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+}
+
+function isLoggedIn() {
+    return !!getToken();
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+}
+
+// Add token to fetch requests
+function authFetch(url, options = {}) {
+    const token = getToken();
+    if (token) {
+        options.headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`
+        };
+    }
+    return fetch(url, options);
+}
+
+// ================================
+// Initialize User Menu on Page Load
+// ================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    initUserMenu();
+});
+
+function initUserMenu() {
+    const user = getUser();
+    const navRight = document.querySelector('nav > div:last-child') || document.querySelector('.nav-right');
+
+    if (!navRight) return;
+
+    if (user) {
+        // Show user avatar
+        const initials = user.fullName
+            ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+            : user.username.substring(0, 2).toUpperCase();
+
+        const userMenuHTML = `
+            <div class="user-menu">
+                <div class="user-avatar" onclick="toggleUserMenu()">${initials}</div>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-info">
+                        <div class="user-name">${user.fullName || user.username}</div>
+                        <div class="user-email">${user.email}</div>
+                    </div>
+                    <a href="/history.html">📜 My History</a>
+                    <a href="/profile.html">👤 Profile</a>
+                    <a href="#" onclick="logout(); return false;" class="logout-btn">🚪 Logout</a>
+                </div>
+            </div>
+        `;
+
+        // Insert user menu (adjust selector based on your nav structure)
+        navRight.insertAdjacentHTML('beforeend', userMenuHTML);
+    } else {
+        // Show login button
+        const loginHTML = `
+            <a href="/login.html" style="color: white; text-decoration: none; padding: 8px 20px; 
+               background: linear-gradient(135deg, #00f2fe, #a855f7); border-radius: 8px; 
+               font-weight: 600; margin-left: 12px;">
+                Login
+            </a>
+        `;
+        navRight.insertAdjacentHTML('beforeend', loginHTML);
+    }
+}
+
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-menu')) {
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) dropdown.classList.remove('active');
+    }
+});
+// ================================
 // Tab Switching - FIXED
 // ================================
 function switchTab(tabName, buttonElement) {
