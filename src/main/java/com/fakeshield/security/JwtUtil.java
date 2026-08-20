@@ -2,12 +2,13 @@ package com.fakeshield.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,14 +17,33 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:mySecretKeyForJWTThatShouldBeVeryLongAndSecureForProductionUse123456789}")
+    @Value("${jwt.secret:FakeShieldDefaultSecretKeyThatIsLongEnoughForHS256Algorithm123456}")
     private String secret;
 
     @Value("${jwt.expiration:86400000}") // 24 hours
     private long expiration;
 
+    /**
+     * Ensures secret is always >= 256 bits for HS256.
+     * If user provides a short secret, we hash it to 256-bit key.
+     */
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        try {
+            byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+            // If key is already long enough (>= 32 bytes), use it
+            if (keyBytes.length >= 32) {
+                return Keys.hmacShaKeyFor(keyBytes);
+            }
+
+            // Otherwise hash it to produce a secure 256-bit key
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] hashedKey = sha256.digest(keyBytes);
+            return Keys.hmacShaKeyFor(hashedKey);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create JWT signing key", e);
+        }
     }
 
     // Generate token
@@ -38,7 +58,7 @@ public class JwtUtil {
                 .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
+                .signWith(getSigningKey())
                 .compact();
     }
 
