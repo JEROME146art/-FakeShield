@@ -54,7 +54,7 @@ public class ImageAnalysis {
     private LocalDateTime createdAt;
 
     // ✅ Link to User
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @JsonIgnore  // Prevent circular JSON reference
     private User user;
