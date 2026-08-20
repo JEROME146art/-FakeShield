@@ -53,7 +53,7 @@ public class ImageAnalysis {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // ✅ NEW: Link to User
+    // ✅ Link to User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore  // Prevent circular JSON reference
@@ -196,6 +196,15 @@ public class ImageAnalysis {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // ✅ Added for Backward Compatibility
+    public LocalDateTime getUploadedAt() {
+        return this.createdAt != null ? this.createdAt : LocalDateTime.now();
+    }
+
+    public void setUploadedAt(LocalDateTime uploadedAt) {
+        this.createdAt = uploadedAt;
     }
 
     public User getUser() {
