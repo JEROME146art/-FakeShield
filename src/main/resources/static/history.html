@@ -8,10 +8,39 @@
     <link rel="stylesheet" href="auth.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: white;
+        }
+
         .history-container {
             max-width: 1200px;
-            margin: 40px auto;
-            padding: 20px;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #4facfe;
+            text-decoration: none;
+            margin-bottom: 24px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            transition: background 0.3s ease;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            background: rgba(79, 172, 254, 0.12);
         }
 
         .history-header {
@@ -21,10 +50,17 @@
 
         .history-header h1 {
             font-size: 42px;
+            margin: 0 0 10px;
             background: linear-gradient(135deg, #00f2fe, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            background-clip: text;
+        }
+
+        .history-header p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            font-size: 16px;
         }
 
         .stats-grid {
@@ -41,22 +77,26 @@
             border-radius: 16px;
             padding: 24px;
             text-align: center;
-            transition: transform 0.3s;
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
         .stat-card:hover {
             transform: translateY(-4px);
+            border-color: rgba(79, 172, 254, 0.3);
         }
 
         .stat-number {
             font-size: 42px;
             font-weight: 700;
             margin-bottom: 8px;
+            line-height: 1;
         }
 
         .stat-label {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
+            font-size: 13px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
         }
 
         .stat-total .stat-number { color: #4facfe; }
@@ -79,7 +119,7 @@
             grid-template-columns: auto 1fr auto;
             gap: 20px;
             align-items: center;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .history-item:hover {
@@ -94,85 +134,130 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 28px;
+            flex-shrink: 0;
         }
 
-        .status-REAL { background: rgba(16, 185, 129, 0.2); }
-        .status-FAKE { background: rgba(239, 68, 68, 0.2); }
-        .status-SUSPICIOUS { background: rgba(245, 158, 11, 0.2); }
+        .status-REAL { background: rgba(16, 185, 129, 0.18); }
+        .status-FAKE { background: rgba(239, 68, 68, 0.18); }
+        .status-SUSPICIOUS { background: rgba(245, 158, 11, 0.18); }
 
         .history-info h3 {
             color: white;
-            margin: 0 0 4px 0;
+            margin: 0 0 6px 0;
             font-size: 16px;
+            word-break: break-word;
         }
 
         .history-info p {
             color: rgba(255, 255, 255, 0.6);
-            margin: 0;
+            margin: 0 0 4px 0;
             font-size: 13px;
         }
 
-        .history-score {
-            font-size: 24px;
-            font-weight: 700;
-            padding: 8px 16px;
-            border-radius: 8px;
+        .history-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
-        .score-REAL { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .score-FAKE { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        .score-SUSPICIOUS { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .history-score {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 10px;
+            min-width: 72px;
+            text-align: center;
+        }
+
+        .score-REAL { color: #10b981; background: rgba(16, 185, 129, 0.12); }
+        .score-FAKE { color: #ef4444; background: rgba(239, 68, 68, 0.12); }
+        .score-SUSPICIOUS { color: #f59e0b; background: rgba(245, 158, 11, 0.12); }
 
         .delete-btn {
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
             border: 1px solid rgba(239, 68, 68, 0.3);
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-size: 16px;
         }
 
         .delete-btn:hover {
             background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
         }
 
         .empty-state {
             text-align: center;
-            padding: 80px 20px;
-            color: rgba(255, 255, 255, 0.5);
+            padding: 70px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
         }
 
         .empty-state h2 {
             color: white;
-            margin-bottom: 12px;
+            margin: 0 0 12px;
+            font-size: 28px;
         }
 
-        .back-btn {
+        .empty-state p {
+            margin: 0 0 18px;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
+
+        .user-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #4facfe;
-            text-decoration: none;
-            margin-bottom: 20px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: background 0.3s;
+            margin-top: 14px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(79, 172, 254, 0.12);
+            border: 1px solid rgba(79, 172, 254, 0.25);
+            color: #cfefff;
+            font-size: 13px;
         }
 
-        .back-btn:hover {
-            background: rgba(79, 172, 254, 0.1);
+        @media (max-width: 768px) {
+            .history-header h1 {
+                font-size: 32px;
+            }
+
+            .history-item {
+                grid-template-columns: 1fr;
+                text-align: left;
+            }
+
+            .history-actions {
+                justify-content: space-between;
+            }
+
+            .history-icon {
+                width: 52px;
+                height: 52px;
+            }
         }
     </style>
 </head>
-<body style="background: #0f0c29; min-height: 100vh;">
+<body>
 <div class="history-container">
     <a href="/" class="back-btn">← Back to Home</a>
 
     <div class="history-header">
         <h1>📜 My Analysis History</h1>
-        <p style="color: rgba(255,255,255,0.7);">Your complete fake news detection history</p>
+        <p>Your complete fake news detection history</p>
+        <div class="user-badge" id="userBadge">Checking login...</div>
     </div>
 
     <div class="stats-grid" id="statsGrid">
@@ -195,104 +280,203 @@
     </div>
 
     <div class="history-list" id="historyList">
-        <div style="text-align: center; padding: 40px; color: white;">Loading...</div>
+        <div class="loading-state">Loading your history...</div>
     </div>
 </div>
 
 <script>
     const token = localStorage.getItem('token');
+    const userRaw = localStorage.getItem('user');
+    let currentUser = null;
 
+    try {
+        currentUser = userRaw ? JSON.parse(userRaw) : null;
+    } catch (e) {
+        currentUser = null;
+    }
+
+    // Redirect if not logged in
     if (!token) {
         alert('Please login to view your history');
         window.location.href = '/login.html';
     }
 
+    // Show logged-in user
+    const userBadge = document.getElementById('userBadge');
+    if (currentUser) {
+        userBadge.textContent = `👤 ${currentUser.fullName || currentUser.username || 'User'}`;
+    } else {
+        userBadge.textContent = '👤 Logged in';
+    }
+
+    function formatDate(value) {
+        if (!value) return 'Unknown date';
+        try {
+            return new Date(value).toLocaleString();
+        } catch (e) {
+            return 'Unknown date';
+        }
+    }
+
+    function formatSize(bytes) {
+        if (!bytes || isNaN(bytes)) return '0 KB';
+        return (Number(bytes) / 1024).toFixed(1) + ' KB';
+    }
+
+    function statusEmoji(status) {
+        if (status === 'REAL') return '✅';
+        if (status === 'FAKE') return '❌';
+        return '⚠️';
+    }
+
     async function loadStats() {
         try {
             const response = await fetch('/api/history/my-stats', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
+
+            if (!response.ok) {
+                let message = 'Failed to load stats';
+                try {
+                    const err = await response.json();
+                    message = err.error || err.message || message;
+                } catch (_) {}
+                throw new Error(message);
+            }
+
             const stats = await response.json();
 
-            document.getElementById('totalCount').textContent = stats.total || 0;
-            document.getElementById('realCount').textContent = stats.real || 0;
-            document.getElementById('fakeCount').textContent = stats.fake || 0;
-            document.getElementById('suspiciousCount').textContent = stats.suspicious || 0;
+            document.getElementById('totalCount').textContent = stats.total ?? 0;
+            document.getElementById('realCount').textContent = stats.real ?? 0;
+            document.getElementById('fakeCount').textContent = stats.fake ?? 0;
+            document.getElementById('suspiciousCount').textContent = stats.suspicious ?? 0;
         } catch (error) {
             console.error('Failed to load stats:', error);
         }
     }
 
     async function loadHistory() {
+        const list = document.getElementById('historyList');
+
         try {
             const response = await fetch('/api/history/my-analyses', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
+
+            // Handle unauthorized
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                alert('Session expired. Please login again.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            if (!response.ok) {
+                let message = `Server error ${response.status}`;
+                try {
+                    const err = await response.json();
+                    message = err.error || err.message || message;
+                } catch (_) {}
+                throw new Error(message);
+            }
+
             const analyses = await response.json();
 
-            const list = document.getElementById('historyList');
+            // Safety check: must be an array
+            if (!Array.isArray(analyses)) {
+                throw new Error('Invalid response from server (expected array)');
+            }
 
             if (analyses.length === 0) {
                 list.innerHTML = `
                         <div class="empty-state">
                             <h2>📭 No analyses yet</h2>
                             <p>Start analyzing images to build your history!</p>
-                            <a href="/" class="back-btn" style="margin-top: 20px;">Go analyze now →</a>
+                            <a href="/" class="back-btn">Go analyze now →</a>
                         </div>
                     `;
                 return;
             }
 
-            list.innerHTML = analyses.map(a => `
-                    <div class="history-item">
-                        <div class="history-icon status-${a.status}">
-                            ${a.status === 'REAL' ? '✅' : a.status === 'FAKE' ? '❌' : '⚠️'}
-                        </div>
-                        <div class="history-info">
-                            <h3>${a.filename || 'Unknown'}</h3>
-                            <p>📅 ${new Date(a.createdAt || Date.now()).toLocaleString()}</p>
-                            <p>📊 Size: ${(a.fileSize / 1024).toFixed(1)} KB • Time: ${a.processingTimeMs}ms</p>
-                        </div>
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <div class="history-score score-${a.status}">
-                                ${a.credibilityScore ? a.credibilityScore.toFixed(0) : 0}%
+            list.innerHTML = analyses.map(a => {
+                const status = a.status || 'SUSPICIOUS';
+                const score = (typeof a.credibilityScore === 'number')
+                    ? a.credibilityScore.toFixed(0)
+                    : 0;
+
+                return `
+                        <div class="history-item">
+                            <div class="history-icon status-${status}">
+                                ${statusEmoji(status)}
                             </div>
-                            <button class="delete-btn" onclick="deleteAnalysis(${a.id})">🗑️</button>
+                            <div class="history-info">
+                                <h3>${a.filename || 'Unknown file'}</h3>
+                                <p>📅 ${formatDate(a.createdAt || a.uploadedAt)}</p>
+                                <p>📊 Size: ${formatSize(a.fileSize)} • Time: ${a.processingTimeMs || 0}ms</p>
+                                <p>🏷️ Status: <strong>${status}</strong></p>
+                            </div>
+                            <div class="history-actions">
+                                <div class="history-score score-${status}">
+                                    ${score}%
+                                </div>
+                                <button class="delete-btn" onclick="deleteAnalysis(${a.id})" title="Delete analysis">
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+            }).join('');
+
         } catch (error) {
             console.error('Failed to load history:', error);
-            document.getElementById('historyList').innerHTML = `
+            list.innerHTML = `
                     <div class="empty-state">
                         <h2>❌ Error loading history</h2>
-                        <p>${error.message}</p>
+                        <p>${error.message || 'Something went wrong'}</p>
+                        <a href="/" class="back-btn">Back to Home</a>
                     </div>
                 `;
         }
     }
 
     async function deleteAnalysis(id) {
+        if (!id) return;
         if (!confirm('Delete this analysis?')) return;
 
         try {
             const response = await fetch(`/api/history/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
 
-            if (response.ok) {
-                loadStats();
-                loadHistory();
-            } else {
-                alert('Failed to delete');
+            if (!response.ok) {
+                let message = 'Failed to delete analysis';
+                try {
+                    const err = await response.json();
+                    message = err.error || err.message || message;
+                } catch (_) {}
+                throw new Error(message);
             }
+
+            // Reload data after delete
+            await Promise.all([loadStats(), loadHistory()]);
         } catch (error) {
             console.error('Delete error:', error);
-            alert('Error deleting analysis');
+            alert(error.message || 'Error deleting analysis');
         }
     }
 
+    // Initial load
     loadStats();
     loadHistory();
 </script>
