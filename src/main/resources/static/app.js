@@ -1,612 +1,738 @@
-// FakeShield Frontend App
-const API_BASE_URL = '/api';
-let selectedImage = null;
+// ============================================
+// FakeShield - Main Frontend Application
+// ============================================
 
-// ================================
-// User Authentication
-// ================================
+const API_URL = window.location.origin;
+
+// ============================================
+// AUTH HELPERS
+// ============================================
 
 function getToken() {
     return localStorage.getItem('token');
 }
 
 function getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+        const raw = localStorage.getItem('user');
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
 }
 
 function isLoggedIn() {
     return !!getToken();
 }
 
-function logout() {
+function saveAuth(data) {
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify({
+        id: data.userId,
+        username: data.username,
+        email: data.email,
+        fullName: data.fullName,
+        role: data.role
+    }));
+}
+
+function clearAuth() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.reload();
 }
 
-// Add token to fetch requests
-function authFetch(url, options = {}) {
+function logout() {
+    clearAuth();
+    window.location.href = '/login.html';
+}
+
+// Authenticated fetch helper
+async function authFetch(url, options = {}) {
     const token = getToken();
+    const headers = {
+        ...(options.headers || {})
+    };
+
     if (token) {
-        options.headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${token}`
-        };
+        headers['Authorization'] = `Bearer ${token}`;
     }
-    return fetch(url, options);
+
+    return fetch(url, {
+        ...options,
+        headers
+    });
 }
 
-// ================================
-// Initialize User Menu on Page Load
-// ================================
+// ============================================
+// GLOBAL STATE
+// ============================================
+
+let selectedFile = null;
+
+// ============================================
+// DOM READY
+// ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🛡️ FakeShield Loaded');
     initUserMenu();
+    initUploadUI();
+    initAnalyzeButton();
+    initRemoveButton();
 });
+
+// ============================================
+// USER MENU
+// ============================================
 
 function initUserMenu() {
     const user = getUser();
-    const navRight = document.querySelector('nav > div:last-child') || document.querySelector('.nav-right');
 
-    if (!navRight) return;
+    // Try common nav containers
+    const nav =
+        document.querySelector('nav') ||
+        document.querySelector('.navbar') ||
+        document.querySelector('header') ||
+        document.body;
+
+    // Remove old menu if exists
+    const old = document.getElementById('fs-user-menu-wrap');
+    if (old) old.remove();
+
+    const wrap = document.createElement('div');
+    wrap.id = 'fs-user-menu-wrap';
+    wrap.style.cssText = `
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 9999;
+        font-family: Inter, system-ui, sans-serif;
+    `;
 
     if (user) {
-        // Show user avatar
-        const initials = user.fullName
-            ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-            : user.username.substring(0, 2).toUpperCase();
+        const initials = getInitials(user.fullName || user.username || 'U');
+        wrap.innerHTML = `
+            <div class="fs-user-menu" style="position:relative;">
+                <button id="fsUserBtn" style="
+                    width:44px;height:44px;border-radius:50%;
+                    border:2px solid rgba(255,255,255,0.15);
+                    background: linear-gradient(135deg,#00f2fe,#a855f7);
+                    color:white;font-weight:700;cursor:pointer;
+                    box-shadow:0 8px 24px rgba(0,0,0,0.25);
+                ">${initials}</button>
 
-        const userMenuHTML = `
-            <div class="user-menu">
-                <div class="user-avatar" onclick="toggleUserMenu()">${initials}</div>
-                <div class="user-dropdown" id="userDropdown">
-                    <div class="user-info">
-                        <div class="user-name">${user.fullName || user.username}</div>
-                        <div class="user-email">${user.email}</div>
+                <div id="fsUserDropdown" style="
+                    display:none; position:absolute; right:0; top:54px;
+                    min-width:230px; background:rgba(20,20,40,0.96);
+                    border:1px solid rgba(255,255,255,0.1);
+                    border-radius:14px; overflow:hidden;
+                    box-shadow:0 16px 40px rgba(0,0,0,0.35);
+                ">
+                    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                        <div style="color:#fff;font-weight:700;margin-bottom:4px;">
+                            ${escapeHtml(user.fullName || user.username)}
+                        </div>
+                        <div style="color:rgba(255,255,255,0.6);font-size:12px;">
+                            ${escapeHtml(user.email || '')}
+                        </div>
                     </div>
-                    <a href="/history.html">📜 My History</a>
-                    <a href="/profile.html">👤 Profile</a>
-                    <a href="#" onclick="logout(); return false;" class="logout-btn">🚪 Logout</a>
+                    <a href="/history.html" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;">📜 My History</a>
+                    <a href="/" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;">🏠 Home</a>
+                    <button id="fsLogoutBtn" style="
+                        width:100%;text-align:left;padding:12px 16px;
+                        background:transparent;border:none;border-top:1px solid rgba(255,255,255,0.08);
+                        color:#ef4444;cursor:pointer;font-size:14px;
+                    ">🚪 Logout</button>
                 </div>
             </div>
         `;
-
-        // Insert user menu (adjust selector based on your nav structure)
-        navRight.insertAdjacentHTML('beforeend', userMenuHTML);
     } else {
-        // Show login button
-        const loginHTML = `
-            <a href="/login.html" style="color: white; text-decoration: none; padding: 8px 20px; 
-               background: linear-gradient(135deg, #00f2fe, #a855f7); border-radius: 8px; 
-               font-weight: 600; margin-left: 12px;">
-                Login
-            </a>
+        wrap.innerHTML = `
+            <a href="/login.html" style="
+                display:inline-block;padding:10px 16px;border-radius:10px;
+                background:linear-gradient(135deg,#00f2fe,#a855f7);
+                color:white;text-decoration:none;font-weight:700;
+                box-shadow:0 8px 24px rgba(0,0,0,0.25);
+            ">Login</a>
         `;
-        navRight.insertAdjacentHTML('beforeend', loginHTML);
+    }
+
+    document.body.appendChild(wrap);
+
+    const btn = document.getElementById('fsUserBtn');
+    const dropdown = document.getElementById('fsUserDropdown');
+    const logoutBtn = document.getElementById('fsLogoutBtn');
+
+    if (btn && dropdown) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', () => {
+            dropdown.style.display = 'none';
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
     }
 }
 
-function toggleUserMenu() {
-    const dropdown = document.getElementById('userDropdown');
-    dropdown.classList.toggle('active');
+function getInitials(name) {
+    return name
+        .split(' ')
+        .filter(Boolean)
+        .map(p => p[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.user-menu')) {
-        const dropdown = document.getElementById('userDropdown');
-        if (dropdown) dropdown.classList.remove('active');
-    }
-});
-// ================================
-// Tab Switching - FIXED
-// ================================
-function switchTab(tabName, buttonElement) {
-    console.log('Switching to tab:', tabName);
+// ============================================
+// UPLOAD UI
+// ============================================
 
-    // Hide all tab contents
-    const allTabs = document.querySelectorAll('.tab-content');
-    for (let i = 0; i < allTabs.length; i++) {
-        allTabs[i].classList.remove('active');
-    }
+function initUploadUI() {
+    const fileInput =
+        document.getElementById('fileInput') ||
+        document.querySelector('input[type="file"]');
 
-    // Remove active from all buttons
-    const allBtns = document.querySelectorAll('.tab-btn');
-    for (let i = 0; i < allBtns.length; i++) {
-        allBtns[i].classList.remove('active');
+    const dropZone =
+        document.getElementById('dropZone') ||
+        document.querySelector('.upload-area') ||
+        document.querySelector('.drop-zone');
+
+    if (fileInput) {
+        fileInput.accept = 'image/*';
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) handleFileSelected(file);
+        });
     }
 
-    // Show selected tab
-    const tabContent = document.getElementById('tab-' + tabName);
-    if (tabContent) {
-        tabContent.classList.add('active');
+    if (dropZone) {
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) handleFileSelected(file);
+        });
+
+        // Click dropzone opens file picker
+        dropZone.addEventListener('click', () => {
+            if (fileInput) fileInput.click();
+        });
+    }
+}
+
+function handleFileSelected(file) {
+    if (!file.type || !file.type.startsWith('image/')) {
+        showToast('❌ Please select a valid image file', 'error');
+        return;
     }
 
-    // Highlight the clicked button
-    if (buttonElement) {
-        buttonElement.classList.add('active');
+    // 5MB limit
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('❌ Image too large. Max 5MB allowed.', 'error');
+        return;
+    }
+
+    selectedFile = file;
+    showFilePreview(file);
+    enableAnalyzeButton(true);
+    hideResults();
+}
+
+function showFilePreview(file) {
+    // Common preview elements
+    const previewImg =
+        document.getElementById('previewImage') ||
+        document.getElementById('imagePreview') ||
+        document.querySelector('.preview-image');
+
+    const fileNameEl =
+        document.getElementById('fileName') ||
+        document.querySelector('.file-name');
+
+    const fileSizeEl =
+        document.getElementById('fileSize') ||
+        document.querySelector('.file-size');
+
+    const previewBox =
+        document.getElementById('previewBox') ||
+        document.querySelector('.preview-box') ||
+        document.querySelector('.file-preview');
+
+    if (previewImg) {
+        const url = URL.createObjectURL(file);
+        previewImg.src = url;
+        previewImg.style.display = 'block';
+    }
+
+    if (fileNameEl) {
+        fileNameEl.textContent = file.name;
+    }
+
+    if (fileSizeEl) {
+        fileSizeEl.textContent = `Size: ${(file.size / 1024).toFixed(2)} KB`;
+    }
+
+    if (previewBox) {
+        previewBox.style.display = 'block';
+    }
+
+    // Fallback floating preview if no UI exists
+    if (!previewImg && !previewBox) {
+        let fallback = document.getElementById('fs-fallback-preview');
+        if (!fallback) {
+            fallback = document.createElement('div');
+            fallback.id = 'fs-fallback-preview';
+            fallback.style.cssText = `
+                max-width: 520px; margin: 16px auto; padding: 14px;
+                border-radius: 14px; background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1); color: white;
+            `;
+            document.body.appendChild(fallback);
+        }
+        fallback.innerHTML = `
+            <div style="font-weight:700;margin-bottom:6px;">Selected file</div>
+            <div>${escapeHtml(file.name)}</div>
+            <div style="opacity:.7;font-size:13px;">${(file.size / 1024).toFixed(2)} KB</div>
+        `;
+    }
+}
+
+function clearSelectedFile() {
+    selectedFile = null;
+
+    const fileInput =
+        document.getElementById('fileInput') ||
+        document.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
+
+    const previewImg =
+        document.getElementById('previewImage') ||
+        document.getElementById('imagePreview') ||
+        document.querySelector('.preview-image');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+
+    const previewBox =
+        document.getElementById('previewBox') ||
+        document.querySelector('.preview-box') ||
+        document.querySelector('.file-preview');
+    if (previewBox) previewBox.style.display = 'none';
+
+    const fallback = document.getElementById('fs-fallback-preview');
+    if (fallback) fallback.remove();
+
+    enableAnalyzeButton(false);
+    hideResults();
+}
+
+function initRemoveButton() {
+    const removeBtn =
+        document.getElementById('removeBtn') ||
+        document.getElementById('removeImage') ||
+        document.querySelector('.remove-btn');
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearSelectedFile();
+        });
+    }
+}
+
+// ============================================
+// ANALYZE BUTTON
+// ============================================
+
+function initAnalyzeButton() {
+    const analyzeBtn =
+        document.getElementById('analyzeBtn') ||
+        document.getElementById('analyzeImageBtn') ||
+        document.querySelector('.analyze-btn') ||
+        findButtonByText('Analyze');
+
+    if (!analyzeBtn) {
+        console.warn('Analyze button not found. Looking for fallback...');
+        return;
+    }
+
+    analyzeBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await analyzeImage();
+    });
+}
+
+function enableAnalyzeButton(enabled) {
+    const analyzeBtn =
+        document.getElementById('analyzeBtn') ||
+        document.getElementById('analyzeImageBtn') ||
+        document.querySelector('.analyze-btn') ||
+        findButtonByText('Analyze');
+
+    if (analyzeBtn) {
+        analyzeBtn.disabled = !enabled;
+        analyzeBtn.style.opacity = enabled ? '1' : '0.6';
+        analyzeBtn.style.pointerEvents = enabled ? 'auto' : 'none';
+    }
+}
+
+function setAnalyzeLoading(isLoading) {
+    const analyzeBtn =
+        document.getElementById('analyzeBtn') ||
+        document.getElementById('analyzeImageBtn') ||
+        document.querySelector('.analyze-btn') ||
+        findButtonByText('Analyze');
+
+    if (!analyzeBtn) return;
+
+    if (isLoading) {
+        analyzeBtn.dataset.originalText = analyzeBtn.innerHTML;
+        analyzeBtn.innerHTML = '⏳ Analyzing Image...';
+        analyzeBtn.disabled = true;
     } else {
-        // Fallback - find button by tab name
-        const btnMap = {
-            'text': 0,
-            'url': 1,
-            'image': 2
-        };
-        const btnIndex = btnMap[tabName];
-        if (btnIndex !== undefined && allBtns[btnIndex]) {
-            allBtns[btnIndex].classList.add('active');
-        }
-    }
-
-    // Hide result card
-    const resultCard = document.getElementById('resultCard');
-    if (resultCard) {
-        resultCard.style.display = 'none';
+        analyzeBtn.innerHTML = analyzeBtn.dataset.originalText || '🔍 Analyze Image';
+        analyzeBtn.disabled = !selectedFile;
     }
 }
 
-// ================================
-// Analyze Text
-// ================================
-async function analyzeNews() {
-    const title = document.getElementById('newsTitle').value.trim();
-    const content = document.getElementById('newsContent').value.trim();
-    const sourceUrl = document.getElementById('sourceUrl').value.trim();
-    const platform = document.getElementById('platform').value;
-
-    if (!title) {
-        alert('⚠️ Please enter a news headline');
-        return;
-    }
-
-    document.getElementById('btnText').style.display = 'none';
-    document.getElementById('btnLoader').style.display = 'flex';
-    document.getElementById('btnAnalyze').disabled = true;
-    document.getElementById('resultCard').style.display = 'none';
-
-    try {
-        const response = await fetch(API_BASE_URL + '/news/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, content, sourceUrl, platform })
-        });
-
-        if (!response.ok) throw new Error('Analysis failed');
-
-        const data = await response.json();
-        console.log('Result:', data);
-        displayResults(data);
-
-    } catch (error) {
-        console.error('Error:', error);
-        alert('❌ ' + error.message);
-    } finally {
-        document.getElementById('btnText').style.display = 'flex';
-        document.getElementById('btnLoader').style.display = 'none';
-        document.getElementById('btnAnalyze').disabled = false;
-    }
-}
-
-// ================================
-// Analyze URL
-// ================================
-async function analyzeUrl() {
-    const url = document.getElementById('urlInput').value.trim();
-
-    if (!url) {
-        alert('⚠️ Please enter a URL');
-        return;
-    }
-
-    // Validate URL format
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        alert('⚠️ URL must start with http:// or https://');
-        return;
-    }
-
-    document.getElementById('btnUrlText').style.display = 'none';
-    document.getElementById('btnUrlLoader').style.display = 'flex';
-    document.getElementById('btnAnalyzeUrl').disabled = true;
-    document.getElementById('resultCard').style.display = 'none';
-
-    try {
-        console.log('Analyzing URL:', url);
-
-        const response = await fetch(API_BASE_URL + '/url/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: url })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.details || errorData.error || 'Failed to fetch article');
-        }
-
-        const data = await response.json();
-        console.log('✅ URL Result:', data);
-        displayResults(data, true, false);
-
-        // Force scroll to results
-        setTimeout(() => {
-            const resultCard = document.getElementById('resultCard');
-            if (resultCard) {
-                resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 200);
-
-    } catch (error) {
-        console.error('❌ Error:', error);
-        alert('❌ Could not analyze this URL.\n\nReason: ' + error.message + '\n\nPlease try a valid news URL like:\n- https://www.bbc.com/news\n- https://www.reuters.com');
-    } finally {
-        document.getElementById('btnUrlText').style.display = 'flex';
-        document.getElementById('btnUrlLoader').style.display = 'none';
-        document.getElementById('btnAnalyzeUrl').disabled = false;
-    }
-}
-
-// ================================
-// Image Functions
-// ================================
-function handleImageSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-        alert('⚠️ Please select an image file');
-        return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-        alert('⚠️ File size must be less than 10MB');
-        return;
-    }
-
-    selectedImage = file;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('previewImage').src = e.target.result;
-        document.getElementById('previewName').textContent = file.name;
-        document.getElementById('previewSize').textContent =
-            'Size: ' + (file.size / 1024).toFixed(2) + ' KB';
-
-        document.getElementById('uploadContent').style.display = 'none';
-        document.getElementById('previewContent').style.display = 'block';
-        document.getElementById('btnAnalyzeImage').disabled = false;
-    };
-    reader.readAsDataURL(file);
-}
-
-function removeImage(event) {
-    if (event) event.stopPropagation();
-    selectedImage = null;
-    document.getElementById('imageInput').value = '';
-    document.getElementById('uploadContent').style.display = 'block';
-    document.getElementById('previewContent').style.display = 'none';
-    document.getElementById('btnAnalyzeImage').disabled = true;
-    document.getElementById('resultCard').style.display = 'none';
-}
+// ============================================
+// MAIN ANALYZE FUNCTION
+// ============================================
 
 async function analyzeImage() {
-    if (!selectedImage) {
-        alert('⚠️ Please select an image first');
+    if (!selectedFile) {
+        showToast('❌ Please select an image first', 'error');
         return;
     }
 
-    document.getElementById('btnImageText').style.display = 'none';
-    document.getElementById('btnImageLoader').style.display = 'flex';
-    document.getElementById('btnAnalyzeImage').disabled = true;
-    document.getElementById('resultCard').style.display = 'none';
+    setAnalyzeLoading(true);
+    hideResults();
+    showProgress(true);
 
     try {
         const formData = new FormData();
-        formData.append('file', selectedImage);
+        // backend expects "file"
+        formData.append('file', selectedFile);
 
-        const response = await fetch(API_BASE_URL + '/images/analyze', {
+        const token = getToken();
+        const headers = {};
+
+        // ✅ CRITICAL: attach JWT so analysis is linked to user
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_URL}/api/images/analyze`, {
             method: 'POST',
+            headers: headers,
             body: formData
         });
 
-        if (!response.ok) throw new Error('Image analysis failed');
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Server returned invalid JSON');
+        }
 
-        const data = await response.json();
-        console.log('Image Result:', data);
-        displayResults(data, false, true);
+        if (!response.ok) {
+            const msg = data?.error || data?.message || `Analysis failed (${response.status})`;
+            throw new Error(msg);
+        }
 
-    } catch (error) {
-        console.error('Error:', error);
-        alert('❌ ' + error.message);
-    } finally {
-        document.getElementById('btnImageText').style.display = 'flex';
-        document.getElementById('btnImageLoader').style.display = 'none';
-        document.getElementById('btnAnalyzeImage').disabled = false;
-    }
-}
+        console.log('✅ Analysis result:', data);
+        showResults(data);
 
-// ================================
-// Display Results
-// ================================
-function displayResults(data, isUrl, isImage) {
-    const resultCard = document.getElementById('resultCard');
-
-    const statusMap = {
-        'REAL': { icon: '✅', color: '#00D68F' },
-        'FAKE': { icon: '❌', color: '#FF4757' },
-        'SUSPICIOUS': { icon: '⚠️', color: '#FFA500' },
-        'UNVERIFIED': { icon: '❓', color: '#6c757d' }
-    };
-
-    const statusInfo = statusMap[data.status] || statusMap['UNVERIFIED'];
-
-    document.getElementById('statusIcon').textContent = statusInfo.icon;
-    document.getElementById('statusText').textContent = data.statusDisplay;
-    document.getElementById('statusText').style.color = statusInfo.color;
-
-    const score = Math.round(data.credibilityScore);
-    document.getElementById('scoreValue').textContent = score;
-
-    const circle = document.getElementById('scoreCircle');
-    if (circle) {
-        circle.style.color = statusInfo.color;
-        const circumference = 377;
-        const offset = circumference - (score / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
-    }
-
-    const extractedSection = document.getElementById('extractedTextSection');
-    const extractedBox = document.getElementById('extractedTextBox');
-
-    if (isUrl) {
-        extractedSection.style.display = 'block';
-        extractedBox.innerHTML =
-            '<strong>📄 Title:</strong> ' + escapeHtml(data.title) + '<br>' +
-            '<strong>👤 Author:</strong> ' + escapeHtml(data.author || 'Unknown') + '<br>' +
-            '<strong>🌐 Platform:</strong> ' + escapeHtml(data.platform || 'Unknown') + '<br>' +
-            '<strong>🔗 URL:</strong> ' + escapeHtml(data.sourceUrl || '') + '<br><br>' +
-            '<strong>📝 Content:</strong><br>' +
-            escapeHtml((data.content || '').substring(0, 300)) + '...';
-    } else if (isImage && data.extractedText) {
-        extractedSection.style.display = 'block';
-        extractedBox.textContent = data.extractedText || 'No text detected';
-    } else {
-        extractedSection.style.display = 'none';
-    }
-
-    if (data.analysisDetails) {
-        const breakdownGrid = document.getElementById('breakdownGrid');
-        const details = data.analysisDetails;
-
-        let metrics;
-        if (isImage) {
-            metrics = [
-                { label: 'Visual', value: details.visualScore || 0, icon: '👁️' },
-                { label: 'Metadata', value: details.metadataScore || 0, icon: '📋' },
-                { label: 'OCR', value: details.ocrScore || 0, icon: '🔍' },
-                { label: 'Text', value: details.textScore || 0, icon: '📝' }
-            ];
+        if (isLoggedIn()) {
+            showToast('✅ Analysis saved to your history!', 'success');
         } else {
-            metrics = [
-                { label: 'ML', value: details.mlScore || 0, icon: '🤖' },
-                { label: 'NLP', value: details.nlpScore || 0, icon: '📝' },
-                { label: 'Source', value: details.sourceScore || 0, icon: '🔗' },
-                { label: 'Clickbait', value: details.clickbaitScore || 0, icon: '🎯' },
-                { label: 'Grammar', value: details.grammarScore || 0, icon: '✍️' },
-                { label: 'Fact Check', value: details.factCheckScore || 0, icon: '✔️' }
-            ];
+            showToast('✅ Analysis complete (login to save history)', 'success');
         }
 
-        let html = '';
-        for (let i = 0; i < metrics.length; i++) {
-            const m = metrics[i];
-            const val = Math.round(m.value);
-            const color = val >= 70 ? '#00D68F' : val >= 45 ? '#FFA500' : '#FF4757';
-            html += '<div class="breakdown-item">' +
-                '<div class="breakdown-header">' +
-                '<span>' + m.icon + '</span>' +
-                '<span class="breakdown-label">' + m.label + '</span>' +
-                '</div>' +
-                '<div class="breakdown-value" style="color: ' + color + '">' + val + '%</div>' +
-                '<div class="breakdown-bar">' +
-                '<div class="breakdown-bar-fill" style="background: ' + color + '; width: ' + val + '%"></div>' +
-                '</div>' +
-                '</div>';
-        }
-        breakdownGrid.innerHTML = html;
-
-        document.getElementById('explanationText').textContent =
-            details.explanation || 'Analysis complete.';
-    }
-
-    resultCard.style.display = 'block';
-    resultCard.scrollIntoView({ behavior: 'smooth' });
-
-    setTimeout(function() {
-        loadStatistics();
-        loadRecentNews();
-    }, 1000);
-}
-
-// ================================
-// Load Statistics
-// ================================
-async function loadStatistics() {
-    try {
-        const response = await fetch(API_BASE_URL + '/news/statistics');
-        const stats = await response.json();
-
-        if (document.getElementById('heroTotal'))
-            document.getElementById('heroTotal').textContent = stats.total || 0;
-        if (document.getElementById('heroFake'))
-            document.getElementById('heroFake').textContent = stats.fake || 0;
-        if (document.getElementById('dashTotal'))
-            document.getElementById('dashTotal').textContent = stats.total || 0;
-        if (document.getElementById('dashFake'))
-            document.getElementById('dashFake').textContent = stats.fake || 0;
-        if (document.getElementById('dashReal'))
-            document.getElementById('dashReal').textContent = stats.real || 0;
-        if (document.getElementById('dashSuspicious'))
-            document.getElementById('dashSuspicious').textContent = stats.suspicious || 0;
     } catch (error) {
-        console.error('Stats error:', error);
-    }
-}
+        console.error('Analyze error:', error);
 
-// ================================
-// Load Recent News
-// ================================
-async function loadRecentNews() {
-    try {
-        const response = await fetch(API_BASE_URL + '/news/all');
-        const newsList = await response.json();
+        let msg = error.message || 'Image analysis failed';
 
-        const tbody = document.getElementById('newsTableBody');
-        if (!tbody) return;
-
-        if (!newsList || newsList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No news analyzed yet.</td></tr>';
-            return;
+        if (msg.includes('Failed to fetch') || msg.toLowerCase().includes('network')) {
+            msg = '🌐 Network error. Please check your connection.';
+        } else if (msg.includes('413') || msg.toLowerCase().includes('too large')) {
+            msg = '📁 Image too large. Please use under 5MB.';
+        } else if (msg.includes('502')) {
+            msg = '⚠️ Server busy/timeout. Try a smaller image.';
+        } else if (msg.includes('401') || msg.toLowerCase().includes('unauthorized')) {
+            msg = '🔐 Session expired. Please login again.';
+            setTimeout(() => {
+                clearAuth();
+                window.location.href = '/login.html';
+            }, 1200);
         }
 
-        let html = '';
-        const limit = Math.min(newsList.length, 10);
-        for (let i = 0; i < limit; i++) {
-            const news = newsList[i];
-            const score = Math.round(news.credibilityScore);
-            const color = score >= 70 ? '#00D68F' : score >= 45 ? '#FFA500' : '#FF4757';
-            html += '<tr>' +
-                '<td style="max-width:400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">' +
-                escapeHtml(news.title) + '</td>' +
-                '<td>' + (news.platform || 'Unknown') + '</td>' +
-                '<td style="color: ' + color + '; font-weight: 700">' + score + '%</td>' +
-                '<td><span class="status-badge ' + news.status.toLowerCase() + '">' +
-                news.statusDisplay + '</span></td>' +
-                '</tr>';
-        }
-        tbody.innerHTML = html;
-    } catch (error) {
-        console.error('News error:', error);
+        showToast('❌ ' + msg, 'error');
+        showErrorBox(msg);
+
+    } finally {
+        setAnalyzeLoading(false);
+        showProgress(false);
     }
 }
 
-// ================================
-// Scroll & Actions
-// ================================
-function scrollToAnalyzer() {
-    const elem = document.getElementById('analyzer');
-    if (elem) elem.scrollIntoView({ behavior: 'smooth' });
-}
+// ============================================
+// RESULTS UI
+// ============================================
 
-function scrollToDashboard() {
-    const elem = document.getElementById('dashboard');
-    if (elem) elem.scrollIntoView({ behavior: 'smooth' });
-}
+function showResults(data) {
+    const resultCard =
+        document.getElementById('resultCard') ||
+        document.getElementById('results') ||
+        document.querySelector('.result-card');
 
-function shareResult() {
-    const status = document.getElementById('statusText').textContent;
-    const score = document.getElementById('scoreValue').textContent;
-    const text = '🛡️ FakeShield: ' + status + ' (' + score + '%)';
+    // If your page already has result elements, fill them
+    fillIfExists('credibilityScore', formatScore(data.credibilityScore));
+    fillIfExists('statusBadge', data.status || 'UNKNOWN');
+    fillIfExists('visualScore', formatScore(data.visualScore));
+    fillIfExists('metadataScore', formatScore(data.metadataScore));
+    fillIfExists('textScore', formatScore(data.textAnalysisScore));
+    fillIfExists('ocrScore', formatScore(data.ocrScore));
+    fillIfExists('extractedText', data.extractedText || 'No text extracted');
+    fillIfExists('explanation', data.explanation || 'No explanation available');
+    fillIfExists('processingTime', `${data.processingTimeMs || 0} ms`);
 
-    if (navigator.share) {
-        navigator.share({ title: 'FakeShield', text: text });
-    } else {
-        navigator.clipboard.writeText(text);
-        alert('✅ Copied to clipboard!');
-    }
-}
-
-function copyResult() {
-    const status = document.getElementById('statusText').textContent;
-    const score = document.getElementById('scoreValue').textContent;
-    const explanation = document.getElementById('explanationText').textContent;
-
-    const report = 'FAKESHIELD REPORT\n\nStatus: ' + status + '\nScore: ' + score + '%\n\n' + explanation;
-
-    navigator.clipboard.writeText(report);
-    alert('📋 Report copied!');
-}
-
-function analyzeAnother() {
-    document.getElementById('resultCard').style.display = 'none';
-    if (document.getElementById('newsTitle')) document.getElementById('newsTitle').value = '';
-    if (document.getElementById('newsContent')) document.getElementById('newsContent').value = '';
-    if (document.getElementById('sourceUrl')) document.getElementById('sourceUrl').value = '';
-    if (document.getElementById('urlInput')) document.getElementById('urlInput').value = '';
-    if (selectedImage) removeImage(null);
-    scrollToAnalyzer();
-}
-
-// ================================
-// Language Switcher
-// ================================
-function toggleLangDropdown() {
-    const dropdown = document.getElementById('langDropdown');
-    if (dropdown) {
-        dropdown.classList.toggle('show');
-    }
-}
-
-function changeLanguage(code, emoji, name) {
-    const currentLang = document.getElementById('currentLang');
-    if (currentLang) {
-        currentLang.textContent = emoji + ' ' + code.toUpperCase();
-    }
-    const dropdown = document.getElementById('langDropdown');
-    if (dropdown) {
-        dropdown.classList.remove('show');
-    }
-    alert('✅ Language changed to ' + name);
-}
-
-// ================================
-// Utility
-// ================================
-function escapeHtml(text) {
-    if (!text) return '';
-    const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
-    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
-}
-
-// ================================
-// Initialize
-// ================================
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🛡️ FakeShield Loaded');
-    loadStatistics();
-    loadRecentNews();
-
-    // Setup tab click handlers with proper event
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach(function(btn, index) {
-        btn.addEventListener('click', function(e) {
-            const tabNames = ['text', 'url', 'image'];
-            switchTab(tabNames[index], btn);
-        });
-    });
-
-    setInterval(function() {
-        loadStatistics();
-        loadRecentNews();
-    }, 30000);
-});
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.language-switcher')) {
-        const dropdown = document.getElementById('langDropdown');
-        if (dropdown) dropdown.classList.remove('show');
-    }
-});
-// Force show results
-function forceShowResult(data) {
-    const resultCard = document.getElementById('resultCard');
     if (resultCard) {
         resultCard.style.display = 'block';
         resultCard.style.visibility = 'visible';
-        resultCard.scrollIntoView({ behavior: 'smooth' });
-        console.log('Result card should be visible now');
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-        console.error('Result card element not found!');
+        // Fallback result panel
+        renderFallbackResult(data);
     }
 }
+
+function hideResults() {
+    const resultCard =
+        document.getElementById('resultCard') ||
+        document.getElementById('results') ||
+        document.querySelector('.result-card');
+
+    if (resultCard) {
+        resultCard.style.display = 'none';
+    }
+
+    const fallback = document.getElementById('fs-fallback-result');
+    if (fallback) fallback.remove();
+
+    const err = document.getElementById('fs-error-box');
+    if (err) err.remove();
+}
+
+function renderFallbackResult(data) {
+    let box = document.getElementById('fs-fallback-result');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'fs-fallback-result';
+        box.style.cssText = `
+            max-width: 720px; margin: 20px auto; padding: 20px;
+            border-radius: 16px; color: white;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+        `;
+        document.body.appendChild(box);
+    }
+
+    const status = data.status || 'UNKNOWN';
+    const score = formatScore(data.credibilityScore);
+    const color =
+        status === 'REAL' ? '#10b981' :
+            status === 'FAKE' ? '#ef4444' : '#f59e0b';
+
+    box.innerHTML = `
+        <h2 style="margin:0 0 10px;">🛡️ Analysis Result</h2>
+        <div style="font-size:28px;font-weight:800;color:${color};margin-bottom:8px;">
+            ${escapeHtml(status)} • ${score}%
+        </div>
+        <div style="opacity:.85;margin-bottom:8px;">
+            Visual: ${formatScore(data.visualScore)}% |
+            Metadata: ${formatScore(data.metadataScore)}% |
+            Text: ${formatScore(data.textAnalysisScore)}% |
+            OCR: ${formatScore(data.ocrScore)}%
+        </div>
+        <div style="opacity:.8;margin-bottom:8px;">⏱️ ${data.processingTimeMs || 0} ms</div>
+        <div style="margin-top:12px;">
+            <strong>Extracted Text</strong>
+            <pre style="white-space:pre-wrap;background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;overflow:auto;">${escapeHtml(data.extractedText || 'No text extracted')}</pre>
+        </div>
+        <div style="margin-top:12px;">
+            <strong>Explanation</strong>
+            <pre style="white-space:pre-wrap;background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;overflow:auto;">${escapeHtml(data.explanation || 'No explanation')}</pre>
+        </div>
+        ${isLoggedIn() ? `<div style="margin-top:14px;"><a href="/history.html" style="color:#4facfe;">View in My History →</a></div>` : ''}
+    `;
+
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showErrorBox(message) {
+    let box = document.getElementById('fs-error-box');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'fs-error-box';
+        box.style.cssText = `
+            max-width: 720px; margin: 16px auto; padding: 14px 16px;
+            border-radius: 12px; color: #fecaca;
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.35);
+        `;
+        document.body.appendChild(box);
+    }
+    box.textContent = message;
+}
+
+// ============================================
+// PROGRESS UI
+// ============================================
+
+function showProgress(show) {
+    let el = document.getElementById('fs-progress');
+
+    if (!show) {
+        if (el) el.remove();
+        return;
+    }
+
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'fs-progress';
+        el.style.cssText = `
+            max-width: 720px; margin: 16px auto; color: white; text-align:center;
+        `;
+        el.innerHTML = `
+            <div style="
+                height:8px;border-radius:999px;overflow:hidden;
+                background:rgba(255,255,255,0.08);margin-bottom:8px;
+            ">
+                <div style="
+                    height:100%;width:40%;
+                    background:linear-gradient(90deg,#00f2fe,#4facfe,#a855f7);
+                    animation: fsSlide 1.2s ease-in-out infinite;
+                "></div>
+            </div>
+            <div style="opacity:.85;">🔍 Analyzing image, please wait...</div>
+            <style>
+                @keyframes fsSlide {
+                    0% { transform: translateX(-120%); }
+                    100% { transform: translateX(320%); }
+                }
+            </style>
+        `;
+        document.body.appendChild(el);
+    }
+}
+
+// ============================================
+// TOAST
+// ============================================
+
+function showToast(message, type = 'info') {
+    let host = document.getElementById('fs-toast-host');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'fs-toast-host';
+        host.style.cssText = `
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 10000; display:flex; flex-direction:column; gap:8px;
+        `;
+        document.body.appendChild(host);
+    }
+
+    const toast = document.createElement('div');
+    const bg =
+        type === 'success' ? 'rgba(16,185,129,0.15)' :
+            type === 'error' ? 'rgba(239,68,68,0.15)' :
+                'rgba(79,172,254,0.15)';
+    const border =
+        type === 'success' ? 'rgba(16,185,129,0.4)' :
+            type === 'error' ? 'rgba(239,68,68,0.4)' :
+                'rgba(79,172,254,0.4)';
+    const color =
+        type === 'success' ? '#6ee7b7' :
+            type === 'error' ? '#fecaca' :
+                '#bfdbfe';
+
+    toast.style.cssText = `
+        min-width: 280px; max-width: 90vw;
+        padding: 12px 16px; border-radius: 12px;
+        background: ${bg}; border: 1px solid ${border};
+        color: ${color}; backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        font-family: Inter, system-ui, sans-serif;
+        font-size: 14px;
+    `;
+    toast.textContent = message;
+    host.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity .3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// ============================================
+// UTILITIES
+// ============================================
+
+function fillIfExists(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+function formatScore(v) {
+    const n = Number(v);
+    if (Number.isNaN(n)) return '0';
+    return n.toFixed(0);
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function findButtonByText(text) {
+    const buttons = Array.from(document.querySelectorAll('button, a.button, .btn'));
+    return buttons.find(btn => (btn.textContent || '').toLowerCase().includes(text.toLowerCase())) || null;
+}
+
+// Optional global exports
+window.FakeShield = {
+    analyzeImage,
+    logout,
+    isLoggedIn,
+    getUser,
+    getToken,
+    clearSelectedFile
+};
