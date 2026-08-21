@@ -4,8 +4,6 @@ import com.fakeshield.model.ImageAnalysis;
 import com.fakeshield.model.NewsStatus;
 import com.fakeshield.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,21 +11,20 @@ import java.util.List;
 @Repository
 public interface ImageAnalysisRepository extends JpaRepository<ImageAnalysis, Long> {
 
-    @Query("SELECT i FROM ImageAnalysis i ORDER BY i.id DESC")
-    List<ImageAnalysis> findLatestImages();
+    List<ImageAnalysis> findAllByOrderByIdDesc();
 
     Long countByStatus(NewsStatus status);
 
     List<ImageAnalysis> findByUserOrderByIdDesc(User user);
+
     Long countByUser(User user);
+
     Long countByUserAndStatus(User user, NewsStatus status);
 
-    @Query("SELECT i FROM ImageAnalysis i WHERE i.user.id = :userId ORDER BY i.id DESC")
-    List<ImageAnalysis> findByUserIdOrderByIdDesc(@Param("userId") Long userId);
+    // Navigates user.id automatically without raw @Query strings
+    List<ImageAnalysis> findByUserIdOrderByIdDesc(Long userId);
 
-    @Query("SELECT COUNT(i) FROM ImageAnalysis i WHERE i.user.id = :userId")
-    Long countByUserId(@Param("userId") Long userId);
+    Long countByUserId(Long userId);
 
-    @Query("SELECT COUNT(i) FROM ImageAnalysis i WHERE i.user.id = :userId AND i.status = :status")
-    Long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") NewsStatus status);
+    Long countByUserIdAndStatus(Long userId, NewsStatus status);
 }

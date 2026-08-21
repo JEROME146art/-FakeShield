@@ -6,13 +6,12 @@ import com.fakeshield.model.User;
 import com.fakeshield.repository.ImageAnalysisRepository;
 import com.fakeshield.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -27,63 +26,28 @@ public class HistoryController {
     @Autowired
     private UserRepository userRepository;
 
-    // ================================
-    // Get Current Authenticated User
-    // ================================
+    // Returns authenticated user or null if missing/invalid session
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(String.valueOf(auth.getPrincipal()))) {
-            throw new RuntimeException("Unauthorized: Please log in again");
+            return null;
         }
         String username = auth.getName();
         return userRepository.findByUsername(username)
-                .orElseGet(() -> userRepository.findByEmail(username)
-                        .orElseThrow(() -> new RuntimeException("User account not found: " + username)));
+                .orElseGet(() -> userRepository.findByEmail(username).orElse(null));
     }
 
-    // ================================
-    // Null-Safe DTO Mapping
-    // ================================
-    private Map<String, Object> convertToMap(ImageAnalysis a) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id", a.getId());
-        map.put("filename", a.getFilename() != null ? a.getFilename() : "Unknown");
-        map.put("fileSize", a.getFileSize() != null ? a.getFileSize() : 0L);
-        map.put("imageType", a.getImageType() != null ? a.getImageType() : "image/jpeg");
-
-        // Null-safe status
-        String statusStr = "SUSPICIOUS";
-        if (a.getStatus() != null) {
-            statusStr = a.getStatus().name();
-        }
-        map.put("status", statusStr);
-
-        // Null-safe scores
-        map.put("credibilityScore", a.getCredibilityScore() != null ? a.getCredibilityScore() : 0.0);
-        map.put("visualScore", a.getVisualScore() != null ? a.getVisualScore() : 0.0);
-        map.put("metadataScore", a.getMetadataScore() != null ? a.getMetadataScore() : 0.0);
-        map.put("textAnalysisScore", a.getTextAnalysisScore() != null ? a.getTextAnalysisScore() : 0.0);
-        map.put("ocrScore", a.getOcrScore() != null ? a.getOcrScore() : 0.0);
-
-        map.put("processingTimeMs", a.getProcessingTimeMs() != null ? a.getProcessingTimeMs() : 0L);
-
-        LocalDateTime created = a.getCreatedAt() != null ? a.getCreatedAt() : LocalDateTime.now();
-        map.put("createdAt", created);
-        map.put("uploadedAt", created);
-        map.put("extractedText", a.getExtractedText() != null ? a.getExtractedText() : "");
-        map.put("explanation", a.getExplanation() != null ? a.getExplanation() : "");
-        return map;
-    }
-
-    // ================================
-    // GET /api/history/my-stats
-    // ================================
     @GetMapping("/my-stats")
     public ResponseEntity<?> getMyStats() {
         try {
             User user = getAuthenticatedUser();
-            Long userId = user.getId();
+            if (user == null) {
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "Session expired or user not found. Please log in again.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
+            }
 
+            Long userId = user.getId();
             long total = safeLong(imageAnalysisRepository.countByUserId(userId));
             long real = safeLong(imageAnalysisRepository.countByUserIdAndStatus(userId, NewsStatus.REAL));
             long fake = safeLong(imageAnalysisRepository.countByUserIdAndStatus(userId, NewsStatus.FAKE));
@@ -97,86 +61,95 @@ public class HistoryController {
             stats.put("username", user.getUsername());
             return ResponseEntity.ok(stats);
 
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return buildErrorResponse(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> err = new HashMap<>();
+            err.put("error", e.getMessage() != null ? e.getMessage() : "Error loading stats");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
         }
     }
 
-    // ================================
-    // GET /api/history/my-analyses
-    // ================================
     @GetMapping("/my-analyses")
     public ResponseEntity<?> getMyAnalyses() {
         try {
             User user = getAuthenticatedUser();
-            Long userId = user.getId();
-
-            List<ImageAnalysis> list = imageAnalysisRepository.findByUserIdOrderByIdDesc(userId);
-            if (list == null) {
-                list = Collections.emptyList();
+            if (user == null) {
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "Session expired or user not found. Please log in again.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
             }
+
+            Long userId = user.getId();
+            List<ImageAnalysis> list = imageAnalysisRepository.findByUserIdOrderByIdDesc(userId);
+            if (list == null) list = Collections.emptyList();
 
             List<Map<String, Object>> result = new ArrayList<>();
             for (ImageAnalysis a : list) {
                 if (a != null) {
-                    result.add(convertToMap(a));
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("id", a.getId());
+                    m.put("filename", a.getFilename() != null ? a.getFilename() : "Unknown");
+                    m.put("fileSize", a.getFileSize() != null ? a.getFileSize() : 0L);
+                    m.put("imageType", a.getImageType() != null ? a.getImageType() : "image/jpeg");
+                    m.put("status", a.getStatus() != null ? a.getStatus().name() : "SUSPICIOUS");
+                    m.put("credibilityScore", a.getCredibilityScore() != null ? a.getCredibilityScore() : 0.0);
+                    m.put("visualScore", a.getVisualScore() != null ? a.getVisualScore() : 0.0);
+                    m.put("metadataScore", a.getMetadataScore() != null ? a.getMetadataScore() : 0.0);
+                    m.put("textAnalysisScore", a.getTextAnalysisScore() != null ? a.getTextAnalysisScore() : 0.0);
+                    m.put("ocrScore", a.getOcrScore() != null ? a.getOcrScore() : 0.0);
+                    m.put("processingTimeMs", a.getProcessingTimeMs() != null ? a.getProcessingTimeMs() : 0L);
+                    LocalDateTime created = a.getCreatedAt() != null ? a.getCreatedAt() : LocalDateTime.now();
+                    m.put("createdAt", created);
+                    m.put("uploadedAt", created);
+                    m.put("extractedText", a.getExtractedText() != null ? a.getExtractedText() : "");
+                    m.put("explanation", a.getExplanation() != null ? a.getExplanation() : "");
+                    result.add(m);
                 }
             }
 
             return ResponseEntity.ok(result);
 
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return buildErrorResponse(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> err = new HashMap<>();
+            err.put("error", e.getMessage() != null ? e.getMessage() : "Error loading history");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
         }
     }
 
-    // ================================
-    // DELETE /api/history/{id}
-    // ================================
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAnalysis(@PathVariable Long id) {
         try {
             User user = getAuthenticatedUser();
+            if (user == null) {
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "Unauthorized");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
+            }
 
             ImageAnalysis analysis = imageAnalysisRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Analysis record not found with id: " + id));
+                    .orElseThrow(() -> new RuntimeException("Analysis record not found: " + id));
 
             if (analysis.getUser() == null || !user.getId().equals(analysis.getUser().getId())) {
-                throw new RuntimeException("Unauthorized: You do not own this analysis record");
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "You do not own this record");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
             }
 
             imageAnalysisRepository.delete(analysis);
-
             Map<String, String> response = new HashMap<>();
             response.put("message", "Analysis deleted successfully");
             return ResponseEntity.ok(response);
 
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return buildErrorResponse(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
         }
     }
 
     private long safeLong(Long val) {
         return val != null ? val : 0L;
-    }
-
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(Throwable t) {
-        Map<String, Object> err = new LinkedHashMap<>();
-        String msg = t.getMessage();
-        if (msg == null || msg.trim().isEmpty()) {
-            msg = t.getClass().getSimpleName();
-        }
-        err.put("error", msg);
-        err.put("exception", t.getClass().getName());
-
-        StringWriter sw = new StringWriter();
-        t.printStackTrace(new PrintWriter(sw));
-        String stackTrace = sw.toString();
-        err.put("details", stackTrace.length() > 300 ? stackTrace.substring(0, 300) + "..." : stackTrace);
-
-        return ResponseEntity.internalServerError().body(err);
     }
 }
