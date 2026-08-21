@@ -18,14 +18,10 @@ public interface ImageAnalysisRepository extends JpaRepository<ImageAnalysis, Lo
 
     Long countByStatus(NewsStatus status);
 
-    // User history
     List<ImageAnalysis> findByUserOrderByIdDesc(User user);
-
     Long countByUser(User user);
-
     Long countByUserAndStatus(User user, NewsStatus status);
 
-    // Safer alternatives by userId (if needed)
     @Query("SELECT i FROM ImageAnalysis i WHERE i.user.id = :userId ORDER BY i.id DESC")
     List<ImageAnalysis> findByUserIdOrderByIdDesc(@Param("userId") Long userId);
 

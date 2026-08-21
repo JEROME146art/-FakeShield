@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -26,91 +28,107 @@ public class HistoryController {
     private UserRepository userRepository;
 
     // ================================
-    // Get current logged-in user
+    // Get Current Authenticated User
     // ================================
-    private User getCurrentUserOrThrow() {
+    private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            throw new RuntimeException("Unauthorized: Please login again");
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(String.valueOf(auth.getPrincipal()))) {
+            throw new RuntimeException("Unauthorized: Please log in again");
         }
-
         String username = auth.getName();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseGet(() -> userRepository.findByEmail(username)
+                        .orElseThrow(() -> new RuntimeException("User account not found: " + username)));
     }
 
     // ================================
-    // GET /api/history/my-analyses
+    // Null-Safe DTO Mapping
     // ================================
-    @GetMapping("/my-analyses")
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> getMyAnalyses() {
-        try {
-            User user = getCurrentUserOrThrow();
+    private Map<String, Object> convertToMap(ImageAnalysis a) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("id", a.getId());
+        map.put("filename", a.getFilename() != null ? a.getFilename() : "Unknown");
+        map.put("fileSize", a.getFileSize() != null ? a.getFileSize() : 0L);
+        map.put("imageType", a.getImageType() != null ? a.getImageType() : "image/jpeg");
 
-            List<ImageAnalysis> analyses =
-                    imageAnalysisRepository.findByUserOrderByIdDesc(user);
-
-            // Convert to safe response maps (avoid lazy/json issues)
-            List<Map<String, Object>> response = new ArrayList<>();
-            for (ImageAnalysis a : analyses) {
-                Map<String, Object> item = new LinkedHashMap<>();
-                item.put("id", a.getId());
-                item.put("filename", a.getFilename());
-                item.put("fileSize", a.getFileSize());
-                item.put("imageType", a.getImageType());
-                item.put("status", a.getStatus() != null ? a.getStatus().name() : "SUSPICIOUS");
-                item.put("credibilityScore", a.getCredibilityScore());
-                item.put("visualScore", a.getVisualScore());
-                item.put("metadataScore", a.getMetadataScore());
-                item.put("textAnalysisScore", a.getTextAnalysisScore());
-                item.put("ocrScore", a.getOcrScore());
-                item.put("processingTimeMs", a.getProcessingTimeMs());
-                item.put("createdAt", a.getCreatedAt());
-                item.put("uploadedAt", a.getCreatedAt());
-                item.put("extractedText", a.getExtractedText());
-                item.put("explanation", a.getExplanation());
-                response.add(item);
-            }
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage() != null ? e.getMessage() : "Internal Server Error");
-            return ResponseEntity.internalServerError().body(error);
+        // Null-safe status
+        String statusStr = "SUSPICIOUS";
+        if (a.getStatus() != null) {
+            statusStr = a.getStatus().name();
         }
+        map.put("status", statusStr);
+
+        // Null-safe scores
+        map.put("credibilityScore", a.getCredibilityScore() != null ? a.getCredibilityScore() : 0.0);
+        map.put("visualScore", a.getVisualScore() != null ? a.getVisualScore() : 0.0);
+        map.put("metadataScore", a.getMetadataScore() != null ? a.getMetadataScore() : 0.0);
+        map.put("textAnalysisScore", a.getTextAnalysisScore() != null ? a.getTextAnalysisScore() : 0.0);
+        map.put("ocrScore", a.getOcrScore() != null ? a.getOcrScore() : 0.0);
+
+        map.put("processingTimeMs", a.getProcessingTimeMs() != null ? a.getProcessingTimeMs() : 0L);
+
+        LocalDateTime created = a.getCreatedAt() != null ? a.getCreatedAt() : LocalDateTime.now();
+        map.put("createdAt", created);
+        map.put("uploadedAt", created);
+        map.put("extractedText", a.getExtractedText() != null ? a.getExtractedText() : "");
+        map.put("explanation", a.getExplanation() != null ? a.getExplanation() : "");
+        return map;
     }
 
     // ================================
     // GET /api/history/my-stats
     // ================================
     @GetMapping("/my-stats")
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getMyStats() {
         try {
-            User user = getCurrentUserOrThrow();
+            User user = getAuthenticatedUser();
+            Long userId = user.getId();
 
-            long total = imageAnalysisRepository.countByUser(user);
-            long real = imageAnalysisRepository.countByUserAndStatus(user, NewsStatus.REAL);
-            long fake = imageAnalysisRepository.countByUserAndStatus(user, NewsStatus.FAKE);
-            long suspicious = imageAnalysisRepository.countByUserAndStatus(user, NewsStatus.SUSPICIOUS);
+            long total = safeLong(imageAnalysisRepository.countByUserId(userId));
+            long real = safeLong(imageAnalysisRepository.countByUserIdAndStatus(userId, NewsStatus.REAL));
+            long fake = safeLong(imageAnalysisRepository.countByUserIdAndStatus(userId, NewsStatus.FAKE));
+            long suspicious = safeLong(imageAnalysisRepository.countByUserIdAndStatus(userId, NewsStatus.SUSPICIOUS));
 
             Map<String, Object> stats = new LinkedHashMap<>();
             stats.put("total", total);
             stats.put("real", real);
             stats.put("fake", fake);
             stats.put("suspicious", suspicious);
-
+            stats.put("username", user.getUsername());
             return ResponseEntity.ok(stats);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage() != null ? e.getMessage() : "Internal Server Error");
-            return ResponseEntity.internalServerError().body(error);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return buildErrorResponse(t);
+        }
+    }
+
+    // ================================
+    // GET /api/history/my-analyses
+    // ================================
+    @GetMapping("/my-analyses")
+    public ResponseEntity<?> getMyAnalyses() {
+        try {
+            User user = getAuthenticatedUser();
+            Long userId = user.getId();
+
+            List<ImageAnalysis> list = imageAnalysisRepository.findByUserIdOrderByIdDesc(userId);
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (ImageAnalysis a : list) {
+                if (a != null) {
+                    result.add(convertToMap(a));
+                }
+            }
+
+            return ResponseEntity.ok(result);
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return buildErrorResponse(t);
         }
     }
 
@@ -118,17 +136,15 @@ public class HistoryController {
     // DELETE /api/history/{id}
     // ================================
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<?> deleteAnalysis(@PathVariable Long id) {
         try {
-            User user = getCurrentUserOrThrow();
+            User user = getAuthenticatedUser();
 
             ImageAnalysis analysis = imageAnalysisRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Analysis not found"));
+                    .orElseThrow(() -> new RuntimeException("Analysis record not found with id: " + id));
 
-            if (analysis.getUser() == null || analysis.getUser().getId() == null
-                    || !analysis.getUser().getId().equals(user.getId())) {
-                throw new RuntimeException("You can only delete your own analyses");
+            if (analysis.getUser() == null || !user.getId().equals(analysis.getUser().getId())) {
+                throw new RuntimeException("Unauthorized: You do not own this analysis record");
             }
 
             imageAnalysisRepository.delete(analysis);
@@ -137,11 +153,30 @@ public class HistoryController {
             response.put("message", "Analysis deleted successfully");
             return ResponseEntity.ok(response);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage() != null ? e.getMessage() : "Internal Server Error");
-            return ResponseEntity.badRequest().body(error);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return buildErrorResponse(t);
         }
+    }
+
+    private long safeLong(Long val) {
+        return val != null ? val : 0L;
+    }
+
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(Throwable t) {
+        Map<String, Object> err = new LinkedHashMap<>();
+        String msg = t.getMessage();
+        if (msg == null || msg.trim().isEmpty()) {
+            msg = t.getClass().getSimpleName();
+        }
+        err.put("error", msg);
+        err.put("exception", t.getClass().getName());
+
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        String stackTrace = sw.toString();
+        err.put("details", stackTrace.length() > 300 ? stackTrace.substring(0, 300) + "..." : stackTrace);
+
+        return ResponseEntity.internalServerError().body(err);
     }
 }
