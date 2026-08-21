@@ -4,6 +4,8 @@ import com.fakeshield.model.ImageAnalysis;
 import com.fakeshield.model.NewsStatus;
 import com.fakeshield.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,9 +13,18 @@ import java.util.List;
 @Repository
 public interface ImageAnalysisRepository extends JpaRepository<ImageAnalysis, Long> {
 
-    List<ImageAnalysis> findAllByOrderByIdDesc();
+    // ================================
+    // General Analysis Queries
+    // ================================
+
+    @Query("SELECT i FROM ImageAnalysis i ORDER BY i.id DESC")
+    List<ImageAnalysis> findLatestImages();
 
     Long countByStatus(NewsStatus status);
+
+    // ================================
+    // Entity-based User History Queries
+    // ================================
 
     List<ImageAnalysis> findByUserOrderByIdDesc(User user);
 
@@ -21,10 +32,16 @@ public interface ImageAnalysisRepository extends JpaRepository<ImageAnalysis, Lo
 
     Long countByUserAndStatus(User user, NewsStatus status);
 
-    // Navigates user.id automatically without raw @Query strings
-    List<ImageAnalysis> findByUserIdOrderByIdDesc(Long userId);
+    // ================================
+    // Safe ID-based User History Queries
+    // ================================
 
-    Long countByUserId(Long userId);
+    @Query("SELECT i FROM ImageAnalysis i WHERE i.user.id = :userId ORDER BY i.id DESC")
+    List<ImageAnalysis> findByUserIdOrderByIdDesc(@Param("userId") Long userId);
 
-    Long countByUserIdAndStatus(Long userId, NewsStatus status);
+    @Query("SELECT COUNT(i) FROM ImageAnalysis i WHERE i.user.id = :userId")
+    Long countByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(i) FROM ImageAnalysis i WHERE i.user.id = :userId AND i.status = :status")
+    Long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") NewsStatus status);
 }
