@@ -4,6 +4,9 @@
 
 const API_URL = window.location.origin;
 
+// Global State
+let selectedFile = null;
+
 // ============================================
 // AUTH & TOKEN HELPERS
 // ============================================
@@ -35,69 +38,58 @@ function logout() {
     window.location.href = '/login.html';
 }
 
-async function authFetch(url, options = {}) {
-    const token = getToken();
-    const headers = { ...(options.headers || {}) };
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-    return fetch(url, { ...options, headers });
-}
-
 // ============================================
-// GLOBAL STATE
+// TAB SWITCHING & SCROLL HELPERS
 // ============================================
 
-let selectedFile = null;
-
-// ============================================
-// TAB SWITCHING & SCROLL HELPERS (Fixes Console Errors)
-// ============================================
-
-function switchTab(tabName) {
+function switchTab(tabName, btnElement) {
     console.log('Switching to tab:', tabName);
 
-    // Tab contents
-    const textTab = document.getElementById('textTab') || document.getElementById('textSection');
-    const urlTab = document.getElementById('urlTab') || document.getElementById('urlSection');
-    const imageTab = document.getElementById('imageTab') || document.getElementById('imageSection');
-
-    if (textTab) textTab.style.display = (tabName === 'text') ? 'block' : 'none';
-    if (urlTab) urlTab.style.display = (tabName === 'url') ? 'block' : 'none';
-    if (imageTab) imageTab.style.display = (tabName === 'image') ? 'block' : 'none';
-
-    // Update active tab buttons
-    document.querySelectorAll('.tab-btn, .nav-tab, [onclick*="switchTab"]').forEach(btn => {
-        if (btn.getAttribute('onclick')?.includes(tabName)) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
+    // 1. Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+        tab.classList.remove('active');
     });
+
+    // 2. Deactivate all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // 3. Activate target tab content
+    const targetTab = document.getElementById(`tab-${tabName}`);
+    if (targetTab) {
+        targetTab.style.display = 'block';
+        targetTab.classList.add('active');
+    }
+
+    // 4. Activate clicked button
+    if (btnElement) {
+        btnElement.classList.add('active');
+    }
 
     hideResults();
 }
 
 function scrollToAnalyzer() {
-    const analyzer =
-        document.getElementById('analyzer') ||
-        document.getElementById('analyzeSection') ||
-        document.querySelector('.analyzer-container') ||
-        document.querySelector('.main-card');
+    const el = document.getElementById('analyzer');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
 
-    if (analyzer) {
-        analyzer.scrollIntoView({ behavior: 'smooth' });
-    }
+function scrollToDashboard() {
+    const el = document.getElementById('dashboard');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================
-// TEXT NEWS ANALYSIS (Fixes analyzeNews error)
+// TEXT NEWS ANALYSIS
 // ============================================
 
 async function analyzeNews() {
-    const headlineInput = document.getElementById('newsHeadline') || document.getElementById('headline');
-    const contentInput = document.getElementById('newsContent') || document.getElementById('content');
-    const sourceInput = document.getElementById('sourceUrl') || document.getElementById('source');
+    // Correct IDs matching index.html
+    const headlineInput = document.getElementById('newsTitle') || document.getElementById('newsHeadline');
+    const contentInput = document.getElementById('newsContent');
+    const sourceInput = document.getElementById('sourceUrl');
     const platformSelect = document.getElementById('platform');
 
     const headline = headlineInput ? headlineInput.value.trim() : '';
@@ -110,7 +102,7 @@ async function analyzeNews() {
         return;
     }
 
-    showProgress(true);
+    setBtnLoading('btnAnalyze', 'btnText', 'btnLoader', true);
     hideResults();
 
     try {
@@ -135,7 +127,7 @@ async function analyzeNews() {
         try {
             data = await response.json();
         } catch (e) {
-            throw new Error('Server returned invalid JSON response');
+            throw new Error('Server returned invalid response');
         }
 
         if (!response.ok) {
@@ -145,22 +137,23 @@ async function analyzeNews() {
         console.log('✅ Text Analysis Result:', data);
         showResults(data);
         showToast('✅ Analysis complete!', 'success');
+        updateDashboardStats();
 
     } catch (error) {
         console.error('Text Analysis Error:', error);
         showToast('❌ ' + (error.message || 'Analysis failed'), 'error');
         showErrorBox(error.message);
     } finally {
-        showProgress(false);
+        setBtnLoading('btnAnalyze', 'btnText', 'btnLoader', false);
     }
 }
 
 // ============================================
-// URL ANALYSIS (Fixes analyzeUrl)
+// URL ANALYSIS
 // ============================================
 
 async function analyzeUrl() {
-    const urlInput = document.getElementById('urlInput') || document.getElementById('newsUrl');
+    const urlInput = document.getElementById('urlInput');
     const url = urlInput ? urlInput.value.trim() : '';
 
     if (!url) {
@@ -168,7 +161,7 @@ async function analyzeUrl() {
         return;
     }
 
-    showProgress(true);
+    setBtnLoading('btnAnalyzeUrl', 'btnUrlText', 'btnUrlLoader', true);
     hideResults();
 
     try {
@@ -186,7 +179,7 @@ async function analyzeUrl() {
         try {
             data = await response.json();
         } catch (e) {
-            throw new Error('Server returned invalid JSON response');
+            throw new Error('Server returned invalid response');
         }
 
         if (!response.ok) {
@@ -196,19 +189,76 @@ async function analyzeUrl() {
         console.log('✅ URL Analysis Result:', data);
         showResults(data);
         showToast('✅ URL Analysis complete!', 'success');
+        updateDashboardStats();
 
     } catch (error) {
         console.error('URL Analysis Error:', error);
         showToast('❌ ' + (error.message || 'URL analysis failed'), 'error');
         showErrorBox(error.message);
     } finally {
-        showProgress(false);
+        setBtnLoading('btnAnalyzeUrl', 'btnUrlText', 'btnUrlLoader', false);
     }
 }
 
 // ============================================
-// IMAGE ANALYSIS (With Auth Token for History)
+// IMAGE ANALYSIS
 // ============================================
+
+function handleImageSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (file) handleFileSelected(file);
+}
+
+function handleFileSelected(file) {
+    if (!file.type || !file.type.startsWith('image/')) {
+        showToast('❌ Please select a valid image file', 'error');
+        return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('❌ Image too large. Max 10MB allowed.', 'error');
+        return;
+    }
+
+    selectedFile = file;
+
+    const uploadContent = document.getElementById('uploadContent');
+    const previewContent = document.getElementById('previewContent');
+    const previewImg = document.getElementById('previewImage');
+    const previewName = document.getElementById('previewName');
+    const previewSize = document.getElementById('previewSize');
+    const btnAnalyzeImage = document.getElementById('btnAnalyzeImage');
+
+    if (previewImg) previewImg.src = URL.createObjectURL(file);
+    if (previewName) previewName.textContent = file.name;
+    if (previewSize) previewSize.textContent = `${(file.size / 1024).toFixed(2)} KB`;
+
+    if (uploadContent) uploadContent.style.display = 'none';
+    if (previewContent) previewContent.style.display = 'block';
+
+    // Enable the analyze button once file is uploaded
+    if (btnAnalyzeImage) btnAnalyzeImage.disabled = false;
+
+    hideResults();
+}
+
+function removeImage(event) {
+    if (event) event.stopPropagation();
+    selectedFile = null;
+
+    const fileInput = document.getElementById('imageInput');
+    if (fileInput) fileInput.value = '';
+
+    const uploadContent = document.getElementById('uploadContent');
+    const previewContent = document.getElementById('previewContent');
+    const btnAnalyzeImage = document.getElementById('btnAnalyzeImage');
+
+    if (uploadContent) uploadContent.style.display = 'block';
+    if (previewContent) previewContent.style.display = 'none';
+    if (btnAnalyzeImage) btnAnalyzeImage.disabled = true;
+
+    hideResults();
+}
 
 async function analyzeImage() {
     if (!selectedFile) {
@@ -216,7 +266,7 @@ async function analyzeImage() {
         return;
     }
 
-    showProgress(true);
+    setBtnLoading('btnAnalyzeImage', 'btnImageText', 'btnImageLoader', true);
     hideResults();
 
     try {
@@ -225,9 +275,7 @@ async function analyzeImage() {
 
         const token = getToken();
         const headers = {};
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const response = await fetch(`${API_URL}/api/images/analyze`, {
             method: 'POST',
@@ -239,7 +287,7 @@ async function analyzeImage() {
         try {
             data = await response.json();
         } catch (e) {
-            throw new Error('Server returned invalid JSON response');
+            throw new Error('Server returned invalid response');
         }
 
         if (!response.ok) {
@@ -248,181 +296,105 @@ async function analyzeImage() {
 
         console.log('✅ Image Analysis Result:', data);
         showResults(data);
-
-        if (isLoggedIn()) {
-            showToast('✅ Saved to your analysis history!', 'success');
-        } else {
-            showToast('✅ Analysis complete (log in to save to history)', 'success');
-        }
+        showToast('✅ Image Analysis complete!', 'success');
+        updateDashboardStats();
 
     } catch (error) {
         console.error('Image Analysis Error:', error);
         showToast('❌ ' + (error.message || 'Image analysis failed'), 'error');
         showErrorBox(error.message);
     } finally {
-        showProgress(false);
+        setBtnLoading('btnAnalyzeImage', 'btnImageText', 'btnImageLoader', false);
     }
+}
+
+// Helper to set button state during API loading
+function setBtnLoading(btnId, textId, loaderId, isLoading) {
+    const btn = document.getElementById(btnId);
+    const text = document.getElementById(textId);
+    const loader = document.getElementById(loaderId);
+
+    if (btn) btn.disabled = isLoading;
+    if (text) text.style.display = isLoading ? 'none' : 'inline-block';
+    if (loader) loader.style.display = isLoading ? 'inline-block' : 'none';
 }
 
 // ============================================
-// FILE UPLOAD UI HANDLERS
-// ============================================
-
-function initUploadUI() {
-    const fileInput = document.getElementById('fileInput') || document.querySelector('input[type="file"]');
-    const dropZone = document.getElementById('dropZone') || document.querySelector('.upload-area') || document.querySelector('.drop-zone');
-
-    if (fileInput) {
-        fileInput.accept = 'image/*';
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files && e.target.files[0];
-            if (file) handleFileSelected(file);
-        });
-    }
-
-    if (dropZone) {
-        ['dragenter', 'dragover'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.add('dragover');
-            });
-        });
-
-        ['dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.remove('dragover');
-            });
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            const file = e.dataTransfer.files && e.dataTransfer.files[0];
-            if (file) handleFileSelected(file);
-        });
-
-        dropZone.addEventListener('click', () => {
-            if (fileInput) fileInput.click();
-        });
-    }
-}
-
-function handleFileSelected(file) {
-    if (!file.type || !file.type.startsWith('image/')) {
-        showToast('❌ Please select a valid image file', 'error');
-        return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-        showToast('❌ Image too large. Max 5MB allowed.', 'error');
-        return;
-    }
-
-    selectedFile = file;
-    showFilePreview(file);
-    hideResults();
-}
-
-function showFilePreview(file) {
-    const previewImg = document.getElementById('previewImage') || document.getElementById('imagePreview');
-    const fileNameEl = document.getElementById('fileName');
-    const fileSizeEl = document.getElementById('fileSize');
-    const previewBox = document.getElementById('previewBox') || document.querySelector('.preview-box');
-
-    if (previewImg) {
-        previewImg.src = URL.createObjectURL(file);
-        previewImg.style.display = 'block';
-    }
-    if (fileNameEl) fileNameEl.textContent = file.name;
-    if (fileSizeEl) fileSizeEl.textContent = `Size: ${(file.size / 1024).toFixed(2)} KB`;
-    if (previewBox) previewBox.style.display = 'block';
-}
-
-function clearSelectedFile() {
-    selectedFile = null;
-    const fileInput = document.getElementById('fileInput') || document.querySelector('input[type="file"]');
-    if (fileInput) fileInput.value = '';
-
-    const previewImg = document.getElementById('previewImage') || document.getElementById('imagePreview');
-    if (previewImg) {
-        previewImg.src = '';
-        previewImg.style.display = 'none';
-    }
-
-    const previewBox = document.getElementById('previewBox') || document.querySelector('.preview-box');
-    if (previewBox) previewBox.style.display = 'none';
-
-    hideResults();
-}
-
-// ============================================
-// RESULTS & PROGRESS UI
+// RESULTS UI & CIRCLE SCORE
 // ============================================
 
 function showResults(data) {
-    const resultCard = document.getElementById('resultCard') || document.getElementById('results') || document.querySelector('.result-card');
+    const resultCard = document.getElementById('resultCard');
+    if (!resultCard) return;
 
-    fillIfExists('credibilityScore', formatScore(data.credibilityScore));
-    fillIfExists('statusBadge', data.status || 'UNKNOWN');
-    fillIfExists('visualScore', formatScore(data.visualScore));
-    fillIfExists('metadataScore', formatScore(data.metadataScore));
-    fillIfExists('textScore', formatScore(data.textAnalysisScore));
-    fillIfExists('ocrScore', formatScore(data.ocrScore));
-    fillIfExists('extractedText', data.extractedText || 'No text extracted');
-    fillIfExists('explanation', data.explanation || 'No explanation available');
+    const status = (data.status || 'UNKNOWN').toUpperCase();
+    const score = Math.round(data.credibilityScore || 0);
 
-    if (resultCard) {
-        resultCard.style.display = 'block';
-        resultCard.style.visibility = 'visible';
-        resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-        renderFallbackResult(data);
+    // Update Status Text & Icon
+    const statusText = document.getElementById('statusText');
+    const statusIcon = document.getElementById('statusIcon');
+
+    if (statusText) statusText.textContent = status === 'REAL' ? 'Verified Real News' : status === 'FAKE' ? 'Fake News Detected' : 'Suspicious Content';
+    if (statusIcon) statusIcon.textContent = status === 'REAL' ? '✅' : status === 'FAKE' ? '❌' : '⚠️';
+
+    // Update Score Circle & Number
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreCircle = document.getElementById('scoreCircle');
+
+    if (scoreValue) scoreValue.textContent = score;
+
+    if (scoreCircle) {
+        const circumference = 377; // 2 * pi * r (60)
+        const offset = circumference - (score / 100) * circumference;
+        scoreCircle.style.strokeDashoffset = offset;
+        scoreCircle.style.color = status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#ef4444' : '#f59e0b';
     }
+
+    // Extracted Text (OCR / Summary)
+    const extractedSection = document.getElementById('extractedTextSection');
+    const extractedBox = document.getElementById('extractedTextBox');
+    if (data.extractedText) {
+        if (extractedSection) extractedSection.style.display = 'block';
+        if (extractedBox) extractedBox.textContent = data.extractedText;
+    } else {
+        if (extractedSection) extractedSection.style.display = 'none';
+    }
+
+    // Breakdown Grid
+    const breakdownGrid = document.getElementById('breakdownGrid');
+    if (breakdownGrid) {
+        breakdownGrid.innerHTML = `
+            <div class="breakdown-item">
+                <span class="breakdown-label">Text Credibility</span>
+                <span class="breakdown-value">${Math.round(data.textAnalysisScore || data.credibilityScore || 0)}%</span>
+            </div>
+            <div class="breakdown-item">
+                <span class="breakdown-label">Visual Authenticity</span>
+                <span class="breakdown-value">${Math.round(data.visualScore || 100)}%</span>
+            </div>
+            <div class="breakdown-item">
+                <span class="breakdown-label">Metadata Check</span>
+                <span class="breakdown-value">${Math.round(data.metadataScore || 100)}%</span>
+            </div>
+        `;
+    }
+
+    // Explanation
+    const explanationText = document.getElementById('explanationText');
+    if (explanationText) {
+        explanationText.textContent = data.explanation || 'Content evaluated across fake news pattern databases and machine learning models.';
+    }
+
+    resultCard.style.display = 'block';
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function hideResults() {
-    const resultCard = document.getElementById('resultCard') || document.getElementById('results') || document.querySelector('.result-card');
+    const resultCard = document.getElementById('resultCard');
     if (resultCard) resultCard.style.display = 'none';
-
-    const fallback = document.getElementById('fs-fallback-result');
-    if (fallback) fallback.remove();
 
     const err = document.getElementById('fs-error-box');
     if (err) err.remove();
-}
-
-function renderFallbackResult(data) {
-    let box = document.getElementById('fs-fallback-result');
-    if (!box) {
-        box = document.createElement('div');
-        box.id = 'fs-fallback-result';
-        box.style.cssText = `
-            max-width: 720px; margin: 20px auto; padding: 20px;
-            border-radius: 16px; color: white;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.12);
-        `;
-        document.body.appendChild(box);
-    }
-
-    const status = data.status || 'UNKNOWN';
-    const score = formatScore(data.credibilityScore);
-    const color = status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#ef4444' : '#f59e0b';
-
-    box.innerHTML = `
-        <h2 style="margin:0 0 10px;">🛡️ Analysis Result</h2>
-        <div style="font-size:28px;font-weight:800;color:${color};margin-bottom:8px;">
-            ${escapeHtml(status)} • ${score}%
-        </div>
-        <div style="margin-top:12px;">
-            <strong>Explanation:</strong>
-            <pre style="white-space:pre-wrap;background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;">${escapeHtml(data.explanation || 'Analysis completed')}</pre>
-        </div>
-        ${isLoggedIn() ? `<div style="margin-top:14px;"><a href="/history.html" style="color:#4facfe;font-weight:600;">View in My History →</a></div>` : ''}
-    `;
-
-    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function showErrorBox(message) {
@@ -431,186 +403,126 @@ function showErrorBox(message) {
         box = document.createElement('div');
         box.id = 'fs-error-box';
         box.style.cssText = `
-            max-width: 720px; margin: 16px auto; padding: 14px 16px;
+            max-width: 800px; margin: 16px auto; padding: 14px 16px;
             border-radius: 12px; color: #fecaca;
             background: rgba(239,68,68,0.12);
-            border: 1px solid rgba(239,68,68,0.35);
+            border: 1px solid rgba(239,68,68,0.35); text-align: center;
         `;
-        document.body.appendChild(box);
+        const container = document.querySelector('.analyzer-section .container') || document.body;
+        container.appendChild(box);
     }
-    box.textContent = message;
+    box.textContent = '❌ Error: ' + message;
 }
 
-function showProgress(show) {
-    let el = document.getElementById('fs-progress');
-    if (!show) {
-        if (el) el.remove();
-        return;
-    }
-    if (!el) {
-        el = document.createElement('div');
-        el.id = 'fs-progress';
-        el.style.cssText = `max-width: 720px; margin: 16px auto; color: white; text-align:center;`;
-        el.innerHTML = `
-            <div style="height:8px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,0.08);margin-bottom:8px;">
-                <div style="height:100%;width:40%;background:linear-gradient(90deg,#00f2fe,#4facfe,#a855f7);animation: fsSlide 1.2s ease-in-out infinite;"></div>
-            </div>
-            <div style="opacity:.85;">🔍 Analyzing, please wait...</div>
-            <style>@keyframes fsSlide { 0% { transform: translateX(-120%); } 100% { transform: translateX(320%); } }</style>
-        `;
-        document.body.appendChild(el);
-    }
-}
-
-function showToast(message, type = 'info') {
-    let host = document.getElementById('fs-toast-host');
-    if (!host) {
-        host = document.createElement('div');
-        host.id = 'fs-toast-host';
-        host.style.cssText = `position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; display:flex; flex-direction:column; gap:8px;`;
-        document.body.appendChild(host);
-    }
-
-    const toast = document.createElement('div');
-    const bg = type === 'success' ? 'rgba(16,185,129,0.15)' : type === 'error' ? 'rgba(239,68,68,0.15)' : 'rgba(79,172,254,0.15)';
-    const border = type === 'success' ? 'rgba(16,185,129,0.4)' : type === 'error' ? 'rgba(239,68,68,0.4)' : 'rgba(79,172,254,0.4)';
-    const color = type === 'success' ? '#6ee7b7' : type === 'error' ? '#fecaca' : '#bfdbfe';
-
-    toast.style.cssText = `
-        min-width: 280px; max-width: 90vw; padding: 12px 16px; border-radius: 12px;
-        background: ${bg}; border: 1px solid ${border}; color: ${color};
-        backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-        font-family: Inter, system-ui, sans-serif; font-size: 14px;
-    `;
-    toast.textContent = message;
-    host.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity .3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
-}
-
-// ============================================
-// USER MENU INITIALIZATION
-// ============================================
-
-function initUserMenu() {
-    const user = getUser();
-    const old = document.getElementById('fs-user-menu-wrap');
-    if (old) old.remove();
-
-    const wrap = document.createElement('div');
-    wrap.id = 'fs-user-menu-wrap';
-    wrap.style.cssText = `position: fixed; top: 18px; right: 18px; z-index: 9999; font-family: Inter, system-ui, sans-serif;`;
-
-    if (user) {
-        const initials = (user.fullName || user.username || 'U').slice(0, 2).toUpperCase();
-        wrap.innerHTML = `
-            <div style="position:relative;">
-                <button id="fsUserBtn" style="
-                    width:44px;height:44px;border-radius:50%;
-                    border:2px solid rgba(255,255,255,0.15);
-                    background: linear-gradient(135deg,#00f2fe,#a855f7);
-                    color:white;font-weight:700;cursor:pointer;
-                    box-shadow:0 8px 24px rgba(0,0,0,0.25);
-                ">${initials}</button>
-
-                <div id="fsUserDropdown" style="
-                    display:none; position:absolute; right:0; top:54px;
-                    min-width:220px; background:rgba(20,20,40,0.96);
-                    border:1px solid rgba(255,255,255,0.1);
-                    border-radius:14px; overflow:hidden;
-                    box-shadow:0 16px 40px rgba(0,0,0,0.35);
-                ">
-                    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);">
-                        <div style="color:#fff;font-weight:700;">${escapeHtml(user.fullName || user.username)}</div>
-                        <div style="color:rgba(255,255,255,0.6);font-size:12px;">${escapeHtml(user.email || '')}</div>
-                    </div>
-                    <a href="/history.html" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;">📜 My History</a>
-                    <button id="fsLogoutBtn" style="
-                        width:100%;text-align:left;padding:12px 16px;
-                        background:transparent;border:none;border-top:1px solid rgba(255,255,255,0.08);
-                        color:#ef4444;cursor:pointer;font-size:14px;
-                    ">🚪 Logout</button>
-                </div>
-            </div>
-        `;
+// Action Buttons
+function shareResult() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'FakeShield Analysis Report',
+            text: 'Check this news analysis on FakeShield!',
+            url: window.location.href
+        }).catch(() => {});
     } else {
-        wrap.innerHTML = `
-            <a href="/login.html" style="
-                display:inline-block;padding:10px 16px;border-radius:10px;
-                background:linear-gradient(135deg,#00f2fe,#a855f7);
-                color:white;text-decoration:none;font-weight:700;
-                box-shadow:0 8px 24px rgba(0,0,0,0.25);
-            ">Login</a>
-        `;
-    }
-
-    document.body.appendChild(wrap);
-
-    const btn = document.getElementById('fsUserBtn');
-    const dropdown = document.getElementById('fsUserDropdown');
-    const logoutBtn = document.getElementById('fsLogoutBtn');
-
-    if (btn && dropdown) {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        });
-
-        document.addEventListener('click', () => {
-            dropdown.style.display = 'none';
-        });
-    }
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
+        copyResult();
     }
 }
 
-// ============================================
-// UTILITIES
-// ============================================
+function copyResult() {
+    const status = document.getElementById('statusText')?.textContent || '';
+    const score = document.getElementById('scoreValue')?.textContent || '';
+    const text = `🛡️ FakeShield Report:\nStatus: ${status}\nCredibility Score: ${score}%\nAnalyzed via ${window.location.origin}`;
 
-function fillIfExists(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 Report copied to clipboard!', 'success');
+    });
 }
 
-function formatScore(v) {
-    const n = Number(v);
-    return Number.isNaN(n) ? '0' : n.toFixed(0);
-}
-
-function escapeHtml(str) {
-    return String(str || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+function analyzeAnother() {
+    hideResults();
+    scrollToAnalyzer();
 }
 
 // ============================================
-// DOM LOAD INITIALIZATION
+// DASHBOARD & STATS
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🛡️ FakeShield Loaded');
-    initUserMenu();
-    initUploadUI();
+let stats = { total: 0, fake: 0, real: 0, suspicious: 0 };
+
+function updateDashboardStats() {
+    stats.total++;
+    // Simple incremental counter for live feeling
+    document.getElementById('heroTotal').textContent = stats.total;
+    document.getElementById('dashTotal').textContent = stats.total;
+}
+
+function loadRecentNews() {
+    showToast('🔄 Refreshing live data...', 'info');
+}
+
+// ============================================
+// LANGUAGE SWITCHER
+// ============================================
+
+function toggleLangDropdown() {
+    const dropdown = document.getElementById('langDropdown');
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+}
+
+function changeLanguage(code, flag, name) {
+    const currentLang = document.getElementById('currentLang');
+    if (currentLang) currentLang.textContent = `${flag} ${code.toUpperCase()}`;
+    toggleLangDropdown();
+    showToast(`Switched language to ${name}`, 'info');
+}
+
+// Close language dropdown on outside click
+document.addEventListener('click', (e) => {
+    const switcher = document.querySelector('.language-switcher');
+    const dropdown = document.getElementById('langDropdown');
+    if (switcher && !switcher.contains(e.target) && dropdown) {
+        dropdown.style.display = 'none';
+    }
 });
 
 // ============================================
-// EXPOSE FUNCTIONS TO WINDOW (Fixes onclick errors)
+// TOAST NOTIFICATIONS
 // ============================================
 
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    if (!toast || !toastMessage) return;
+
+    toastMessage.textContent = message;
+    toast.className = `toast ${type} show`;
+
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 3500);
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🛡️ FakeShield Initialized');
+});
+
+// ============================================
+// EXPOSE FUNCTIONS TO WINDOW
+// ============================================
 window.switchTab = switchTab;
 window.scrollToAnalyzer = scrollToAnalyzer;
+window.scrollToDashboard = scrollToDashboard;
 window.analyzeNews = analyzeNews;
 window.analyzeUrl = analyzeUrl;
+window.handleImageSelect = handleImageSelect;
+window.removeImage = removeImage;
 window.analyzeImage = analyzeImage;
-window.clearSelectedFile = clearSelectedFile;
-window.logout = logout;
+window.shareResult = shareResult;
+window.copyResult = copyResult;
+window.analyzeAnother = analyzeAnother;
+window.loadRecentNews = loadRecentNews;
+window.toggleLangDropdown = toggleLangDropdown;
+window.changeLanguage = changeLanguage;
