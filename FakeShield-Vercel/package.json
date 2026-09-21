@@ -1,0 +1,14 @@
+{
+  "name": "fakeshield-web",
+  "version": "1.0.0",
+  "description": "FakeShield - AI-Powered Fake News & Misinformation Detector",
+  "main": "index.js",
+  "scripts": {
+    "start": "serve public",
+    "dev": "vercel dev"
+  },
+  "keywords": ["fakeshield", "ai", "fake-news-detector", "vercel"],
+  "author": "Jerome Victor Paulraj",
+  "license": "MIT",
+  "dependencies": {}
+}

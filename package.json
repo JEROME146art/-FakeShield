@@ -1,0 +1,13 @@
+{
+  "name": "fakeshield-ai",
+  "version": "2.0.0",
+  "description": "FakeShield - AI-Powered Fake News, URL & Image Misinformation Detector",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "dev": "npx serve -l 3000 ."
+  },
+  "keywords": ["ai", "fake-news-detector", "misinformation", "multilingual", "fact-checking"],
+  "author": "FakeShield Team",
+  "license": "MIT"
+}

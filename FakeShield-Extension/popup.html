@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FakeShield - AI Detector</title>
+    <link rel="stylesheet" href="popup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="shield-glow">🛡️</span>
+                <div class="logo-text">
+                    <span class="title">FakeShield</span>
+                    <span class="tagline">AI Credibility Engine</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="server-status" id="serverStatus" title="Server Status: Checking...">
+                    <span class="status-dot"></span>
+                </div>
+                <button class="icon-btn" id="btnSettings" title="Configure API Endpoint">⚙️</button>
+            </div>
+        </header>
+
+        <!-- API Settings Modal / Dropdown -->
+        <div class="settings-drawer" id="settingsDrawer" style="display:none;">
+            <div class="settings-header">
+                <span>API Endpoint URL</span>
+                <button class="btn-close-settings" id="btnCloseSettings">✕</button>
+            </div>
+            <div class="settings-body">
+                <input type="url" id="apiUrlInput" placeholder="http://localhost:8090" value="http://localhost:8090">
+                <div class="settings-presets">
+                    <button type="button" class="preset-pill" data-url="http://localhost:8090">Local (8090)</button>
+                    <button type="button" class="preset-pill" data-url="https://fakeshield-production-f214.up.railway.app">Cloud (Railway)</button>
+                </div>
+                <button class="btn-save-settings" id="btnSaveSettings">Save & Check</button>
+            </div>
+        </div>
+
+        <!-- Analyzer Navigation Tabs -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="content">
+                <span class="tab-icon">📝</span>
+                <span>Content</span>
+            </button>
+            <button class="tab-btn" data-tab="url">
+                <span class="tab-icon">🔗</span>
+                <span>URL</span>
+            </button>
+            <button class="tab-btn" data-tab="image">
+                <span class="tab-icon">🖼️</span>
+                <span>Image</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: Content Analysis -->
+        <section id="tab-content" class="tab-pane active">
+            <div class="input-card">
+                <div class="card-head">
+                    <label for="contentInput">News Article or Headline</label>
+                    <button class="btn-text-action" id="btnPasteContent">📋 Paste</button>
+                </div>
+                <textarea 
+                    id="contentInput" 
+                    placeholder="Paste news headline, WhatsApp message, or article text to verify..."
+                    rows="4"
+                ></textarea>
+                <div class="quick-samples">
+                    <span class="samples-title">Quick test:</span>
+                    <button type="button" class="sample-chip sample-real" id="btnSampleReal">✅ Real</button>
+                    <button type="button" class="sample-chip sample-fake" id="btnSampleFake">❌ Fake</button>
+                </div>
+            </div>
+            <button class="btn-primary" id="btnAnalyzeContent">
+                <span class="btn-label">🔍 Analyze Content</span>
+                <span class="btn-spinner" style="display:none"><span class="spinner"></span> Analyzing...</span>
+            </button>
+        </section>
+
+        <!-- TAB 2: URL Analysis -->
+        <section id="tab-url" class="tab-pane" style="display:none;">
+            <div class="input-card">
+                <div class="card-head">
+                    <label for="urlInput">News Article URL</label>
+                    <button class="btn-text-action" id="btnUseCurrentTab">📌 Current Tab</button>
+                </div>
+                <div class="url-input-wrap">
+                    <span class="url-prefix">🌐</span>
+                    <input 
+                        type="url" 
+                        id="urlInput" 
+                        placeholder="https://example.com/breaking-news-article"
+                    >
+                </div>
+                <p class="input-tip">Scans domain reputation, author credibility, clickbait signals, and article body.</p>
+            </div>
+            <button class="btn-primary" id="btnAnalyzeUrl">
+                <span class="btn-label">🔗 Verify URL</span>
+                <span class="btn-spinner" style="display:none"><span class="spinner"></span> Fetching & Verifying...</span>
+            </button>
+        </section>
+
+        <!-- TAB 3: Image Analysis -->
+        <section id="tab-image" class="tab-pane" style="display:none;">
+            <div class="input-card">
+                <div class="card-head">
+                    <label>Image / Screenshot / Meme</label>
+                    <span class="card-hint">Max 5MB (JPG/PNG)</span>
+                </div>
+                <div class="dropzone" id="imageDropzone">
+                    <div class="dropzone-idle" id="dropzoneIdle">
+                        <span class="dropzone-icon">📸</span>
+                        <p class="dropzone-text"><strong>Click to browse</strong> or drag & drop</p>
+                        <span class="dropzone-sub">Supports OCR text extraction & metadata check</span>
+                    </div>
+                    <div class="dropzone-preview" id="dropzonePreview" style="display:none;">
+                        <img id="imagePreviewImg" src="" alt="Selected Preview">
+                        <div class="preview-meta">
+                            <span id="imagePreviewName">image.png</span>
+                            <span id="imagePreviewSize">0 KB</span>
+                        </div>
+                        <button class="btn-remove-img" id="btnRemoveImage">✕ Remove</button>
+                    </div>
+                    <input type="file" id="imageFileInput" accept="image/*" style="display:none;">
+                </div>
+            </div>
+            <button class="btn-primary" id="btnAnalyzeImage" disabled>
+                <span class="btn-label">🖼️ Analyze Image</span>
+                <span class="btn-spinner" style="display:none"><span class="spinner"></span> Running OCR & AI...</span>
+            </button>
+        </section>
+
+        <!-- Analysis Results Card (Dynamic) -->
+        <section class="result-card" id="resultCard" style="display:none;">
+            <div class="result-top">
+                <div class="status-badge" id="resStatusBadge">
+                    <span class="status-icon" id="resStatusIcon">✅</span>
+                    <div class="status-meta">
+                        <span class="status-tag">Verdict</span>
+                        <strong class="status-title" id="resStatusText">Real News</strong>
+                    </div>
+                </div>
+                <div class="score-display">
+                    <div class="score-circle-sm">
+                        <span class="score-num" id="resScoreNum">94</span><span class="score-pct">%</span>
+                    </div>
+                    <span class="score-caption">Credibility</span>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="meter-bar">
+                <div class="meter-fill" id="resMeterFill"></div>
+            </div>
+
+            <!-- Extracted OCR Text (if image) -->
+            <div class="ocr-extracted-box" id="resOcrBox" style="display:none;">
+                <div class="ocr-head">📝 Extracted OCR Text:</div>
+                <div class="ocr-content" id="resOcrContent"></div>
+            </div>
+
+            <!-- Multi-Factor Metrics Breakdown -->
+            <div class="metrics-grid" id="resMetricsGrid">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Explanation Accordion -->
+            <details class="explanation-accordion" open>
+                <summary>💡 AI Reasoning & Analysis</summary>
+                <div class="explanation-body" id="resExplanation"></div>
+            </details>
+
+            <!-- Card Actions -->
+            <div class="result-card-actions">
+                <button class="btn-action-sm" id="btnCopyReport">📋 Copy Report</button>
+                <button class="btn-action-sm" id="btnClearResult">🔄 Clear</button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <a href="#" id="btnOpenWebDashboard">🌐 Open Full Web Dashboard →</a>
+        </footer>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toastMessage"></div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

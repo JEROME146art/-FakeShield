@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "FakeShield - AI Fake News & Misinformation Detector",
+  "version": "1.1.0",
+  "description": "Multi-modal AI-powered verification engine for Text, URLs, and Images directly in your browser.",
+  "author": "Jerome Victor Paulraj",
+  
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "tabs",
+    "storage",
+    "notifications",
+    "clipboardRead"
+  ],
+  
+  "host_permissions": [
+    "http://localhost:8090/*",
+    "https://*/*",
+    "<all_urls>"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FakeShield - AI Detector",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
