@@ -1,0 +1,36 @@
+# Compiled files
+target/
+build/
+*.class
+
+# IntelliJ files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Log files
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+# Sensitive files
+.env
+*.env
+application-local.properties
+application-secret.properties
+
+# IDE
+.idea/
+*.iml
+
+# Build
+target/
