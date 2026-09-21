@@ -1580,3 +1580,83 @@ function escapeHtml(str) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// ===================================================================
+// 14. AUTHENTICATION & USER PROFILE NAVBAR INTEGRATION
+// ===================================================================
+function getActiveSessionUser() {
+    try {
+        const s = localStorage.getItem('fakeshield_auth_user');
+        return s ? JSON.parse(s) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function renderNavbarAuth() {
+    const container = document.getElementById('navAuthContainer');
+    if (!container) return;
+
+    const user = getActiveSessionUser();
+    if (!user) {
+        container.innerHTML = `
+            <a href="login.html" class="user-profile-btn" id="navLoginBtn">
+                <span>👤</span>
+                <span id="navLoginText">Login / Sign Up</span>
+            </a>
+        `;
+        return;
+    }
+
+    const initial = (user.fullName || user.username || 'U').charAt(0).toUpperCase();
+    const displayName = user.fullName || user.username || 'User';
+
+    container.innerHTML = `
+        <div class="user-nav-profile">
+            <button class="user-profile-btn" onclick="toggleUserMenu()">
+                <div class="user-avatar-circle">${initial}</div>
+                <span class="user-name-text">${escapeHtml(displayName)}</span>
+                <span style="font-size: 0.7rem; color: #94a3b8;">▼</span>
+            </button>
+            <div class="user-dropdown-menu" id="userDropdownMenu">
+                <div style="padding: 0.6rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <div style="font-weight: 700; color: #f8fafc; font-size: 0.88rem;">${escapeHtml(user.fullName || user.username)}</div>
+                    <div style="font-size: 0.75rem; color: #38bdf8;">${escapeHtml(user.role || 'Member')}</div>
+                </div>
+                <a href="#history-section" class="user-menu-item" onclick="toggleUserMenu()">
+                    <span>📜</span> My Analyses
+                </a>
+                <a href="#dashboard" class="user-menu-item" onclick="toggleUserMenu()">
+                    <span>📊</span> Credibility Stats
+                </a>
+                <button class="user-menu-item logout" onclick="logoutAppUser()">
+                    <span>🚪</span> Sign Out
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function toggleUserMenu() {
+    const menu = document.getElementById('userDropdownMenu');
+    if (menu) menu.classList.toggle('show');
+}
+
+function logoutAppUser() {
+    localStorage.removeItem('fakeshield_auth_user');
+    renderNavbarAuth();
+    showToast('👋 You have been signed out.');
+}
+
+// Close user dropdown when clicking outside
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-nav-profile')) {
+        const menu = document.getElementById('userDropdownMenu');
+        if (menu && menu.classList.contains('show')) menu.classList.remove('show');
+    }
+});
+
+// Call renderNavbarAuth on init
+document.addEventListener('DOMContentLoaded', () => {
+    renderNavbarAuth();
+});
