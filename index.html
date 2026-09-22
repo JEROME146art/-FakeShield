@@ -3,52 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FakeShield - AI Fake News & Misinformation Detector</title>
+    <title>FakeShield - AI-Powered Fake News & Misinformation Detector</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
 </head>
 <body>
-    <!-- Ambient glowing backgrounds -->
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
-    <div class="ambient-glow glow-3"></div>
+    <!-- Background Starfield Mesh & Ambient Cosmic Lighting -->
+    <div class="bg-mesh-grid"></div>
+    <div class="ambient-glow glow-top"></div>
+    <div class="ambient-glow glow-left"></div>
+    <div class="ambient-glow glow-right"></div>
 
-    <!-- 1. Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
+    <!-- 1. Floating Luxury Navbar -->
+    <div class="navbar-wrapper">
+        <nav class="navbar">
             <a href="#" class="nav-brand">
-                <span class="shield-logo-icon">🛡️</span>
-                <div class="brand-name-wrap">
-                    <span class="brand-main-title">FakeShield</span>
-                    <span class="brand-badge">v2.5 AI Security</span>
+                <div class="brand-shield-orb">🛡️</div>
+                <div class="brand-text-block">
+                    <span class="brand-heading">FakeShield</span>
+                    <span class="brand-badge-text">v2.5 AI Security</span>
                 </div>
             </a>
 
-            <div class="nav-links">
-                <a href="#analyzer" class="nav-item active" id="navAnalyze">🔍 Analyze</a>
-                <a href="#dashboard" class="nav-item" id="navDashboard">📊 Dashboard</a>
-                <a href="#history-section" class="nav-item" id="navHistory">📜 History <span class="nav-count-badge" id="navHistoryCount">0</span></a>
-                <a href="#how-it-works" class="nav-item" id="navHow">💡 How It Works</a>
-                <a href="#tips" class="nav-item" id="navTips">🛡️ Spotting Tips</a>
+            <div class="nav-menu-capsule">
+                <a href="#analyzer" class="nav-link-btn active" id="navAnalyze">🔍 Analyze</a>
+                <a href="#dashboard" class="nav-link-btn" id="navDashboard">📊 Dashboard</a>
+                <a href="#history-section" class="nav-link-btn" id="navHistory">📜 History <span class="nav-count-pill" id="navHistoryCount">0</span></a>
+                <a href="#how-it-works" class="nav-link-btn" id="navHow">💡 How It Works</a>
+                <a href="#tips" class="nav-link-btn" id="navTips">🛡️ Tips</a>
             </div>
 
-            <div class="nav-actions">
-                <!-- Language Selector -->
-                <div class="lang-dropdown-wrapper">
-                    <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
+            <div class="nav-actions-group">
+                <!-- Theme Palette Switcher -->
+                <button type="button" class="theme-picker-btn" onclick="cycleThemePalette()" title="Switch Theme Color Palette">🎨</button>
+
+                <!-- Language Dropdown -->
+                <div class="lang-dropdown-box">
+                    <button class="lang-toggle-btn" id="langBtn" onclick="toggleLangDropdown()">
                         <span id="activeLangFlag">🌍</span>
                         <span id="activeLangLabel">English</span>
                         <span style="font-size: 0.65rem; color: #94a3b8;">▼</span>
                     </button>
-                    <div class="lang-menu" id="langDropdown">
-                        <button class="lang-opt active" onclick="changeLanguage('en', '🇬🇧', 'English')">🇬🇧 English</button>
-                        <button class="lang-opt" onclick="changeLanguage('ta', '🇮🇳', 'தமிழ்')">🇮🇳 தமிழ் (Tamil)</button>
-                        <button class="lang-opt" onclick="changeLanguage('hi', '🇮🇳', 'हिन्दी')">🇮🇳 हिन्दी (Hindi)</button>
-                        <button class="lang-opt" onclick="changeLanguage('es', '🇪🇸', 'Español')">🇪🇸 Español</button>
-                        <button class="lang-opt" onclick="changeLanguage('fr', '🇫🇷', 'Français')">🇫🇷 Français</button>
-                        <button class="lang-opt" onclick="changeLanguage('de', '🇩🇪', 'Deutsch')">🇩🇪 Deutsch</button>
+                    <div class="lang-dropdown-menu" id="langDropdown">
+                        <button class="lang-item-btn active" onclick="changeLanguage('en', '🇬🇧', 'English')">🇬🇧 English</button>
+                        <button class="lang-item-btn" onclick="changeLanguage('ta', '🇮🇳', 'தமிழ்')">🇮🇳 தமிழ் (Tamil)</button>
+                        <button class="lang-item-btn" onclick="changeLanguage('hi', '🇮🇳', 'हिन्दी')">🇮🇳 हिन्दी (Hindi)</button>
+                        <button class="lang-item-btn" onclick="changeLanguage('es', '🇪🇸', 'Español')">🇪🇸 Español</button>
+                        <button class="lang-item-btn" onclick="changeLanguage('fr', '🇫🇷', 'Français')">🇫🇷 Français</button>
+                        <button class="lang-item-btn" onclick="changeLanguage('de', '🇩🇪', 'Deutsch')">🇩🇪 Deutsch</button>
                     </div>
                 </div>
 
@@ -60,75 +64,75 @@
                     </a>
                 </div>
 
-                <a href="#analyzer" class="btn-nav-analyze" id="btnNavCta">⚡ Verify Now</a>
+                <a href="#analyzer" class="btn-nav-glow-cta" id="btnNavCta">⚡ Verify Now</a>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </div>
 
     <!-- 2. Hero Section -->
     <header class="hero-section container">
-        <div class="hero-grid">
-            <div class="hero-text-col">
+        <div class="hero-grid-layout">
+            <div class="hero-text-column">
                 <div class="hero-badge-pill">
                     <span class="pulse-dot"></span>
                     <span id="heroBadge">AI-Powered Fact Verification</span>
                 </div>
-                <h1 class="hero-headline">
+                <h1 class="hero-main-heading">
                     <span id="heroTitleMain">Detect Fake News</span><br>
-                    <span class="gradient-text" id="heroTitleSub">In Seconds</span>
+                    <span class="iridescent-gradient-text" id="heroTitleSub">In Real-Time</span>
                 </h1>
-                <p class="hero-subtext" id="heroSubtitle">
+                <p class="hero-subtext-para" id="heroSubtitle">
                     Advanced AI analyzes news articles, web links, and image screenshots in real-time to detect fabricated claims, sensational clickbait, and manipulated media.
                 </p>
-                <div class="hero-cta-group">
-                    <a href="#analyzer" class="btn-glow-primary" id="btnHeroAnalyze">🔍 Start Analysis</a>
-                    <a href="#dashboard" class="btn-glass-secondary" id="btnHeroDashboard">📊 View Live Dashboard</a>
+                <div class="hero-btn-row">
+                    <a href="#analyzer" class="btn-aurora-primary" id="btnHeroAnalyze">🔍 Start Analysis</a>
+                    <a href="#dashboard" class="btn-crystal-secondary" id="btnHeroDashboard">📊 View Live Dashboard</a>
                 </div>
-                <div class="hero-stats-row">
-                    <div class="stat-item">
+                <div class="hero-stats-strip">
+                    <div class="stat-metric-block">
                         <strong id="heroTotal">0</strong>
                         <span id="lblHeroTotal">Articles Analyzed</span>
                     </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
+                    <div class="stat-v-divider"></div>
+                    <div class="stat-metric-block">
                         <strong id="heroFake" style="color: #fb7185;">0</strong>
                         <span id="lblHeroFake">Fake News Detected</span>
                     </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
+                    <div class="stat-v-divider"></div>
+                    <div class="stat-metric-block">
                         <strong style="color: #34d399;">96.8%</strong>
                         <span id="lblHeroAccuracy">Accuracy Rate</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Floating Preview Cards -->
-            <div class="hero-visual-col">
-                <div class="floating-preview-card card-pill-real">
-                    <div class="f-card-icon">✅</div>
-                    <div class="f-card-info">
-                        <div class="f-card-title" id="cardRealTitle">ISRO Polar Satellite Launch</div>
-                        <div class="f-card-sub" id="cardRealSub">Verified Official Source</div>
+            <!-- Floating Hero Cards Stack -->
+            <div class="hero-cards-stack">
+                <div class="glass-pill-card card-real">
+                    <div class="pill-icon-box real">✅</div>
+                    <div class="pill-card-details">
+                        <div class="pill-card-title" id="cardRealTitle">ISRO Polar Satellite Launch</div>
+                        <div class="pill-card-sub" id="cardRealSub">Verified Official Source</div>
                     </div>
-                    <div class="f-card-score real">96%</div>
+                    <div class="pill-card-score real">96%</div>
                 </div>
 
-                <div class="floating-preview-card card-pill-suspicious">
-                    <div class="f-card-icon">⚠️</div>
-                    <div class="f-card-info">
-                        <div class="f-card-title" id="cardSuspTitle">Unverified Financial Scheme</div>
-                        <div class="f-card-sub" id="cardSuspSub">Missing Authoritative Source</div>
+                <div class="glass-pill-card card-suspicious">
+                    <div class="pill-icon-box suspicious">⚠️</div>
+                    <div class="pill-card-details">
+                        <div class="pill-card-title" id="cardSuspTitle">Unverified Financial Scheme</div>
+                        <div class="pill-card-sub" id="cardSuspSub">Missing Authoritative Source</div>
                     </div>
-                    <div class="f-card-score suspicious">54%</div>
+                    <div class="pill-card-score suspicious">54%</div>
                 </div>
 
-                <div class="floating-preview-card card-pill-fake">
-                    <div class="f-card-icon">❌</div>
-                    <div class="f-card-info">
-                        <div class="f-card-title" id="cardFakeTitle">Miracle 24-Hour Cure Forward</div>
-                        <div class="f-card-sub" id="cardFakeSub">High Clickbait & Fabricated Claim</div>
+                <div class="glass-pill-card card-fake">
+                    <div class="pill-icon-box fake">❌</div>
+                    <div class="pill-card-details">
+                        <div class="pill-card-title" id="cardFakeTitle">Miracle 24-Hour Cure Forward</div>
+                        <div class="pill-card-sub" id="cardFakeSub">High Clickbait & Fabricated Claim</div>
                     </div>
-                    <div class="f-card-score fake">18%</div>
+                    <div class="pill-card-score fake">18%</div>
                 </div>
             </div>
         </div>
@@ -136,64 +140,64 @@
 
     <!-- 3. Analyzer Workspace Section -->
     <section id="analyzer" class="container" style="padding: 40px 0 20px;">
-        <div class="section-header">
-            <div class="section-tag" id="tagAnalyzer">AI Verification Engine</div>
-            <h2 class="section-title" id="headAnalyzer">Analyze News Credibility</h2>
-            <p class="section-subtitle" id="subAnalyzer">Check text claims, webpage URLs, or upload screenshots to inspect credibility.</p>
+        <div class="section-title-block">
+            <div class="section-tag-capsule" id="tagAnalyzer">AI Verification Engine</div>
+            <h2 class="section-heading-lg" id="headAnalyzer">Analyze News Credibility</h2>
+            <p class="section-subheading-p" id="subAnalyzer">Check text claims, webpage URLs, or upload screenshots to inspect credibility.</p>
         </div>
 
-        <div class="analyzer-wrapper">
-            <!-- Analyzer Tabs -->
-            <div class="analyzer-tab-row">
-                <button class="tab-btn active" id="tabBtnText" onclick="switchTab('text', this)">
+        <div class="analyzer-container-box">
+            <!-- Tabs -->
+            <div class="analyzer-tabs-pill-row">
+                <button class="tab-pill-btn active" id="tabBtnText" onclick="switchTab('text', this)">
                     <span>📝</span> <span id="tabText">Text Analysis</span>
                 </button>
-                <button class="tab-btn" id="tabBtnUrl" onclick="switchTab('url', this)">
+                <button class="tab-pill-btn" id="tabBtnUrl" onclick="switchTab('url', this)">
                     <span>🔗</span> <span id="tabUrl">URL Analysis</span>
                 </button>
-                <button class="tab-btn" id="tabBtnImage" onclick="switchTab('image', this)">
+                <button class="tab-pill-btn" id="tabBtnImage" onclick="switchTab('image', this)">
                     <span>🖼️</span> <span id="tabImage">Image Analysis</span>
                 </button>
             </div>
 
-            <!-- Tab 1: Text Content Analysis -->
+            <!-- Tab 1: Text Content -->
             <div id="tab-text" class="tab-content">
-                <div class="analyzer-main-card">
+                <div class="analyzer-card-frame">
                     <!-- Sample Presets -->
-                    <div class="quick-samples-bar">
-                        <span class="samples-caption" id="lblQuickSamples">⚡ Quick Samples:</span>
-                        <button type="button" class="sample-chip" onclick="loadSample('real')">✅ <span id="sampleReal">Real News Sample</span></button>
-                        <button type="button" class="sample-chip" onclick="loadSample('fake')">❌ <span id="sampleFake">Clickbait Rumor</span></button>
-                        <button type="button" class="sample-chip" onclick="loadSample('whatsapp')">💬 <span id="sampleViral">WhatsApp Forward</span></button>
+                    <div class="quick-presets-strip">
+                        <span class="presets-label" id="lblQuickSamples">⚡ Quick Samples:</span>
+                        <button type="button" class="preset-chip-btn" onclick="loadSample('real')">✅ <span id="sampleReal">Real News Sample</span></button>
+                        <button type="button" class="preset-chip-btn" onclick="loadSample('fake')">❌ <span id="sampleFake">Clickbait Rumor</span></button>
+                        <button type="button" class="preset-chip-btn" onclick="loadSample('whatsapp')">💬 <span id="sampleViral">WhatsApp Forward</span></button>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="newsTitle">
+                    <div class="form-input-group">
+                        <label class="form-label-title" for="newsTitle">
                             <span>📰</span> <span id="lblHeadline">News Headline / Title</span> <span style="color:#f43f5e;">*</span>
                         </label>
-                        <input type="text" id="newsTitle" class="form-control" placeholder="Enter the news headline here...">
+                        <input type="text" id="newsTitle" class="form-field-input" placeholder="Enter the news headline here...">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="newsContent">
+                    <div class="form-input-group">
+                        <label class="form-label-title" for="newsContent">
                             <span>📝</span> <span id="lblContent">Full News Content / Body Text</span>
                         </label>
-                        <textarea id="newsContent" class="form-control" rows="5" placeholder="Paste the full article content or forwarded text message here..."></textarea>
+                        <textarea id="newsContent" class="form-field-input" rows="5" placeholder="Paste the full article content or forwarded text message here..."></textarea>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="sourceUrl">
+                    <div class="form-two-col-grid">
+                        <div class="form-input-group">
+                            <label class="form-label-title" for="sourceUrl">
                                 <span>🔗</span> <span id="lblSourceUrl">Source URL (Optional)</span>
                             </label>
-                            <input type="url" id="sourceUrl" class="form-control" placeholder="https://example.com/news-article">
+                            <input type="url" id="sourceUrl" class="form-field-input" placeholder="https://example.com/news-article">
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="platform">
+                        <div class="form-input-group">
+                            <label class="form-label-title" for="platform">
                                 <span>🏷️</span> <span id="lblPlatform">Platform / Origin</span>
                             </label>
-                            <select id="platform" class="form-select-box">
+                            <select id="platform" class="form-field-select">
                                 <option value="News Website" selected>📰 News Website</option>
                                 <option value="WhatsApp">💬 WhatsApp</option>
                                 <option value="Twitter">🐦 Twitter / X</option>
@@ -205,104 +209,104 @@
                         </div>
                     </div>
 
-                    <button class="btn-execute-analysis" id="btnAnalyze" onclick="analyzeNews()">
+                    <button class="btn-trigger-analysis" id="btnAnalyze" onclick="analyzeNews()">
                         <span>🤖</span> <span id="btnAnalyzeText">Analyze News Text</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Tab 2: URL Analysis -->
+            <!-- Tab 2: URL -->
             <div id="tab-url" class="tab-content" style="display: none;">
-                <div class="analyzer-main-card">
-                    <div class="form-group">
-                        <label class="form-label" for="urlInput">
+                <div class="analyzer-card-frame">
+                    <div class="form-input-group">
+                        <label class="form-label-title" for="urlInput">
                             <span>📎</span> <span id="lblUrlInput">News Article URL</span> <span style="color:#f43f5e;">*</span>
                         </label>
-                        <input type="url" id="urlInput" class="form-control" placeholder="https://example-news-site.com/breaking-article-headline">
+                        <input type="url" id="urlInput" class="form-field-input" placeholder="https://example-news-site.com/breaking-article-headline">
                     </div>
 
-                    <div class="breakdown-grid" style="margin: 16px 0;">
-                        <div class="breakdown-card">
-                            <div class="b-card-head"><span>🌐 Domain Authority</span></div>
-                            <div style="font-size: 0.78rem; color: var(--text-muted);">Cross-checks domain with verified news registry.</div>
+                    <div class="forensics-grid-layout" style="margin: 18px 0;">
+                        <div class="forensic-mini-pill">
+                            <div class="f-pill-header"><span>🌐 Domain Authority</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Cross-checks domain with verified global press registries.</div>
                         </div>
-                        <div class="breakdown-card">
-                            <div class="b-card-head"><span>🔒 SSL & TLD Integrity</span></div>
-                            <div style="font-size: 0.78rem; color: var(--text-muted);">Scans for high-risk extensions (.xyz, .click).</div>
+                        <div class="forensic-mini-pill">
+                            <div class="f-pill-header"><span>🔒 SSL & TLD Integrity</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Scans for high-risk extensions (.xyz, .click, .biz).</div>
                         </div>
-                        <div class="breakdown-card">
-                            <div class="b-card-head"><span>⚡ Deep NLP Inspection</span></div>
-                            <div style="font-size: 0.78rem; color: var(--text-muted);">Inspects scraped article content in real-time.</div>
+                        <div class="forensic-mini-pill">
+                            <div class="f-pill-header"><span>⚡ Deep NLP Inspection</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Inspects scraped article content in real-time.</div>
                         </div>
                     </div>
 
-                    <button class="btn-execute-analysis" id="btnAnalyzeUrl" onclick="analyzeUrl()">
+                    <button class="btn-trigger-analysis" id="btnAnalyzeUrl" onclick="analyzeUrl()">
                         <span>🔗</span> <span id="btnAnalyzeUrlText">Analyze URL Credibility</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Tab 3: Image Analysis -->
+            <!-- Tab 3: Image -->
             <div id="tab-image" class="tab-content" style="display: none;">
-                <div class="analyzer-main-card">
-                    <div class="upload-drop-zone" id="uploadArea" onclick="document.getElementById('imageInput').click()">
+                <div class="analyzer-card-frame">
+                    <div class="modern-dropzone" id="uploadArea" onclick="document.getElementById('imageInput').click()">
                         <div id="uploadContent">
-                            <div class="upload-icon-lead">📸</div>
-                            <div class="upload-title" id="dropTitle">Drop News Screenshot Here or Click to Upload</div>
-                            <div class="upload-sub" id="dropSub">Supports: JPG, PNG, WEBP, GIF (Max 10MB)</div>
-                            <div style="font-size: 0.78rem; color: #38bdf8; margin-top: 8px;">💡 Perfect for social media screenshots, WhatsApp images & memes</div>
+                            <div class="dropzone-icon">📸</div>
+                            <div class="dropzone-title" id="dropTitle">Drop News Screenshot Here or Click to Upload</div>
+                            <div class="dropzone-sub" id="dropSub">Supports: JPG, PNG, WEBP, GIF (Max 10MB)</div>
+                            <div style="font-size: 0.8rem; color: #38bdf8; margin-top: 8px;">💡 Perfect for social media screenshots, WhatsApp images & memes</div>
                         </div>
                         <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
                     </div>
 
                     <!-- Image Preview -->
-                    <div class="image-preview-strip" id="previewContent">
+                    <div class="image-preview-bar" id="previewContent">
                         <img id="previewImage" src="" alt="Selected Screenshot">
-                        <div class="image-preview-info">
+                        <div class="image-preview-meta">
                             <div style="font-weight: 700; color: #fff;" id="previewName">screenshot.png</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);" id="previewSize">1.2 MB</div>
+                            <div style="font-size: 0.82rem; color: var(--text-muted);" id="previewSize">1.2 MB</div>
                         </div>
-                        <button type="button" class="btn-remove-img" onclick="removeImage(event)">✕ Remove</button>
+                        <button type="button" class="btn-remove-preview" onclick="removeImage(event)">✕ Remove</button>
                     </div>
 
-                    <div class="breakdown-grid" style="margin: 16px 0;">
-                        <div class="breakdown-card">
-                            <div class="b-card-head"><span>🔍 OCR Text Extraction</span></div>
+                    <div class="forensics-grid-layout" style="margin: 18px 0;">
+                        <div class="forensic-mini-pill">
+                            <div class="f-pill-header"><span>🔍 OCR Text Extraction</span></div>
                         </div>
-                        <div class="breakdown-card">
-                            <div class="b-card-head"><span>📊 Visual Forensics</span></div>
+                        <div class="forensic-mini-pill">
+                            <div class="f-pill-header"><span>📊 Visual Forensics</span></div>
                         </div>
-                        <div class="breakdown-card">
-                            <div class="b-card-head"><span>🎯 Metadata Inspection</span></div>
+                        <div class="forensic-mini-pill">
+                            <div class="f-pill-header"><span>🎯 Metadata Inspection</span></div>
                         </div>
                     </div>
 
-                    <button class="btn-execute-analysis" id="btnAnalyzeImage" onclick="analyzeImage()" disabled>
+                    <button class="btn-trigger-analysis" id="btnAnalyzeImage" onclick="analyzeImage()" disabled>
                         <span>🖼️</span> <span id="btnAnalyzeImageText">Analyze Image & Extract Text</span>
                     </button>
                 </div>
             </div>
 
             <!-- 4. Interactive Results Card -->
-            <div class="result-section" id="resultCard">
-                <div class="result-card">
-                    <div class="result-top-header">
-                        <div class="result-status-block">
-                            <div class="status-badge-lg" id="statusIcon">✅</div>
+            <div class="verdict-result-section" id="resultCard">
+                <div class="verdict-card-frame">
+                    <div class="verdict-header-row">
+                        <div class="verdict-status-info">
+                            <div class="verdict-large-icon" id="statusIcon">✅</div>
                             <div>
-                                <div class="status-meta-text" id="lblVerdictTag">AI Credibility Verdict</div>
-                                <div class="status-title-text" id="statusText">Verified Real News</div>
-                                <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;" id="resultMeta">Direct NLP Scan • Just now</div>
+                                <div class="verdict-meta-caption" id="lblVerdictTag">AI Credibility Verdict</div>
+                                <div class="verdict-title-text" id="statusText">Verified Real News</div>
+                                <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;" id="resultMeta">Direct NLP Scan • Just now</div>
                             </div>
                         </div>
 
                         <!-- Neural SVG Gauge -->
-                        <div class="gauge-box">
-                            <svg class="gauge-circle-svg" width="120" height="120" viewBox="0 0 120 120">
-                                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
-                                <circle class="gauge-bar" id="scoreCircle" cx="60" cy="60" r="50" stroke="#10b981"></circle>
+                        <div class="gauge-meter-box">
+                            <svg class="gauge-svg" width="125" height="125" viewBox="0 0 120 120">
+                                <circle class="gauge-bg-circle" cx="60" cy="60" r="50"></circle>
+                                <circle class="gauge-progress-circle" id="scoreCircle" cx="60" cy="60" r="50" stroke="#10b981"></circle>
                             </svg>
-                            <div class="gauge-score-center">
+                            <div class="gauge-center-content">
                                 <div class="gauge-score-number" id="scoreValue">96%</div>
                                 <div class="gauge-score-caption" id="lblCredibilityScore">Trust Score</div>
                             </div>
@@ -310,37 +314,37 @@
                     </div>
 
                     <!-- Extracted Text (OCR) -->
-                    <div class="extracted-box" id="extractedTextSection">
+                    <div class="extracted-ocr-card" id="extractedTextSection">
                         <h4 id="lblExtractedOcr">📝 Extracted Screenshot Information (OCR):</h4>
-                        <div class="extracted-text-body" id="extractedTextBox"></div>
+                        <div class="extracted-ocr-body" id="extractedTextBox"></div>
                     </div>
 
                     <!-- 4-Factor Breakdown Metrics -->
                     <div style="margin-bottom: 24px;">
-                        <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 12px;" id="lblMetricsBreakdown">📊 Multi-Factor AI Breakdown</h4>
-                        <div class="breakdown-grid" id="breakdownGrid"></div>
+                        <h4 style="font-size: 0.94rem; font-weight: 700; color: #fff; margin-bottom: 14px;" id="lblMetricsBreakdown">📊 Multi-Factor AI Breakdown</h4>
+                        <div class="forensics-grid-layout" id="breakdownGrid"></div>
                     </div>
 
                     <!-- Transparent Detailed Reasoning -->
-                    <div class="reasoning-box">
+                    <div class="reasoning-glass-box">
                         <h4 id="lblReasoningTitle">💡 AI Analysis Reasoning & Forensic Insights</h4>
-                        <div class="reasoning-body" id="explanationText"></div>
+                        <div class="reasoning-text-area" id="explanationText"></div>
                     </div>
 
                     <!-- Actions Toolbar -->
-                    <div class="result-actions-row">
+                    <div class="verdict-actions-strip">
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button type="button" class="btn-res-util" onclick="copyResult()">
+                            <button type="button" class="btn-crystal-util" onclick="copyResult()">
                                 <span>📋</span> <span id="btnCopyReport">Copy Report</span>
                             </button>
-                            <button type="button" class="btn-res-util" onclick="downloadReport()">
+                            <button type="button" class="btn-crystal-util" onclick="downloadReport()">
                                 <span>💾</span> <span id="btnDownloadReport">Download Report</span>
                             </button>
-                            <button type="button" class="btn-res-util" onclick="shareResult()">
+                            <button type="button" class="btn-crystal-util" onclick="shareResult()">
                                 <span>📤</span> <span id="btnShareReport">Share</span>
                             </button>
                         </div>
-                        <button type="button" class="btn-res-util" onclick="analyzeAnother()" style="border-color: var(--cyan-glow);">
+                        <button type="button" class="btn-crystal-util" onclick="analyzeAnother()" style="border-color: var(--accent-cyan); color: #fff;">
                             <span>🔄</span> <span id="btnAnalyzeAnother">Analyze Another</span>
                         </button>
                     </div>
@@ -351,69 +355,69 @@
 
     <!-- 5. Live Dashboard Section -->
     <section id="dashboard" class="dashboard-section container">
-        <div class="section-header">
-            <div class="section-tag" id="tagDashboard">Live Telemetry</div>
-            <h2 class="section-title" id="headDashboard">Live Credibility Dashboard</h2>
-            <p class="section-subtitle" id="subDashboard">Real-time tracking of analyzed misinformation trends.</p>
+        <div class="section-title-block">
+            <div class="section-tag-capsule" id="tagDashboard">Live Telemetry</div>
+            <h2 class="section-heading-lg" id="headDashboard">Live Credibility Dashboard</h2>
+            <p class="section-subheading-p" id="subDashboard">Real-time tracking of analyzed misinformation trends.</p>
         </div>
 
-        <div class="dash-grid">
-            <div class="dash-card">
-                <div class="dash-icon total">📊</div>
+        <div class="metrics-four-grid">
+            <div class="metric-stat-card">
+                <div class="metric-icon-square total">📊</div>
                 <div>
-                    <div class="dash-stat-val" id="dashTotal">0</div>
-                    <div class="dash-stat-lbl" id="lblDashTotal">Total Analyzed</div>
+                    <div class="metric-number-val" id="dashTotal">0</div>
+                    <div class="metric-label-txt" id="lblDashTotal">Total Analyzed</div>
                 </div>
             </div>
-            <div class="dash-card">
-                <div class="dash-icon real">✅</div>
+            <div class="metric-stat-card">
+                <div class="metric-icon-square real">✅</div>
                 <div>
-                    <div class="dash-stat-val" id="dashReal" style="color: #34d399;">0</div>
-                    <div class="dash-stat-lbl" id="lblDashReal">Verified Real</div>
+                    <div class="metric-number-val" id="dashReal" style="color: #34d399;">0</div>
+                    <div class="metric-label-txt" id="lblDashReal">Verified Real</div>
                 </div>
             </div>
-            <div class="dash-card">
-                <div class="dash-icon fake">❌</div>
+            <div class="metric-stat-card">
+                <div class="metric-icon-square fake">❌</div>
                 <div>
-                    <div class="dash-stat-val" id="dashFake" style="color: #fb7185;">0</div>
-                    <div class="dash-stat-lbl" id="lblDashFake">Fake Detected</div>
+                    <div class="metric-number-val" id="dashFake" style="color: #fb7185;">0</div>
+                    <div class="metric-label-txt" id="lblDashFake">Fake Detected</div>
                 </div>
             </div>
-            <div class="dash-card">
-                <div class="dash-icon suspicious">⚠️</div>
+            <div class="metric-stat-card">
+                <div class="metric-icon-square suspicious">⚠️</div>
                 <div>
-                    <div class="dash-stat-val" id="dashSuspicious" style="color: #fbbf24;">0</div>
-                    <div class="dash-stat-lbl" id="lblDashSuspicious">Suspicious / Pending</div>
+                    <div class="metric-number-val" id="dashSuspicious" style="color: #fbbf24;">0</div>
+                    <div class="metric-label-txt" id="lblDashSuspicious">Suspicious / Pending</div>
                 </div>
             </div>
         </div>
 
         <!-- History & Recent Verifications Table -->
-        <div id="history-section" class="history-table-card">
-            <div class="history-toolbar">
+        <div id="history-section" class="history-vault-card">
+            <div class="history-control-toolbar">
                 <input 
                     type="text" 
                     id="historySearchInput" 
-                    class="hist-search" 
+                    class="history-search-box" 
                     placeholder="🔍 Search analyzed records..."
                     oninput="renderRecentTable()"
                 >
 
-                <div class="hist-filter-group">
-                    <button class="hist-btn-pill active" onclick="filterRecentNews('ALL', this)">All</button>
-                    <button class="hist-btn-pill" onclick="filterRecentNews('REAL', this)">✅ Real</button>
-                    <button class="hist-btn-pill" onclick="filterRecentNews('FAKE', this)">❌ Fake</button>
-                    <button class="hist-btn-pill" onclick="filterRecentNews('SUSPICIOUS', this)">⚠️ Suspicious</button>
+                <div class="history-filter-pills">
+                    <button class="hist-chip-btn active" onclick="filterRecentNews('ALL', this)">All</button>
+                    <button class="hist-chip-btn" onclick="filterRecentNews('REAL', this)">✅ Real</button>
+                    <button class="hist-chip-btn" onclick="filterRecentNews('FAKE', this)">❌ Fake</button>
+                    <button class="hist-chip-btn" onclick="filterRecentNews('SUSPICIOUS', this)">⚠️ Suspicious</button>
                 </div>
 
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-res-util" onclick="exportHistoryJson()">📥 Export JSON</button>
-                    <button class="btn-res-util" onclick="clearAllHistory()" style="color: #f43f5e;">🗑️ Clear</button>
+                    <button class="btn-crystal-util" onclick="exportHistoryJson()">📥 Export JSON</button>
+                    <button class="btn-crystal-util" onclick="clearAllHistory()" style="color: #f43f5e;">🗑️ Clear</button>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="news-table">
+            <div class="news-table-responsive">
+                <table class="history-data-table">
                     <thead>
                         <tr>
                             <th id="thHeadline">Headline / Subject</th>
@@ -432,106 +436,106 @@
     </section>
 
     <!-- 6. How FakeShield Works Section -->
-    <section id="how-it-works" class="how-it-works-section container">
-        <div class="section-header">
-            <div class="section-tag" id="tagHow">Methodology</div>
-            <h2 class="section-title" id="headHow">How FakeShield AI Works</h2>
-            <p class="section-subtitle" id="subHow">Multi-layered detection combining NLP heuristics, OCR computer vision, and domain verification.</p>
+    <section id="how-it-works" class="container" style="padding: 40px 0 60px;">
+        <div class="section-title-block">
+            <div class="section-tag-capsule" id="tagHow">Methodology</div>
+            <h2 class="section-heading-lg" id="headHow">How FakeShield AI Works</h2>
+            <p class="section-subheading-p" id="subHow">Multi-layered detection combining NLP heuristics, OCR computer vision, and domain verification.</p>
         </div>
 
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-num">01</div>
-                <div class="step-icon">📝</div>
-                <h3 class="step-title" id="step1Title">Ingest & Extract</h3>
-                <p class="step-desc" id="step1Desc">Extract raw text, headline, URL structure, or perform OCR on screenshot images.</p>
+        <div class="methodology-four-grid">
+            <div class="methodology-step-card">
+                <div class="step-large-num">01</div>
+                <div class="step-card-icon">📝</div>
+                <h3 class="step-card-title" id="step1Title">Ingest & Extract</h3>
+                <p class="step-card-desc" id="step1Desc">Extract raw text, headline, URL structure, or perform OCR on screenshot images.</p>
             </div>
 
-            <div class="step-card">
-                <div class="step-num">02</div>
-                <div class="step-icon">🤖</div>
-                <h3 class="step-title" id="step2Title">Linguistic & NLP Forensics</h3>
-                <p class="step-desc" id="step2Desc">Analyzes clickbait triggers, sensationalism, capitalization, and emotional bias.</p>
+            <div class="methodology-step-card">
+                <div class="step-large-num">02</div>
+                <div class="step-card-icon">🤖</div>
+                <h3 class="step-card-title" id="step2Title">Linguistic & NLP Forensics</h3>
+                <p class="step-card-desc" id="step2Desc">Analyzes clickbait triggers, sensationalism, capitalization, and emotional bias.</p>
             </div>
 
-            <div class="step-card">
-                <div class="step-num">03</div>
-                <div class="step-icon">🛡️</div>
-                <h3 class="step-title" id="step3Title">Source & Domain Check</h3>
-                <p class="step-desc" id="step3Desc">Cross-references domain credibility against certified news registries and blacklists.</p>
+            <div class="methodology-step-card">
+                <div class="step-large-num">03</div>
+                <div class="step-card-icon">🛡️</div>
+                <h3 class="step-card-title" id="step3Title">Source & Domain Check</h3>
+                <p class="step-card-desc" id="step3Desc">Cross-references domain credibility against certified news registries and blacklists.</p>
             </div>
 
-            <div class="step-card">
-                <div class="step-num">04</div>
-                <div class="step-icon">📊</div>
-                <h3 class="step-title" id="step4Title">Score & Report</h3>
-                <p class="step-desc" id="step4Desc">Computes a multi-factor score and provides transparent AI reasoning in your language.</p>
+            <div class="methodology-step-card">
+                <div class="step-large-num">04</div>
+                <div class="step-card-icon">📊</div>
+                <h3 class="step-card-title" id="step4Title">Score & Report</h3>
+                <p class="step-card-desc" id="step4Desc">Computes a multi-factor score and provides transparent AI reasoning in your language.</p>
             </div>
         </div>
     </section>
 
     <!-- 7. 5 Rules to Spot Fake News Section -->
     <section id="tips" class="container" style="padding: 20px 0 60px;">
-        <div class="section-header">
-            <div class="section-tag">Media Literacy</div>
-            <h2 class="section-title">5 Essential Rules to Spot Fake News</h2>
-            <p class="section-subtitle">Practical advice to evaluate information before forwarding or sharing.</p>
+        <div class="section-title-block">
+            <div class="section-tag-capsule">Media Literacy</div>
+            <h2 class="section-heading-lg">5 Essential Rules to Spot Fake News</h2>
+            <p class="section-subheading-p">Practical advice to evaluate information before forwarding or sharing.</p>
         </div>
 
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-icon">🔍</div>
-                <h3 class="step-title">1. Check the Source</h3>
-                <p class="step-desc">Verify if the story is published by reputable, established journalism organizations.</p>
+        <div class="methodology-four-grid">
+            <div class="methodology-step-card">
+                <div class="step-card-icon">🔍</div>
+                <h3 class="step-card-title">1. Check the Source</h3>
+                <p class="step-card-desc">Verify if the story is published by reputable, established journalism organizations.</p>
             </div>
-            <div class="step-card">
-                <div class="step-icon">⚠️</div>
-                <h3 class="step-title">2. Watch for Clickbait</h3>
-                <p class="step-desc">Headlines with excessive capital letters, exclamation marks, or dramatic claims are red flags.</p>
+            <div class="methodology-step-card">
+                <div class="step-card-icon">⚠️</div>
+                <h3 class="step-card-title">2. Watch for Clickbait</h3>
+                <p class="step-card-desc">Headlines with excessive capital letters, exclamation marks, or dramatic claims are red flags.</p>
             </div>
-            <div class="step-card">
-                <div class="step-icon">📅</div>
-                <h3 class="step-title">3. Verify the Date</h3>
-                <p class="step-desc">Old news stories are often recirculated out of context during crisis events.</p>
+            <div class="methodology-step-card">
+                <div class="step-card-icon">📅</div>
+                <h3 class="step-card-title">3. Verify the Date</h3>
+                <p class="step-card-desc">Old news stories are often recirculated out of context during crisis events.</p>
             </div>
-            <div class="step-card">
-                <div class="step-icon">🖼️</div>
-                <h3 class="step-title">4. Inspect Screenshots</h3>
-                <p class="step-desc">Screenshots can easily be altered. Always seek original direct links.</p>
+            <div class="methodology-step-card">
+                <div class="step-card-icon">🖼️</div>
+                <h3 class="step-card-title">4. Inspect Screenshots</h3>
+                <p class="step-card-desc">Screenshots can easily be altered. Always seek original direct links.</p>
             </div>
         </div>
     </section>
 
     <!-- 8. Footer -->
-    <footer id="about" class="footer">
+    <footer id="about" class="footer-wrapper">
         <div class="container">
-            <div class="footer-content-row">
-                <div class="footer-brand">
+            <div class="footer-columns-row">
+                <div class="footer-brand-col">
                     <h3>🛡️ FakeShield AI</h3>
                     <p>Fighting misinformation, sensationalism, and manipulated media with transparent AI technology.</p>
                 </div>
-                <div class="footer-links-col">
+                <div class="footer-nav-col">
                     <h4>Features</h4>
                     <a href="#analyzer">Text Analysis</a>
                     <a href="#analyzer">URL Verification</a>
                     <a href="#analyzer">Image Forensics</a>
                     <a href="#dashboard">Live Dashboard</a>
                 </div>
-                <div class="footer-links-col">
+                <div class="footer-nav-col">
                     <h4>User Portal</h4>
                     <a href="login.html">Sign In</a>
                     <a href="signup.html">Create Account</a>
                     <a href="#history-section">Analysis Vault</a>
                 </div>
             </div>
-            <div class="footer-bottom">
+            <div class="footer-bottom-copy">
                 <p>© 2026 FakeShield AI • Designed for Truth & Transparency</p>
             </div>
         </div>
     </footer>
 
-    <!-- Toast Popup -->
-    <div class="toast-msg" id="toast"></div>
+    <!-- Toast Notification -->
+    <div class="toast-popup-bar" id="toast"></div>
 
     <script src="auth.js"></script>
     <script src="app.js"></script>

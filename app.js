@@ -502,14 +502,46 @@ document.addEventListener('DOMContentLoaded', () => {
     changeLanguage(saved, dict.flag, dict.name);
     setupDropZone();
     renderNavbarAuth();
+    initThemePalette();
 });
 
 // ===================================================================
-// 3. TAB SWITCHING
+// 3. THEME PALETTE CONTROLLER
+// ===================================================================
+const THEMES = ['default', 'theme-cyberpunk', 'theme-emerald'];
+const THEME_NAMES = {
+    'default': '🌌 Midnight Aurora',
+    'theme-cyberpunk': '🔮 Cyberpunk Neon',
+    'theme-emerald': '💎 Emerald Shield'
+};
+
+function initThemePalette() {
+    const savedTheme = localStorage.getItem('fakeshield_theme') || 'default';
+    applyThemePalette(savedTheme);
+}
+
+function cycleThemePalette() {
+    const current = localStorage.getItem('fakeshield_theme') || 'default';
+    const nextIndex = (THEMES.indexOf(current) + 1) % THEMES.length;
+    const nextTheme = THEMES[nextIndex];
+    applyThemePalette(nextTheme);
+    showToast(`🎨 Palette: ${THEME_NAMES[nextTheme]}`);
+}
+
+function applyThemePalette(themeName) {
+    document.body.classList.remove('theme-cyberpunk', 'theme-emerald');
+    if (themeName !== 'default') {
+        document.body.classList.add(themeName);
+    }
+    localStorage.setItem('fakeshield_theme', themeName);
+}
+
+// ===================================================================
+// 4. TAB SWITCHING
 // ===================================================================
 function switchTab(tab, btn) {
     activeAnalysisTab = tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
     document.getElementById('tab-text').style.display = tab === 'text' ? 'block' : 'none';
