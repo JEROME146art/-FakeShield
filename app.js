@@ -507,6 +507,8 @@ function showResults(data) {
     }
 
     // Explanation
+    const explanationText = document.getElementById('explanationText');
+    if (explanationText) {
         const explanation = data.explanation || (data.analysisDetails && data.analysisDetails.explanation);
         explanationText.textContent = explanation || 'Content evaluated across fake news pattern databases and machine learning models.';
     }
