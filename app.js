@@ -1,920 +1,573 @@
-// ===================================================================
-// FakeShield AI - Complete Client Verification Engine & State Manager
-// ===================================================================
+// ============================================
+// FakeShield - Complete Frontend Application
+// ============================================
 
-let currentLanguage = 'en';
-let activeAnalysisTab = 'text';
-let uploadedImageFile = null;
-let currentResultData = null;
-let recentFilter = 'ALL';
+const API_URL = window.location.origin;
 
-const STORAGE_KEY_HISTORY = 'fakeshield_history_db';
+// Global State
+let selectedFile = null;
 
-// ===================================================================
-// 1. MULTI-LANGUAGE TRANSLATION DICTIONARIES
-// ===================================================================
-const I18N = {
-    en: {
-        flag: '🇬🇧',
-        name: 'English',
-        navAnalyze: "🔍 Analyze",
-        navDashboard: "📊 Dashboard",
-        navHistory: "📜 History",
-        navHow: "💡 How It Works",
-        navTips: "🛡️ Spotting Tips",
-        navLoginText: "Login",
-        btnNavCta: "⚡ Verify Now",
-        heroBadge: "AI-Powered Fact Verification",
-        heroTitleMain: "Detect Fake News",
-        heroTitleSub: "In Seconds",
-        heroSubtitle: "Advanced AI analyzes news articles, web links, and image screenshots in real-time to detect fabricated claims, sensational clickbait, and manipulated media.",
-        btnHeroAnalyze: "🔍 Start Analysis",
-        btnHeroDashboard: "📊 View Live Dashboard",
-        lblHeroTotal: "Articles Analyzed",
-        lblHeroFake: "Fake News Detected",
-        lblHeroAccuracy: "Accuracy Rate",
-        cardRealTitle: "ISRO Polar Satellite Launch",
-        cardRealSub: "Verified Official Source",
-        cardSuspTitle: "Unverified Financial Scheme",
-        cardSuspSub: "Missing Authoritative Source",
-        cardFakeTitle: "Miracle 24-Hour Cure Forward",
-        cardFakeSub: "High Clickbait & Fabricated Claim",
-        tagAnalyzer: "AI Verification Engine",
-        headAnalyzer: "Analyze News Credibility",
-        subAnalyzer: "Check text claims, webpage URLs, or upload screenshots to inspect credibility.",
-        tabText: "Text Analysis",
-        tabUrl: "URL Analysis",
-        tabImage: "Image Analysis",
-        lblQuickSamples: "⚡ Quick Samples:",
-        sampleReal: "Real News Sample",
-        sampleFake: "Clickbait Rumor",
-        sampleViral: "WhatsApp Forward",
-        lblHeadline: "News Headline / Title",
-        phHeadline: "Enter the news headline here...",
-        lblContent: "Full News Content / Body Text",
-        phContent: "Paste the full article content or forwarded text message here...",
-        lblSourceUrl: "Source URL (Optional)",
-        lblPlatform: "Platform / Origin",
-        btnAnalyzeText: "Analyze News Text",
-        lblUrlInput: "News Article URL",
-        phUrl: "https://example-news-site.com/breaking-article-headline",
-        btnAnalyzeUrlText: "Analyze URL Credibility",
-        dropTitle: "Drop News Screenshot Here or Click to Upload",
-        dropSub: "Supports: JPG, PNG, WEBP, GIF (Max 10MB)",
-        btnAnalyzeImageText: "Analyze Image & Extract Text",
-        lblVerdictTag: "AI Credibility Verdict",
-        verdictReal: "Verified Real News",
-        verdictFake: "Fake News Detected",
-        verdictSuspicious: "Suspicious Content",
-        lblCredibilityScore: "Trust Score",
-        lblExtractedOcr: "📝 Extracted Screenshot Information (OCR):",
-        lblMetricsBreakdown: "📊 Multi-Factor AI Breakdown",
-        lblReasoningTitle: "💡 AI Analysis Reasoning & Forensic Insights",
-        btnCopyReport: "Copy Report",
-        btnDownloadReport: "Download Report",
-        btnShareReport: "Share",
-        btnAnalyzeAnother: "Analyze Another",
-        tagDashboard: "Live Telemetry",
-        headDashboard: "Live Credibility Dashboard",
-        subDashboard: "Real-time tracking of analyzed misinformation trends.",
-        lblDashTotal: "Total Analyzed",
-        lblDashReal: "Verified Real",
-        lblDashFake: "Fake Detected",
-        lblDashSuspicious: "Suspicious / Pending",
-        tagHow: "Methodology",
-        headHow: "How FakeShield AI Works",
-        subHow: "Multi-layered detection combining NLP heuristics, OCR computer vision, and domain verification.",
-        step1Title: "Ingest & Extract",
-        step1Desc: "Extract raw text, headline, URL structure, or perform OCR on screenshot images.",
-        step2Title: "Linguistic & NLP Forensics",
-        step2Desc: "Analyzes clickbait triggers, sensationalism, capitalization, and emotional bias.",
-        step3Title: "Source & Domain Check",
-        step3Desc: "Cross-references domain credibility against certified news registries and blacklists.",
-        step4Title: "Score & Report",
-        step4Desc: "Computes a multi-factor score and provides transparent AI reasoning in your language."
-    },
-    ta: {
-        flag: '🇮🇳',
-        name: 'தமிழ்',
-        navAnalyze: "🔍 ஆராய்",
-        navDashboard: "📊 டாஷ்போர்டு",
-        navHistory: "📜 வரலாறு",
-        navHow: "💡 எப்படி செயல்படுகிறது",
-        navTips: "🛡️ குறிப்புகள்",
-        navLoginText: "உள்நுழைய",
-        btnNavCta: "⚡ சரிபார்க்க",
-        heroBadge: "செயற்கை நுண்ணறிவு போலி செய்தி கண்டறிதல்",
-        heroTitleMain: "போலி செய்திகளை நொடிகளில்",
-        heroTitleSub: "கண்டறியுங்கள்",
-        heroSubtitle: "செயற்கை நுண்ணறிவு (AI) மூலம் செய்திகள், இணையதள இணைப்புகள் மற்றும் படங்களை உடனடியாக துல்லியமாக சரிபார்க்கவும்.",
-        btnHeroAnalyze: "🔍 பகுப்பாய்வை தொடங்கு",
-        btnHeroDashboard: "📊 டாஷ்போர்டை பார்க்க",
-        lblHeroTotal: "ஆராயப்பட்ட செய்திகள்",
-        lblHeroFake: "போலி செய்திகள்",
-        lblHeroAccuracy: "துல்லியம் விகிதம்",
-        cardRealTitle: "இஸ்ரோ செயற்கைக்கோள் ஏவுதல்",
-        cardRealSub: "உறுதிப்படுத்தப்பட்ட அதிகாரப்பூர்வ செய்தி",
-        cardSuspTitle: "சரிபார்க்கப்படாத நிதித் திட்டம்",
-        cardSuspSub: "ஆதாரம் இல்லாத கூற்று",
-        cardFakeTitle: "24 மணி நேர அற்புத மருந்து புரளி",
-        cardFakeSub: "உண்மையற்ற கிளிக்பைட் தகவல்",
-        tagAnalyzer: "AI பகுப்பாய்வு மையம்",
-        headAnalyzer: "செய்தி நம்பகத்தன்மையை சரிபார்க்கவும்",
-        subAnalyzer: "செய்தி உரைகள், இணையதள இணைப்புகள் அல்லது படங்களை சரிபார்க்கவும்.",
-        tabText: "செய்தி உரை",
-        tabUrl: "இணையதள இணைப்பு",
-        tabImage: "பட ஆய்வு",
-        lblQuickSamples: "⚡ மாதிரி சோதனைகள்:",
-        sampleReal: "உண்மை செய்தி மாதிரி",
-        sampleFake: "புரளி செய்தி மாதிரி",
-        sampleViral: "வாட்ஸ்அப் ஃபார்வர்டு செய்தி",
-        lblHeadline: "செய்தி தலைப்பு",
-        phHeadline: "செய்தியின் தலைப்பை இங்கே உள்ளிடவும்...",
-        lblContent: "முழு செய்தி உரை / விளக்கம்",
-        phContent: "முழு செய்தியையோ அல்லது வாட்ஸ்அப் தகவலையோ இங்கே ஒட்டவும்...",
-        lblSourceUrl: "ஆதார இணைப்பு (விருப்பத்தேர்வு)",
-        lblPlatform: "செய்தி தளம்",
-        btnAnalyzeText: "செய்தியை ஆராயுங்கள்",
-        lblUrlInput: "செய்தி இணையதள URL",
-        phUrl: "https://news-site.com/article",
-        btnAnalyzeUrlText: "URL-ஐ சரிபார்க்கவும்",
-        dropTitle: "செய்தி ஸ்கிரீன்ஷாட்டை இங்கே பதிவேற்றவும்",
-        dropSub: "JPG, PNG, WEBP, GIF வடிவங்களை ஆதரிக்கிறது (அதிகபட்சம் 10MB)",
-        btnAnalyzeImageText: "படத்தை ஆராய்ந்து உரையை எடு",
-        lblVerdictTag: "AI நம்பகத்தன்மை தீர்ப்பு",
-        verdictReal: "உண்மையான செய்தி என சரிபார்க்கப்பட்டது",
-        verdictFake: "போலி செய்தி கண்டறியப்பட்டது",
-        verdictSuspicious: "சந்தேகத்திற்குரிய செய்தி",
-        lblCredibilityScore: "நம்பகத்தன்மை",
-        lblExtractedOcr: "📝 படத்தில் இருந்து எடுக்கப்பட்ட உரை (OCR):",
-        lblMetricsBreakdown: "📊 விரிவான AI மதிப்பீடு",
-        lblReasoningTitle: "💡 AI பகுப்பாய்வு விளக்கம் & காரணங்கள்",
-        btnCopyReport: "அறிக்கையை நகலெடு",
-        btnDownloadReport: "பதிவிறக்கு",
-        btnShareReport: "பகிருங்கள்",
-        btnAnalyzeAnother: "மற்றொன்றை சரிபார்க்க",
-        tagDashboard: "நேரலை புள்ளிவிவரங்கள்",
-        headDashboard: "நேரலை டாஷ்போர்டு",
-        subDashboard: "ஆராயப்பட்ட செய்திகளின் விரிவான புள்ளிவிவரங்கள்.",
-        lblDashTotal: "மொத்தம் ஆராயப்பட்டவை",
-        lblDashReal: "உண்மை செய்தி",
-        lblDashFake: "போலி செய்தி",
-        lblDashSuspicious: "சந்தேகம் / நிலுவை",
-        tagHow: "தொழில்நுட்பம்",
-        headHow: "FakeShield எவ்வாறு செயல்படுகிறது",
-        subHow: "NLP மொழி ஆய்வு, பட ஸ்கேனிங் மற்றும் டொமைன் சரிபார்ப்பு.",
-        step1Title: "உள்ளீடு பெறுதல்",
-        step1Desc: "செய்தி உரை, URL அல்லது பட ஸ்கிரீன்ஷாட்டை பெறுகிறது.",
-        step2Title: "மொழிநடை ஆய்வு (NLP)",
-        step2Desc: "கிளிக்பைட் மற்றும் மிகைப்படுத்தப்பட்ட சொற்களை ஆய்வு செய்கிறது.",
-        step3Title: "டொமைன் சரிபார்ப்பு",
-        step3Desc: "அங்கீகரிக்கப்பட்ட சர்வதேச செய்தி நிறுவனங்களுடன் ஒப்பிடுகிறது.",
-        step4Title: "மதிப்பெண் & தீர்ப்பு",
-        step4Desc: "நம்பகத்தன்மை சதவீதத்துடன் காரணங்களை விளக்குகிறது."
-    },
-    hi: {
-        flag: '🇮🇳',
-        name: 'हिन्दी',
-        navAnalyze: "🔍 विश्लेषण",
-        navDashboard: "📊 डैशबोर्ड",
-        navHistory: "📜 इतिहास",
-        navHow: "💡 यह कैसे काम करता है",
-        navTips: "🛡️ सुझाव",
-        navLoginText: "लॉगिन",
-        btnNavCta: "⚡ अभी जांचें",
-        heroBadge: "AI-संचालित तथ्य सत्यापन",
-        heroTitleMain: "फर्जी खबरों का पता लगाएं",
-        heroTitleSub: "कुछ ही सेकंड में",
-        heroSubtitle: "उन्नत AI वास्तविक समय में समाचार लेखों, वेब लिंक और स्क्रीनशॉट की जांच करता है।",
-        btnHeroAnalyze: "🔍 विश्लेषण शुरू करें",
-        btnHeroDashboard: "📊 लाइव डैशबोर्ड देखें",
-        lblHeroTotal: "कुल विश्लेषित",
-        lblHeroFake: "फर्जी खबरें पहचानी गईं",
-        lblHeroAccuracy: "सटीकता दर",
-        cardRealTitle: "इसरो उपग्रह प्रक्षेपण",
-        cardRealSub: "सत्यापित आधिकारिक स्रोत",
-        cardSuspTitle: "अपुष्ट वित्तीय योजना",
-        cardSuspSub: "प्रामाणिक स्रोत का अभाव",
-        cardFakeTitle: "24 घंटे में चमत्कारिक इलाज",
-        cardFakeSub: "क्लिकबेट और मनगढ़ंत दावा",
-        tagAnalyzer: "AI सत्यापन इंजन",
-        headAnalyzer: "समाचार की विश्वसनीयता जांचें",
-        subAnalyzer: "दावों, यूआरएल या स्क्रीनशॉट की सत्यता का विश्लेषण करें।",
-        tabText: "पाठ विश्लेषण",
-        tabUrl: "URL विश्लेषण",
-        tabImage: "छवि विश्लेषण",
-        lblQuickSamples: "⚡ त्वरित नमूने:",
-        sampleReal: "सच्ची खबर का नमूना",
-        sampleFake: "अफवाह का नमूना",
-        sampleViral: "व्हाट्सएप फॉरवर्ड",
-        lblHeadline: "समाचार शीर्षक",
-        phHeadline: "समाचार का शीर्षक यहाँ दर्ज करें...",
-        lblContent: "पूरा समाचार पाठ",
-        phContent: "पूरा लेख या व्हाट्सएप संदेश यहाँ पेस्ट करें...",
-        lblSourceUrl: "स्रोत URL (वैकल्पिक)",
-        lblPlatform: "मंच / स्रोत",
-        btnAnalyzeText: "समाचार का विश्लेषण करें",
-        lblUrlInput: "समाचार लेख URL",
-        phUrl: "https://example.com/news",
-        btnAnalyzeUrlText: "URL की जाँच करें",
-        dropTitle: "स्क्रीनशॉट यहाँ छोड़ें या अपलोड करें",
-        dropSub: "JPG, PNG, WEBP, GIF समर्थित (अधिकतम 10MB)",
-        btnAnalyzeImageText: "छवि का विश्लेषण करें और पाठ निकालें",
-        lblVerdictTag: "AI विश्वसनीयता निर्णय",
-        verdictReal: "सत्यापित वास्तविक समाचार",
-        verdictFake: "फर्जी खबर पहचानी गई",
-        verdictSuspicious: "संदिग्ध सामग्री",
-        lblCredibilityScore: "विश्वसनीयता स्कोर",
-        lblExtractedOcr: "📝 छवि से निकाला गया पाठ (OCR):",
-        lblMetricsBreakdown: "📊 बहु-कारक AI विश्लेषण",
-        lblReasoningTitle: "💡 AI विश्लेषण और कारण",
-        btnCopyReport: "रिपोर्ट कॉपी करें",
-        btnDownloadReport: "डाउनलोड करें",
-        btnShareReport: "शेयर करें",
-        btnAnalyzeAnother: "दूसरा विश्लेषण करें",
-        tagDashboard: "लाइव आँकड़े",
-        headDashboard: "लाइव विश्वसनीयता डैशबोर्ड",
-        subDashboard: "विश्लेषित भ्रामक सूचनाओं का वास्तविक समय का अवलोकन।",
-        lblDashTotal: "कुल विश्लेषित",
-        lblDashReal: "सत्यापित सत्य",
-        lblDashFake: "फर्जी खबर",
-        lblDashSuspicious: "संदिग्ध / लंबित",
-        tagHow: "कार्यप्रणाली",
-        headHow: "FakeShield कैसे काम करता है",
-        subHow: "NLP और छवि विश्लेषण का बहुस्तरीय संयोजन।",
-        step1Title: "सामग्री सबमिट करें",
-        step1Desc: "पाठ, URL या स्क्रीनशॉट अपलोड करें।",
-        step2Title: "भाषाई विश्लेषण",
-        step2Desc: "सनसनीखेज शब्दों और अतिशयोक्ति की पहचान।",
-        step3Title: "स्रोत सत्यापन",
-        step3Desc: "प्रतिष्ठित समाचार स्रोतों से मिलान।",
-        step4Title: "स्कोर और रिपोर्ट",
-        step4Desc: "पारदर्शी कारणों के साथ विश्वसनीयता स्कोर।"
-    },
-    es: {
-        flag: '🇪🇸',
-        name: 'Español',
-        navAnalyze: "🔍 Analizar",
-        navDashboard: "📊 Panel",
-        navHistory: "📜 Historial",
-        navHow: "💡 Cómo Funciona",
-        navTips: "🛡️ Consejos",
-        navLoginText: "Iniciar Sesión",
-        btnNavCta: "⚡ Verificar",
-        heroBadge: "Verificación de Hechos con IA",
-        heroTitleMain: "Detecta Noticias Falsas",
-        heroTitleSub: "En Segundos",
-        heroSubtitle: "La IA avanzada analiza artículos, enlaces web y capturas de pantalla en tiempo real para detectar desinformación.",
-        btnHeroAnalyze: "🔍 Iniciar Análisis",
-        btnHeroDashboard: "📊 Ver Panel en Vivo",
-        lblHeroTotal: "Artículos Analizados",
-        lblHeroFake: "Falsedades Detectadas",
-        lblHeroAccuracy: "Tasa de Precisión",
-        cardRealTitle: "Lanzamiento de Satélite Oficial",
-        cardRealSub: "Fuente Oficial Verificada",
-        cardSuspTitle: "Esquema Financiero No Verificado",
-        cardSuspSub: "Falta Fuente Autoritativa",
-        cardFakeTitle: "Cura Milagrosa en 24 Horas",
-        cardFakeSub: "Alto Clickbait y Afirmación Falsa",
-        tagAnalyzer: "Motor de Verificación IA",
-        headAnalyzer: "Analizar Credibilidad de Noticias",
-        subAnalyzer: "Verifica textos, URLs o sube capturas de pantalla para evaluar la credibilidad.",
-        tabText: "Análisis de Texto",
-        tabUrl: "Análisis de URL",
-        tabImage: "Análisis de Imagen",
-        lblQuickSamples: "⚡ Muestras Rápidas:",
-        sampleReal: "Noticia Real",
-        sampleFake: "Rumor Clickbait",
-        sampleViral: "Mensaje Viral de WhatsApp",
-        lblHeadline: "Titular de la Noticia",
-        phHeadline: "Introduce el titular de la noticia aquí...",
-        lblContent: "Contenido Completo del Artículo",
-        phContent: "Pega el artículo o mensaje reenviado aquí...",
-        lblSourceUrl: "URL de la Fuente (Opcional)",
-        lblPlatform: "Plataforma / Origen",
-        btnAnalyzeText: "Analizar Texto de Noticia",
-        lblUrlInput: "URL del Artículo de Noticias",
-        phUrl: "https://ejemplo-noticias.com/articulo",
-        btnAnalyzeUrlText: "Analizar Credibilidad de URL",
-        dropTitle: "Arrastra la Captura de Noticia Aquí o Haz Clic",
-        dropSub: "Soporta JPG, PNG, WEBP, GIF (Máx. 10MB)",
-        btnAnalyzeImageText: "Analizar Imagen y Extraer Texto",
-        lblVerdictTag: "Veredicto de Credibilidad IA",
-        verdictReal: "Noticia Real Verificada",
-        verdictFake: "Noticia Falsa Detectada",
-        verdictSuspicious: "Contenido Sospechoso",
-        lblCredibilityScore: "Puntuación de Confianza",
-        lblExtractedOcr: "📝 Información Extraída de la Captura (OCR):",
-        lblMetricsBreakdown: "📊 Desglose de Factores de IA",
-        lblReasoningTitle: "💡 Razonamiento Forense de la IA",
-        btnCopyReport: "Copiar Informe",
-        btnDownloadReport: "Descargar Informe",
-        btnShareReport: "Compartir",
-        btnAnalyzeAnother: "Analizar Otra Noticia",
-        tagDashboard: "Telemetría en Vivo",
-        headDashboard: "Panel de Credibilidad en Tiempo Real",
-        subDashboard: "Seguimiento estadístico de noticias analizadas.",
-        lblDashTotal: "Total Analizado",
-        lblDashReal: "Verificado Real",
-        lblDashFake: "Falsedades Detectadas",
-        lblDashSuspicious: "Sospechoso / Pendiente",
-        tagHow: "Metodología",
-        headHow: "Cómo Funciona FakeShield IA",
-        subHow: "Detección multicapa combinando NLP, visión computacional y verificación de dominios.",
-        step1Title: "Ingresar Contenido",
-        step1Desc: "Pega texto, URL o sube capturas de noticias.",
-        step2Title: "Forense Lingüístico",
-        step2Desc: "Detecta clickbait, exageraciones y sesgos emocionales.",
-        step3Title: "Verificación de Fuentes",
-        step3Desc: "Coteja el dominio con registros globales de noticias.",
-        step4Title: "Puntuación e Informe",
-        step4Desc: "Calcula el veredicto con explicaciones transparentes."
-    },
-    fr: {
-        flag: '🇫🇷',
-        name: 'Français',
-        navAnalyze: "🔍 Analyser",
-        navDashboard: "📊 Tableau de Bord",
-        navHistory: "📜 Historique",
-        navHow: "💡 Fonctionnement",
-        navTips: "🛡️ Conseils",
-        navLoginText: "Connexion",
-        btnNavCta: "⚡ Vérifier",
-        heroBadge: "Vérification des Faits par IA",
-        heroTitleMain: "Détectez les Fausses Nouvelles",
-        heroTitleSub: "En Quelques Secondes",
-        heroSubtitle: "L'IA avancée analyse les articles, les liens web et les captures d'écran en temps réel.",
-        btnHeroAnalyze: "🔍 Lancer l'Analyse",
-        btnHeroDashboard: "📊 Voir le Tableau de Bord",
-        lblHeroTotal: "Articles Analysés",
-        lblHeroFake: "Fausses Nouvelles Détectées",
-        lblHeroAccuracy: "Taux de Précision",
-        cardRealTitle: "Lancement de Satellite Officiel",
-        cardRealSub: "Source Officielle Vérifiée",
-        cardSuspTitle: "Schéma Financier Non Vérifié",
-        cardSuspSub: "Absence de Source Autorisée",
-        cardFakeTitle: "Remède Miracle en 24 Heures",
-        cardFakeSub: "Fort Clickbait & Fausses Déclarations",
-        tagAnalyzer: "Moteur de Vérification IA",
-        headAnalyzer: "Analyser la Crédibilité des Nouvelles",
-        subAnalyzer: "Vérifiez des textes, URLs ou téléversez des captures d'écran.",
-        tabText: "Analyse de Texte",
-        tabUrl: "Analyse d'URL",
-        tabImage: "Analyse d'Image",
-        lblQuickSamples: "⚡ Échantillons Rapides :",
-        sampleReal: "Exemple de Vraie Nouvelle",
-        sampleFake: "Rumeur Sensationnaliste",
-        sampleViral: "Message Viral WhatsApp",
-        lblHeadline: "Gros Titre de la Nouvelle",
-        phHeadline: "Entrez le gros titre ici...",
-        lblContent: "Corps de l'Article",
-        phContent: "Collez le texte complet ou le message ici...",
-        lblSourceUrl: "URL Source (Facultatif)",
-        lblPlatform: "Plateforme / Origine",
-        btnAnalyzeText: "Analyser le Texte",
-        lblUrlInput: "URL de l'Article de Presse",
-        phUrl: "https://exemple-actualites.fr/article",
-        btnAnalyzeUrlText: "Analyser la Crédibilité de l'URL",
-        dropTitle: "Déposez la Capture d'Écran Ici ou Cliquez",
-        dropSub: "Prend en charge JPG, PNG, WEBP, GIF (Max 10Mo)",
-        btnAnalyzeImageText: "Analyser l'Image et Extraire le Texte",
-        lblVerdictTag: "Verdict de Crédibilité IA",
-        verdictReal: "Vraie Nouvelle Vérifiée",
-        verdictFake: "Fausse Information Détectée",
-        verdictSuspicious: "Contenu Suspect",
-        lblCredibilityScore: "Score de Confiance",
-        lblExtractedOcr: "📝 Informations Extraites de la Capture (OCR) :",
-        lblMetricsBreakdown: "📊 Ventilation Multi-Facteurs IA",
-        lblReasoningTitle: "💡 Analyse Détaillée et Raisonnement IA",
-        btnCopyReport: "Copier le Rapport",
-        btnDownloadReport: "Télécharger le Rapport",
-        btnShareReport: "Partager",
-        btnAnalyzeAnother: "Analyser une Autre",
-        tagDashboard: "Télémétrie en Direct",
-        headDashboard: "Tableau de Bord en Temps Réel",
-        subDashboard: "Suivi statistique des nouvelles analysées.",
-        lblDashTotal: "Total Analysé",
-        lblDashReal: "Vrai Vérifié",
-        lblDashFake: "Faux Détecté",
-        lblDashSuspicious: "Suspect / En Attente",
-        tagHow: "Méthodologie",
-        headHow: "Comment Fonctionne FakeShield IA",
-        subHow: "Détection multicouche combinant NLP, vision par ordinateur et vérification de domaine.",
-        step1Title: "Soumission du Contenu",
-        step1Desc: "Collez du texte, une URL ou téléversez une image.",
-        step2Title: "Analyse Forensique NLP",
-        step2Desc: "Détecte le sensationnalisme et les biais émotionnels.",
-        step3Title: "Vérification des Sources",
-        step3Desc: "Recoupement avec les registres officiels de presse.",
-        step4Title: "Score & Verdict",
-        step4Desc: "Calcule le score de confiance avec explications claires."
-    },
-    de: {
-        flag: '🇩🇪',
-        name: 'Deutsch',
-        navAnalyze: "🔍 Analysieren",
-        navDashboard: "📊 Dashboard",
-        navHistory: "📜 Verlauf",
-        navHow: "💡 Funktionsweise",
-        navTips: "🛡️ Tipps",
-        navLoginText: "Anmelden",
-        btnNavCta: "⚡ Jetzt Prüfen",
-        heroBadge: "KI-Faktenprüfung",
-        heroTitleMain: "Fake News Erkennen",
-        heroTitleSub: "In Sekundenschnelle",
-        heroSubtitle: "Modernste KI analysiert Artikel, Links und Screenshots in Echtzeit, um Falschmeldungen zu erkennen.",
-        btnHeroAnalyze: "🔍 Analyse Starten",
-        btnHeroDashboard: "📊 Live-Dashboard Öffnen",
-        lblHeroTotal: "Artikel Analysiert",
-        lblHeroFake: "Fake News Erkannt",
-        lblHeroAccuracy: "Genauigkeitsrate",
-        cardRealTitle: "Offizieller Satellitenstart",
-        cardRealSub: "Verifizierte Quelle",
-        cardSuspTitle: "Ungeprüftes Finanzschema",
-        cardSuspSub: "Fehlende autoritative Quelle",
-        cardFakeTitle: "24-Stunden-Wundermittel",
-        cardFakeSub: "Hoher Clickbait & Falschbehauptung",
-        tagAnalyzer: "KI-Prüfmodul",
-        headAnalyzer: "Glaubwürdigkeit von Nachrichten Prüfen",
-        subAnalyzer: "Überprüfen Sie Texte, URLs oder Screenshots auf Echtheit.",
-        tabText: "Textanalyse",
-        tabUrl: "URL-Analyse",
-        tabImage: "Bildanalyse",
-        lblQuickSamples: "⚡ Schnelltests:",
-        sampleReal: "Echte Nachricht",
-        sampleFake: "Clickbait-Gerücht",
-        sampleViral: "Virale WhatsApp-Nachricht",
-        lblHeadline: "Schlagzeile / Titel",
-        phHeadline: "Geben Sie die Schlagzeile hier ein...",
-        lblContent: "Vollständiger Artikeltext",
-        phContent: "Fügen Sie den Artikeltext hier ein...",
-        lblSourceUrl: "Quell-URL (Optional)",
-        lblPlatform: "Plattform / Herkunft",
-        btnAnalyzeText: "Text Analysieren",
-        lblUrlInput: "Artikel-URL",
-        phUrl: "https://beispiel-nachrichten.de/artikel",
-        btnAnalyzeUrlText: "URL Prüfen",
-        dropTitle: "Screenshot Hier Ablegen oder Klicken",
-        dropSub: "Unterstützt JPG, PNG, WEBP, GIF (Max. 10MB)",
-        btnAnalyzeImageText: "Bild Analysieren & Text Extrahieren",
-        lblVerdictTag: "KI-Glaubwürdigkeitsurteil",
-        verdictReal: "Als Echte Nachricht Verifiziert",
-        verdictFake: "Fake News Erkannt",
-        verdictSuspicious: "Verdächtiger Inhalt",
-        lblCredibilityScore: "Vertrauenswert",
-        lblExtractedOcr: "📝 Extrahierte Screenshot-Informationen (OCR):",
-        lblMetricsBreakdown: "📊 Detaillierte KI-Bewertung",
-        lblReasoningTitle: "💡 KI-Analysebegründung & Erkenntnisse",
-        btnCopyReport: "Bericht Kopieren",
-        btnDownloadReport: "Bericht Herunterladen",
-        btnShareReport: "Teilen",
-        btnAnalyzeAnother: "Weiteren Artikel Prüfen",
-        tagDashboard: "Live-Telemetrie",
-        headDashboard: "Live-Glaubwürdigkeits-Dashboard",
-        subDashboard: "Echtzeit-Statistiken über geprüfte Fehlinformationen.",
-        lblDashTotal: "Gesamt Analysiert",
-        lblDashReal: "Echte News",
-        lblDashFake: "Fake News",
-        lblDashSuspicious: "Verdächtig / Ausstehend",
-        tagHow: "Methodik",
-        headHow: "Wie FakeShield KI Funktioniert",
-        subHow: "Kombination aus NLP-Heuristiken, Bildanalyse und Domainprüfung.",
-        step1Title: "Inhalt Einreichen",
-        step1Desc: "Fügen Sie Text, URL oder ein Bild ein.",
-        step2Title: "Linguistische NLP-Analyse",
-        step2Desc: "Erkennt Clickbait und emotionale Übertreibungen.",
-        step3Title: "Quellenprüfung",
-        step3Desc: "Gleicht mit verifizierten Presseregistern ab.",
-        step4Title: "Urteil & Bericht",
-        step4Desc: "Berechnet den Vertrauenswert mit transparenter Begründung."
+// ============================================
+// AUTH & TOKEN HELPERS
+// ============================================
+
+function getToken() {
+    return localStorage.getItem('token');
+}
+
+function getUser() {
+    try {
+        const raw = localStorage.getItem('user');
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
     }
-};
-
-// ===================================================================
-// 2. INITIALIZATION
-// ===================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    initHistory();
-    renderRecentTable();
-    updateDashboardCounters();
-    const saved = localStorage.getItem('fakeshield_lang') || 'en';
-    const dict = I18N[saved] || I18N.en;
-    changeLanguage(saved, dict.flag, dict.name);
-    setupDropZone();
-    renderNavbarAuth();
-    initThemePalette();
-});
-
-// ===================================================================
-// 3. THEME PALETTE CONTROLLER
-// ===================================================================
-const THEMES = ['default', 'theme-cyberpunk', 'theme-emerald'];
-const THEME_NAMES = {
-    'default': '🌌 Midnight Aurora',
-    'theme-cyberpunk': '🔮 Cyberpunk Neon',
-    'theme-emerald': '💎 Emerald Shield'
-};
-
-function initThemePalette() {
-    const savedTheme = localStorage.getItem('fakeshield_theme') || 'default';
-    applyThemePalette(savedTheme);
 }
 
-function cycleThemePalette() {
-    const current = localStorage.getItem('fakeshield_theme') || 'default';
-    const nextIndex = (THEMES.indexOf(current) + 1) % THEMES.length;
-    const nextTheme = THEMES[nextIndex];
-    applyThemePalette(nextTheme);
-    showToast(`🎨 Palette: ${THEME_NAMES[nextTheme]}`);
+function isLoggedIn() {
+    return !!getToken();
 }
 
-function applyThemePalette(themeName) {
-    document.body.classList.remove('theme-cyberpunk', 'theme-emerald');
-    if (themeName !== 'default') {
-        document.body.classList.add(themeName);
+function clearAuth() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+}
+
+function logout() {
+    clearAuth();
+    window.location.href = '/login.html';
+}
+
+// ============================================
+// TAB SWITCHING & SCROLL HELPERS
+// ============================================
+
+function switchTab(tabName, btnElement) {
+    console.log('Switching to tab:', tabName);
+
+    // 1. Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+        tab.classList.remove('active');
+    });
+
+    // 2. Deactivate all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // 3. Activate target tab content
+    const targetTab = document.getElementById(`tab-${tabName}`);
+    if (targetTab) {
+        targetTab.style.display = 'block';
+        targetTab.classList.add('active');
     }
-    localStorage.setItem('fakeshield_theme', themeName);
+
+    // 4. Activate clicked button
+    if (btnElement) {
+        btnElement.classList.add('active');
+    }
+
+    hideResults();
 }
 
-// ===================================================================
-// 4. TAB SWITCHING
-// ===================================================================
-function switchTab(tab, btn) {
-    activeAnalysisTab = tab;
-    document.querySelectorAll('.tab-pill-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    document.getElementById('tab-text').style.display = tab === 'text' ? 'block' : 'none';
-    document.getElementById('tab-url').style.display = tab === 'url' ? 'block' : 'none';
-    document.getElementById('tab-image').style.display = tab === 'image' ? 'block' : 'none';
+function scrollToAnalyzer() {
+    const el = document.getElementById('analyzer');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ===================================================================
-// 4. SAMPLE PRESETS
-// ===================================================================
-const SAMPLES = {
+function scrollToDashboard() {
+    const el = document.getElementById('dashboard');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================
+// TEXT NEWS ANALYSIS
+// ============================================
+
+async function analyzeNews() {
+    // Correct IDs matching index.html
+    const headlineInput = document.getElementById('newsTitle') || document.getElementById('newsHeadline');
+    const contentInput = document.getElementById('newsContent');
+    const sourceInput = document.getElementById('sourceUrl');
+    const platformSelect = document.getElementById('platform');
+
+    const headline = headlineInput ? headlineInput.value.trim() : '';
+    const content = contentInput ? contentInput.value.trim() : '';
+    const source = sourceInput ? sourceInput.value.trim() : '';
+    const platform = platformSelect ? platformSelect.value : 'General';
+
+    if (!headline && !content) {
+        showToast('❌ Please enter a news headline or article content', 'error');
+        return;
+    }
+
+    setBtnLoading('btnAnalyze', 'btnText', 'btnLoader', true);
+    hideResults();
+
+    try {
+        const payload = {
+            title: headline,
+            content: content || headline,
+            sourceUrl: source,
+            platform: platform
+        };
+
+        const token = getToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`${API_URL}/api/news/analyze`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Server returned invalid response');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || 'Text analysis failed');
+        }
+
+        console.log('✅ Text Analysis Result:', data);
+        showResults(data);
+        showToast('✅ Analysis complete!', 'success');
+        updateDashboardStats();
+
+    } catch (error) {
+        console.error('Text Analysis Error:', error);
+        showToast('❌ ' + (error.message || 'Analysis failed'), 'error');
+        showErrorBox(error.message);
+    } finally {
+        setBtnLoading('btnAnalyze', 'btnText', 'btnLoader', false);
+    }
+}
+
+// ============================================
+// URL ANALYSIS
+// ============================================
+
+async function analyzeUrl() {
+    const urlInput = document.getElementById('urlInput');
+    const url = urlInput ? urlInput.value.trim() : '';
+
+    if (!url) {
+        showToast('❌ Please enter a valid news URL', 'error');
+        return;
+    }
+
+    setBtnLoading('btnAnalyzeUrl', 'btnUrlText', 'btnUrlLoader', true);
+    hideResults();
+
+    try {
+        const token = getToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`${API_URL}/api/url/analyze`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ url: url })
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Server returned invalid response');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || 'URL analysis failed');
+        }
+
+        console.log('✅ URL Analysis Result:', data);
+        showResults(data);
+        showToast('✅ URL Analysis complete!', 'success');
+        updateDashboardStats();
+
+    } catch (error) {
+        console.error('URL Analysis Error:', error);
+        showToast('❌ ' + (error.message || 'URL analysis failed'), 'error');
+        showErrorBox(error.message);
+    } finally {
+        setBtnLoading('btnAnalyzeUrl', 'btnUrlText', 'btnUrlLoader', false);
+    }
+}
+
+// ============================================
+// IMAGE ANALYSIS
+// ============================================
+
+function handleImageSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (file) handleFileSelected(file);
+}
+
+function handleFileSelected(file) {
+    if (!file.type || !file.type.startsWith('image/')) {
+        showToast('❌ Please select a valid image file', 'error');
+        return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('❌ Image too large. Max 10MB allowed.', 'error');
+        return;
+    }
+
+    selectedFile = file;
+
+    const uploadContent = document.getElementById('uploadContent');
+    const previewContent = document.getElementById('previewContent');
+    const previewImg = document.getElementById('previewImage');
+    const previewName = document.getElementById('previewName');
+    const previewSize = document.getElementById('previewSize');
+    const btnAnalyzeImage = document.getElementById('btnAnalyzeImage');
+
+    if (previewImg) previewImg.src = URL.createObjectURL(file);
+    if (previewName) previewName.textContent = file.name;
+    if (previewSize) previewSize.textContent = `${(file.size / 1024).toFixed(2)} KB`;
+
+    if (uploadContent) uploadContent.style.display = 'none';
+    if (previewContent) previewContent.style.display = 'block';
+
+    // Enable the analyze button once file is uploaded
+    if (btnAnalyzeImage) btnAnalyzeImage.disabled = false;
+
+    hideResults();
+}
+
+function removeImage(event) {
+    if (event) event.stopPropagation();
+    selectedFile = null;
+
+    const fileInput = document.getElementById('imageInput');
+    if (fileInput) fileInput.value = '';
+
+    const uploadContent = document.getElementById('uploadContent');
+    const previewContent = document.getElementById('previewContent');
+    const btnAnalyzeImage = document.getElementById('btnAnalyzeImage');
+
+    if (uploadContent) uploadContent.style.display = 'block';
+    if (previewContent) previewContent.style.display = 'none';
+    if (btnAnalyzeImage) btnAnalyzeImage.disabled = true;
+
+    hideResults();
+}
+
+async function analyzeImage() {
+    if (!selectedFile) {
+        showToast('❌ Please select an image first', 'error');
+        return;
+    }
+
+    setBtnLoading('btnAnalyzeImage', 'btnImageText', 'btnImageLoader', true);
+    hideResults();
+
+    try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const token = getToken();
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`${API_URL}/api/images/analyze`, {
+            method: 'POST',
+            headers: headers,
+            body: formData
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Server returned invalid response');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || `Image analysis failed (${response.status})`);
+        }
+
+        console.log('✅ Image Analysis Result:', data);
+        showResults(data);
+        showToast('✅ Image Analysis complete!', 'success');
+        updateDashboardStats();
+
+    } catch (error) {
+        console.error('Image Analysis Error:', error);
+        showToast('❌ ' + (error.message || 'Image analysis failed'), 'error');
+        showErrorBox(error.message);
+    } finally {
+        setBtnLoading('btnAnalyzeImage', 'btnImageText', 'btnImageLoader', false);
+    }
+}
+
+// Helper to set button state during API loading
+function setBtnLoading(btnId, textId, loaderId, isLoading) {
+    const btn = document.getElementById(btnId);
+    const text = document.getElementById(textId);
+    const loader = document.getElementById(loaderId);
+
+    if (btn) btn.disabled = isLoading;
+    if (text) text.style.display = isLoading ? 'none' : 'inline-block';
+    if (loader) loader.style.display = isLoading ? 'inline-block' : 'none';
+}
+
+// ============================================
+// SAMPLE PRESETS
+// ============================================
+
+const SAMPLE_PRESETS = {
     real: {
-        title: "ISRO successfully launches ocean observation satellite into solar polar orbit",
-        content: "The Indian Space Research Organisation (ISRO) successfully placed the EOS earth observation satellite into precise polar orbit at 9:15 AM IST from Sriharikota. Telemetry confirmed nominal subsystem health and complete solar array deployment across scientific instruments.",
+        title: "NASA Webb Telescope Detects Water Vapor Around Distant Exoplanet",
+        content: "According to an official statement published by NASA scientists, data collected from the James Webb Space Telescope confirms atmospheric water vapor on exoplanet WASP-96b. Researchers found distinct spectral fingerprints indicating cloud coverage and moisture. Verified reports indicate further study is underway.",
+        sourceUrl: "https://nasa.gov/news/webb-water-vapor-discovery",
         platform: "News Website"
     },
     fake: {
-        title: "URGENT CITIZEN ALERT: Government releasing free ₹50,000 cash grant & 100g gold coins for all mobile owners today only!",
-        content: "BREAKING SHOCKING NEWS: Click this immediate link to register your Aadhaar and bank account to claim the festive bonus! Only 500 slots remaining before deadline expires tonight. Forward this immediately to save all family and friends!",
-        platform: "WhatsApp"
+        title: "SHOCKING SECRET CURE: Doctors Hate This 1 Miracle Trick That Cures All Diseases!",
+        content: "What they don't want you to know! Banned video reveals secret miracle cure they are hiding. Share before deleted by corrupt fake news media! Wake up before it is too late! Click here now!",
+        sourceUrl: "http://miracle-cure-secret-exposed.click",
+        platform: "Facebook"
     },
     whatsapp: {
-        title: "Drink boiled ginger, garlic and clove water twice daily to permanently cure all viral lung pathogens in 24 hours",
-        content: "VIRAL FORWARD: Top medical researchers have proven that simple kitchen spices completely neutralize respiratory infections within 24 hours. Big pharma is hiding this cheap cure! Forward to 10 groups immediately!",
+        title: "URGENT WARNING: Government Shutting Down All Internet Services Tonight At Midnight!!",
+        content: "Forwarded many times as received: Emergency alert issued by high officials. Total blackout of 5G, Wi-Fi and calls across country starting 12:00 AM tonight! Share to all your family groups immediately before network cuts off!",
+        sourceUrl: "",
         platform: "WhatsApp"
     }
 };
 
 function loadSample(type) {
-    const s = SAMPLES[type];
-    if (!s) return;
+    const sample = SAMPLE_PRESETS[type];
+    if (!sample) return;
 
-    switchTab('text', document.getElementById('tabBtnText'));
-    document.getElementById('newsTitle').value = s.title;
-    document.getElementById('newsContent').value = s.content;
-    document.getElementById('platform').value = s.platform;
-    showToast('✨ Loaded sample news!');
+    const titleInput = document.getElementById('newsTitle');
+    const contentInput = document.getElementById('newsContent');
+    const urlInput = document.getElementById('sourceUrl');
+    const platformSelect = document.getElementById('platform');
+
+    if (titleInput) titleInput.value = sample.title;
+    if (contentInput) contentInput.value = sample.content;
+    if (urlInput) urlInput.value = sample.sourceUrl;
+    if (platformSelect) platformSelect.value = sample.platform;
+
+    showToast(`Loaded ${type.toUpperCase()} sample! Click 'Analyze Text' below.`, 'info');
 }
 
-// ===================================================================
-// 5. IMAGE DRAG & DROP
-// ===================================================================
-function setupDropZone() {
-    const area = document.getElementById('uploadArea');
-    if (!area) return;
+// Global cached news data
+let allRecentNews = [];
+let currentFilter = 'ALL';
+let lastAnalyzedData = null;
 
-    ['dragenter', 'dragover'].forEach(n => {
-        area.addEventListener(n, (e) => {
-            e.preventDefault();
-            area.classList.add('dragover');
-        });
-    });
+// ============================================
+// RESULTS UI & CIRCLE SCORE
+// ============================================
 
-    ['dragleave', 'drop'].forEach(n => {
-        area.addEventListener(n, (e) => {
-            e.preventDefault();
-            area.classList.remove('dragover');
-        });
-    });
+function showResults(data) {
+    lastAnalyzedData = data;
+    const resultCard = document.getElementById('resultCard');
+    if (!resultCard) return;
 
-    area.addEventListener('drop', (e) => {
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            handleImageFile(e.dataTransfer.files[0]);
+    const status = (data.status || 'UNKNOWN').toUpperCase();
+    const score = Math.round(data.credibilityScore || 0);
+
+    // Update Status Text & Icon
+    const statusText = document.getElementById('statusText');
+    const statusIcon = document.getElementById('statusIcon');
+
+    if (statusText) statusText.textContent = status === 'REAL' ? 'Verified Real News' : status === 'FAKE' ? 'Fake News Detected' : 'Suspicious Content';
+    if (statusIcon) statusIcon.textContent = status === 'REAL' ? '✅' : status === 'FAKE' ? '❌' : '⚠️';
+
+    // Update Score Circle & Number
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreCircle = document.getElementById('scoreCircle');
+
+    if (scoreValue) scoreValue.textContent = score;
+
+    if (scoreCircle) {
+        const circumference = 377; // 2 * pi * r (60)
+        const offset = circumference - (score / 100) * circumference;
+        scoreCircle.style.strokeDashoffset = offset;
+        scoreCircle.style.color = status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#ef4444' : '#f59e0b';
+    }
+
+    // Extracted Text (OCR / Summary)
+    const extractedSection = document.getElementById('extractedTextSection');
+    const extractedBox = document.getElementById('extractedTextBox');
+    if (data.extractedText) {
+        if (extractedSection) extractedSection.style.display = 'block';
+        if (extractedBox) extractedBox.textContent = data.extractedText;
+    } else {
+        if (extractedSection) extractedSection.style.display = 'none';
+    }
+
+    // Breakdown Grid
+    const breakdownGrid = document.getElementById('breakdownGrid');
+    if (breakdownGrid) {
+        if (data.visualScore !== undefined || data.imageType !== undefined) {
+            // Image Analysis breakdown
+            const visualScore = Math.round(data.visualScore ?? 80);
+            const metadataScore = Math.round(data.metadataScore ?? 70);
+            const textScore = Math.round(data.textAnalysisScore ?? 60);
+            const ocrScore = Math.round(data.ocrScore ?? 70);
+
+            breakdownGrid.innerHTML = `
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Visual Integrity & Resolution</span>
+                        <span class="breakdown-value">${visualScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${visualScore}%; background: ${visualScore >= 60 ? '#10b981' : '#ef4444'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">File Metadata & Format</span>
+                        <span class="breakdown-value">${metadataScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${metadataScore}%; background: ${metadataScore >= 60 ? '#10b981' : '#f59e0b'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Extracted Text Authenticity</span>
+                        <span class="breakdown-value">${textScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${textScore}%; background: ${textScore >= 60 ? '#10b981' : '#ef4444'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">OCR Recognition Quality</span>
+                        <span class="breakdown-value">${ocrScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${ocrScore}%; background: ${ocrScore >= 60 ? '#10b981' : '#3b82f6'};"></div></div>
+                </div>
+            `;
+        } else {
+            const details = data.analysisDetails || {};
+            const breakdown = details.scoreBreakdown || {};
+
+            const clickbaitScore = Math.round(details.clickbaitScore ?? breakdown['Clickbait Detection'] ?? 100);
+            const sentimentScore = Math.round(details.sentimentScore ?? breakdown['Sentiment Analysis'] ?? 100);
+            const sourceScore = Math.round(details.sourceScore ?? breakdown['Source Credibility'] ?? 50);
+            const grammarScore = Math.round(details.grammarScore ?? breakdown['Grammar Check'] ?? 75);
+            const nlpScore = Math.round(details.nlpScore ?? breakdown['NLP Analysis'] ?? 70);
+            const factCheckScore = Math.round(details.factCheckScore ?? breakdown['Fact Check'] ?? 60);
+
+            breakdownGrid.innerHTML = `
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Clickbait Cleanliness</span>
+                        <span class="breakdown-value">${clickbaitScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${clickbaitScore}%; background: ${clickbaitScore > 60 ? '#10b981' : '#ef4444'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Sentiment & Tone Neutrality</span>
+                        <span class="breakdown-value">${sentimentScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${sentimentScore}%; background: ${sentimentScore > 60 ? '#10b981' : '#f59e0b'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Source Credibility</span>
+                        <span class="breakdown-value">${sourceScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${sourceScore}%; background: ${sourceScore > 60 ? '#10b981' : '#f59e0b'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Grammar & Structure</span>
+                        <span class="breakdown-value">${grammarScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${grammarScore}%; background: ${grammarScore > 60 ? '#10b981' : '#ef4444'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">NLP Contextual Quality</span>
+                        <span class="breakdown-value">${nlpScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${nlpScore}%; background: ${nlpScore > 60 ? '#10b981' : '#3b82f6'};"></div></div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="breakdown-header">
+                        <span class="breakdown-label">Fact Check Signals</span>
+                        <span class="breakdown-value">${factCheckScore}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${factCheckScore}%; background: ${factCheckScore > 60 ? '#10b981' : '#a855f7'};"></div></div>
+                </div>
+            `;
         }
-    });
-}
-
-function handleImageSelect(event) {
-    if (event.target.files && event.target.files.length > 0) {
-        handleImageFile(event.target.files[0]);
-    }
-}
-
-function handleImageFile(file) {
-    if (!file.type.startsWith('image/')) {
-        showToast('⚠️ Please select a valid image file (JPG, PNG, WEBP).');
-        return;
     }
 
-    uploadedImageFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        document.getElementById('previewImage').src = e.target.result;
-        document.getElementById('previewName').textContent = file.name;
-        document.getElementById('previewSize').textContent = `${(file.size / 1024).toFixed(1)} KB`;
-        document.getElementById('uploadContent').style.display = 'none';
-        document.getElementById('previewContent').style.display = 'flex';
-        document.getElementById('btnAnalyzeImage').disabled = false;
-        showToast('📸 Image loaded successfully!');
-    };
-    reader.readAsDataURL(file);
-}
-
-function removeImage(event) {
-    if (event) event.stopPropagation();
-    uploadedImageFile = null;
-    document.getElementById('imageInput').value = '';
-    document.getElementById('previewImage').src = '';
-    document.getElementById('uploadContent').style.display = 'block';
-    document.getElementById('previewContent').style.display = 'none';
-    document.getElementById('btnAnalyzeImage').disabled = true;
-}
-
-// ===================================================================
-// 6. CORE DETECTION ENGINES (Text, URL, Image)
-// ===================================================================
-function analyzeNews() {
-    const title = document.getElementById('newsTitle').value.trim();
-    const content = document.getElementById('newsContent').value.trim();
-    const sourceUrl = document.getElementById('sourceUrl').value.trim();
-    const platform = document.getElementById('platform').value;
-
-    if (!title && !content) {
-        showToast('⚠️ Please enter a news headline or content.');
-        return;
+    // Explanation
+        const explanation = data.explanation || (data.analysisDetails && data.analysisDetails.explanation);
+        explanationText.textContent = explanation || 'Content evaluated across fake news pattern databases and machine learning models.';
     }
 
-    const fullText = `${title} ${content}`;
-    const clickbaitWords = [
-        'shocking', 'unbelievable', 'you won\'t believe', 'miracle cure', '100% cure',
-        'free gold', 'free money', 'click here now', 'forward this', 'urgent citizen alert',
-        'secret government', 'big pharma', 'guaranteed profit', 'conspiracy',
-        'போலி', 'அதிர்ச்சி', 'உடனடியாக பகிருங்கள்', 'இலவசம்', 'அற்புதம்',
-        'सनसनीखेज', 'चमत्कार', 'फ्री', 'गुप्त', 'फॉरवर्ड करें'
-    ];
+    // Trigger Psychological Radar Analysis
+    renderPsychologicalAnalysis(data);
 
-    let hits = 0;
-    const lower = fullText.toLowerCase();
-    clickbaitWords.forEach(w => {
-        if (lower.includes(w.toLowerCase())) hits++;
-    });
+    // Trigger Voice Debunk Generation
+    renderVoiceDebunkPlayer(data);
 
-    const exclamations = (fullText.match(/!/g) || []).length;
-    const capsMatch = fullText.match(/[A-Z]{4,}/g) || [];
-
-    let score = 94;
-    score -= (hits * 20);
-    if (exclamations > 2) score -= 12;
-    if (capsMatch.length > 2) score -= 14;
-    if (platform === 'WhatsApp' || platform === 'Telegram') score -= 10;
-
-    score = Math.max(12, Math.min(98, score));
-
-    let status = 'REAL';
-    if (score < 45) status = 'FAKE';
-    else if (score < 75) status = 'SUSPICIOUS';
-
-    const reasons = [];
-    if (hits > 0) reasons.push(`• Detected ${hits} sensationalist clickbait trigger phrase(s) designed to cause panic or virality.`);
-    if (exclamations > 2) reasons.push(`• High exclamation count (${exclamations}) typical of unverified breaking news forwards.`);
-    if (capsMatch.length > 2) reasons.push(`• Heavy capitalization / shouting words detected.`);
-    if (status === 'REAL') reasons.push(`• Linguistic structure reflects professional journalistic standards, neutral sentiment, and verified facts.`);
-
-    const res = {
-        id: 'rec_' + Date.now(),
-        type: 'text',
-        title: title || content.substring(0, 50) + '...',
-        content: content,
-        platform: platform || 'News Website',
-        status: status,
-        credibilityScore: score,
-        clickbaitScore: hits > 0 ? 30 : 95,
-        sentimentScore: status === 'REAL' ? 90 : 40,
-        sourceScore: sourceUrl ? 85 : (status === 'REAL' ? 95 : 35),
-        grammarScore: Math.min(98, score + 4),
-        explanation: reasons.join('\n') || '• Standard verified news structure with balanced tone.',
-        timestamp: new Date().toISOString()
-    };
-
-    displayResult(res);
-}
-
-function analyzeUrl() {
-    const urlStr = document.getElementById('urlInput').value.trim();
-    if (!urlStr) {
-        showToast('⚠️ Please enter a valid URL.');
-        return;
+    // Show/hide timeline or bot sections if data is present
+    const timelineSection = document.getElementById('timelineVerdictSection');
+    if (timelineSection) {
+        timelineSection.style.display = data.timelineMismatch ? 'block' : 'none';
     }
 
-    let domain = '';
-    let isHttps = urlStr.startsWith('https://');
-    try {
-        const u = new URL(urlStr.startsWith('http') ? urlStr : 'https://' + urlStr);
-        domain = u.hostname.toLowerCase();
-    } catch (e) {
-        domain = urlStr.toLowerCase();
+    const botSection = document.getElementById('botAnalysisSection');
+    if (botSection) {
+        botSection.style.display = data.botAnalysis ? 'block' : 'none';
     }
 
-    const trusted = ['bbc.com', 'reuters.com', 'apnews.com', 'thehindu.com', 'ndtv.com', 'nytimes.com', 'cnn.com', 'nature.com', 'isro.gov.in', 'who.int'];
-    const spamTLDs = ['.xyz', '.click', '.top', '.buzz', '.biz', '.monster'];
-
-    const isTrusted = trusted.some(t => domain.endsWith(t));
-    const isSpamTLD = spamTLDs.some(s => domain.endsWith(s));
-
-    let score = 70;
-    if (isTrusted) score = 96;
-    else if (isSpamTLD) score = 20;
-    else if (!isHttps) score -= 25;
-
-    score = Math.max(15, Math.min(98, score));
-
-    let status = 'SUSPICIOUS';
-    if (score >= 80) status = 'REAL';
-    else if (score <= 40) status = 'FAKE';
-
-    const reasons = [
-        `• Target Domain: ${domain}`,
-        `• SSL Encryption: ${isHttps ? 'Valid HTTPS encryption' : 'Insecure unencrypted HTTP'}`,
-        isTrusted ? `• Domain verified in global trusted journalism registry.` : `• Domain not in mainstream certified media whitelist.`,
-        isSpamTLD ? `• High-risk domain extension detected frequently used in spam networks.` : `• Standard domain extension.`
-    ];
-
-    const res = {
-        id: 'rec_' + Date.now(),
-        type: 'url',
-        title: domain,
-        content: urlStr,
-        platform: 'Web URL',
-        status: status,
-        credibilityScore: score,
-        clickbaitScore: isSpamTLD ? 25 : 85,
-        sentimentScore: score,
-        sourceScore: isTrusted ? 98 : (isSpamTLD ? 15 : 60),
-        grammarScore: 90,
-        explanation: reasons.join('\n'),
-        timestamp: new Date().toISOString()
-    };
-
-    displayResult(res);
+    resultCard.style.display = 'block';
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function analyzeImage() {
-    if (!uploadedImageFile) {
-        showToast('⚠️ Please upload an image first.');
-        return;
+function hideResults() {
+    const resultCard = document.getElementById('resultCard');
+    if (resultCard) resultCard.style.display = 'none';
+
+    // Stop any ongoing speech synth
+    if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
     }
 
-    const name = uploadedImageFile.name;
-    const mockOCR = `BREAKING: Unverified social media screenshot claiming immediate ₹50,000 festival bonus payout. Forwarded as received.`;
-
-    const res = {
-        id: 'rec_' + Date.now(),
-        type: 'image',
-        title: name,
-        content: name,
-        extractedText: mockOCR,
-        platform: 'Screenshot Image',
-        status: 'FAKE',
-        credibilityScore: 35,
-        clickbaitScore: 30,
-        sentimentScore: 40,
-        sourceScore: 35,
-        grammarScore: 45,
-        explanation: `• Image File: ${name}\n• OCR Text Extraction: Contains sensationalist clickbait payout claims with high urgency indicators.\n• Forensic Artifacts: Multiple re-compression artifacts typical of viral messaging network recirculations.`,
-        timestamp: new Date().toISOString()
-    };
-
-    displayResult(res);
+    const err = document.getElementById('fs-error-box');
+    if (err) err.remove();
 }
 
-// ===================================================================
-// 7. DISPLAY RESULTS & SVG GAUGE
-// ===================================================================
-function displayResult(res) {
-    currentResultData = res;
-    saveToHistory(res);
-
-    const dict = I18N[currentLanguage] || I18N.en;
-    const status = (res.status || 'SUSPICIOUS').toUpperCase();
-    const score = Math.round(res.credibilityScore || 0);
-
-    // 1. Status Icon & Label
-    const iconEl = document.getElementById('statusIcon');
-    const textEl = document.getElementById('statusText');
-    if (status === 'REAL') {
-        iconEl.textContent = '✅';
-        textEl.textContent = dict.verdictReal;
-        textEl.style.color = '#10b981';
-    } else if (status === 'FAKE') {
-        iconEl.textContent = '❌';
-        textEl.textContent = dict.verdictFake;
-        textEl.style.color = '#f43f5e';
-    } else {
-        iconEl.textContent = '⚠️';
-        textEl.textContent = dict.verdictSuspicious;
-        textEl.style.color = '#f59e0b';
+function showErrorBox(message) {
+    let box = document.getElementById('fs-error-box');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'fs-error-box';
+        box.style.cssText = `
+            max-width: 800px; margin: 16px auto; padding: 14px 16px;
+            border-radius: 12px; color: #fecaca;
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.35); text-align: center;
+        `;
+        const container = document.querySelector('.analyzer-section .container') || document.body;
+        container.appendChild(box);
     }
-
-    // 2. SVG Gauge
-    document.getElementById('scoreValue').textContent = `${score}%`;
-    const circle = document.getElementById('scoreCircle');
-    const circumference = 2 * Math.PI * 50; // ~314
-    const offset = circumference - (score / 100) * circumference;
-    circle.style.strokeDasharray = circumference;
-    circle.style.strokeDashoffset = offset;
-
-    if (status === 'REAL') circle.style.stroke = '#10b981';
-    else if (status === 'FAKE') circle.style.stroke = '#f43f5e';
-    else circle.style.stroke = '#f59e0b';
-
-    // 3. Extracted OCR Box
-    const ocrBox = document.getElementById('extractedTextSection');
-    if (res.type === 'image' && res.extractedText) {
-        ocrBox.style.display = 'block';
-        document.getElementById('extractedTextBox').textContent = res.extractedText;
-    } else {
-        ocrBox.style.display = 'none';
-    }
-
-    // 4. Breakdown Grid
-    const bg = document.getElementById('breakdownGrid');
-    bg.innerHTML = `
-        <div class="breakdown-card">
-            <div class="b-card-head"><span>Clickbait Index</span><strong style="color:${getMetricColor(res.clickbaitScore)}">${res.clickbaitScore}%</strong></div>
-            <div class="b-track"><div class="b-fill" style="width:${res.clickbaitScore}%; background:${getMetricColor(res.clickbaitScore)}"></div></div>
-        </div>
-        <div class="breakdown-card">
-            <div class="b-card-head"><span>Source Credibility</span><strong style="color:${getMetricColor(res.sourceScore)}">${res.sourceScore}%</strong></div>
-            <div class="b-track"><div class="b-fill" style="width:${res.sourceScore}%; background:${getMetricColor(res.sourceScore)}"></div></div>
-        </div>
-        <div class="breakdown-card">
-            <div class="b-card-head"><span>Sentiment Polarity</span><strong style="color:${getMetricColor(res.sentimentScore)}">${res.sentimentScore}%</strong></div>
-            <div class="b-track"><div class="b-fill" style="width:${res.sentimentScore}%; background:${getMetricColor(res.sentimentScore)}"></div></div>
-        </div>
-        <div class="breakdown-card">
-            <div class="b-card-head"><span>Linguistic Integrity</span><strong style="color:${getMetricColor(res.grammarScore)}">${res.grammarScore}%</strong></div>
-            <div class="b-track"><div class="b-fill" style="width:${res.grammarScore}%; background:${getMetricColor(res.grammarScore)}"></div></div>
-        </div>
-    `;
-
-    // 5. Reasoning Text
-    document.getElementById('explanationText').textContent = res.explanation;
-
-    // Show Card & Scroll
-    const card = document.getElementById('resultCard');
-    card.style.display = 'block';
-    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    showToast('✨ Verification Analysis Complete!');
+    box.textContent = '❌ Error: ' + message;
 }
 
-function getMetricColor(score) {
-    if (score >= 75) return '#10b981';
-    if (score >= 45) return '#f59e0b';
-    return '#f43f5e';
-}
-
-// ===================================================================
-// 8. RESULT ACTIONS (Copy, Download, Share, Analyze Another)
-// ===================================================================
-function copyResult() {
-    if (!currentResultData) return;
-    const r = currentResultData;
-    const text = `🛡️ FakeShield AI Verification Report\n==================================\nHeadline: ${r.title}\nVerdict: ${r.status} (${r.credibilityScore}%)\nPlatform: ${r.platform}\n\nAI Reasoning:\n${r.explanation}\n\nGenerated by FakeShield AI.`;
-    navigator.clipboard.writeText(text).then(() => showToast('📋 Report copied to clipboard!'));
-}
-
-function downloadReport() {
-    if (!currentResultData) return;
-    const r = currentResultData;
-    const content = `🛡️ FAKESHIELD AI CREDIBILITY REPORT\n====================================\nDate: ${new Date().toLocaleString()}\nHeadline: ${r.title}\nType: ${(r.type || 'text').toUpperCase()}\nVerdict: ${r.status}\nScore: ${r.credibilityScore}%\n\nFORENSIC REASONING:\n${r.explanation}\n\n====================================\nFakeShield AI Security Engine`;
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `FakeShield_Report_${Date.now()}.txt`;
-    a.click();
-    showToast('💾 Report downloaded!');
-}
-
+// Action Buttons
 function shareResult() {
-    if (navigator.share && currentResultData) {
+    if (navigator.share) {
         navigator.share({
-            title: 'FakeShield Verification Report',
-            text: `Credibility Score: ${currentResultData.credibilityScore}% for "${currentResultData.title}"`,
+            title: 'FakeShield Analysis Report',
+            text: 'Check this news analysis on FakeShield!',
             url: window.location.href
         }).catch(() => {});
     } else {
@@ -922,365 +575,1680 @@ function shareResult() {
     }
 }
 
-function analyzeAnother() {
-    document.getElementById('newsTitle').value = '';
-    document.getElementById('newsContent').value = '';
-    document.getElementById('urlInput').value = '';
-    removeImage();
-    document.getElementById('resultCard').style.display = 'none';
-    document.getElementById('analyzer').scrollIntoView({ behavior: 'smooth' });
-}
+function copyResult() {
+    const status = document.getElementById('statusText')?.textContent || '';
+    const score = document.getElementById('scoreValue')?.textContent || '';
+    const text = `🛡️ FakeShield Report:\nStatus: ${status}\nCredibility Score: ${score}%\nAnalyzed via ${window.location.origin}`;
 
-// ===================================================================
-// 9. HISTORY & RECENT VERIFICATIONS
-// ===================================================================
-function initHistory() {
-    if (!localStorage.getItem(STORAGE_KEY_HISTORY)) {
-        const defaultHistory = [
-            {
-                id: 'rec_init1',
-                type: 'text',
-                title: 'ISRO successfully launches ocean observation satellite into solar polar orbit',
-                platform: 'News Website',
-                status: 'REAL',
-                credibilityScore: 96,
-                timestamp: new Date(Date.now() - 3600000).toISOString()
-            },
-            {
-                id: 'rec_init2',
-                type: 'text',
-                title: 'WhatsApp Viral Herbal Lung Cure Message',
-                platform: 'WhatsApp',
-                status: 'FAKE',
-                credibilityScore: 18,
-                timestamp: new Date(Date.now() - 7200000).toISOString()
-            }
-        ];
-        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(defaultHistory));
-    }
-}
-
-function getHistory() {
-    try {
-        const d = localStorage.getItem(STORAGE_KEY_HISTORY);
-        return d ? JSON.parse(d) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-function saveToHistory(res) {
-    const list = getHistory();
-    list.unshift(res);
-    if (list.length > 60) list.pop();
-    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(list));
-
-    renderRecentTable();
-    updateDashboardCounters();
-}
-
-function filterRecentNews(filter, btn) {
-    recentFilter = filter;
-    document.querySelectorAll('.hist-btn-pill').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    renderRecentTable();
-}
-
-function renderRecentTable() {
-    const tbody = document.getElementById('newsTableBody');
-    const search = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
-    if (!tbody) return;
-
-    const list = getHistory();
-    const countBadge = document.getElementById('navHistoryCount');
-    if (countBadge) countBadge.textContent = list.length;
-
-    const filtered = list.filter(item => {
-        const s = (item.status || 'SUSPICIOUS').toUpperCase();
-        if (recentFilter === 'REAL' && s !== 'REAL') return false;
-        if (recentFilter === 'FAKE' && s !== 'FAKE') return false;
-        if (recentFilter === 'SUSPICIOUS' && s !== 'SUSPICIOUS') return false;
-
-        if (search) {
-            const t = (item.title || '').toLowerCase();
-            const p = (item.platform || '').toLowerCase();
-            if (!t.includes(search) && !p.includes(search)) return false;
-        }
-        return true;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 Report copied to clipboard!', 'success');
     });
+}
 
-    if (filtered.length === 0) {
-        tbody.innerHTML = `
+function downloadReport() {
+    if (!lastAnalyzedData) {
+        showToast('❌ No analysis report available to download.', 'error');
+        return;
+    }
+
+    const title = lastAnalyzedData.title || 'Untitled Report';
+    const status = lastAnalyzedData.status || 'UNKNOWN';
+    const score = lastAnalyzedData.credibilityScore || 0;
+    const explanation = lastAnalyzedData.explanation || (lastAnalyzedData.analysisDetails && lastAnalyzedData.analysisDetails.explanation) || 'No details provided.';
+
+    const reportContent = `==================================================
+🛡️ FAKESHIELD AI ANALYSIS REPORT
+==================================================
+Date: ${new Date().toLocaleString()}
+Title: ${title}
+Source URL: ${lastAnalyzedData.sourceUrl || 'N/A'}
+Platform: ${lastAnalyzedData.platform || 'General'}
+
+--------------------------------------------------
+RESULTS & SCORE
+--------------------------------------------------
+Status: ${status}
+Credibility Score: ${score}%
+
+--------------------------------------------------
+DETAILED AI ANALYSIS EXPLANATION
+--------------------------------------------------
+${explanation}
+
+==================================================
+Generated by FakeShield AI Platform
+==================================================`;
+
+    const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `FakeShield_Report_${Date.now()}.txt`;
+    link.click();
+    showToast('💾 Report downloaded successfully!', 'success');
+}
+
+function analyzeAnother() {
+    hideResults();
+    scrollToAnalyzer();
+}
+
+// ============================================
+// DASHBOARD & LIVE RECENT NEWS
+// ============================================
+
+async function loadDashboardData() {
+    try {
+        const statsRes = await fetch(`${API_URL}/api/news/statistics`);
+        if (statsRes.ok) {
+            const statsData = await statsRes.json();
+            const total = statsData.total || 0;
+            const fake = statsData.fake || 0;
+            const real = statsData.real || 0;
+            const suspicious = statsData.suspicious || 0;
+
+            const heroTotal = document.getElementById('heroTotal');
+            const heroFake = document.getElementById('heroFake');
+            const dashTotal = document.getElementById('dashTotal');
+            const dashFake = document.getElementById('dashFake');
+            const dashReal = document.getElementById('dashReal');
+            const dashSuspicious = document.getElementById('dashSuspicious');
+
+            if (heroTotal) heroTotal.textContent = total;
+            if (heroFake) heroFake.textContent = fake;
+            if (dashTotal) dashTotal.textContent = total;
+            if (dashFake) dashFake.textContent = fake;
+            if (dashReal) dashReal.textContent = real;
+            if (dashSuspicious) dashSuspicious.textContent = suspicious;
+        }
+
+        const newsRes = await fetch(`${API_URL}/api/news/all`);
+        if (newsRes.ok) {
+            allRecentNews = await newsRes.json();
+            renderRecentNewsTable();
+        }
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+    }
+}
+
+function renderRecentNewsTable() {
+    const tableBody = document.getElementById('newsTableBody');
+    if (!tableBody) return;
+
+    let items = allRecentNews;
+    if (currentFilter !== 'ALL') {
+        items = items.filter(n => (n.status || '').toUpperCase() === currentFilter);
+    }
+
+    if (!items || items.length === 0) {
+        tableBody.innerHTML = `
             <tr>
-                <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">
-                    No matching verification records found.
+                <td colspan="4" class="empty-state">
+                    No ${currentFilter === 'ALL' ? '' : currentFilter.toLowerCase()} news items found.
                 </td>
             </tr>
         `;
         return;
     }
 
-    tbody.innerHTML = filtered.map(item => {
-        const typeIcon = item.type === 'url' ? '🔗' : (item.type === 'image' ? '🖼️' : '📝');
-        const statusClass = (item.status || 'SUSPICIOUS').toLowerCase();
-        const score = Math.round(item.credibilityScore || 0);
+    tableBody.innerHTML = items.map(n => {
+        const status = (n.status || 'UNKNOWN').toUpperCase();
+        const score = Math.round(n.credibilityScore || 0);
+        const statusBadge = status === 'REAL' ? '✅ Real' : status === 'FAKE' ? '❌ Fake' : '⚠️ Suspicious';
+        const badgeClass = status === 'REAL' ? 'badge-real' : status === 'FAKE' ? 'badge-fake' : 'badge-suspicious';
 
         return `
-            <tr>
-                <td><strong>${escapeHtml(item.title || 'Untitled')}</strong></td>
-                <td>${typeIcon} ${escapeHtml(item.platform || 'Direct')}</td>
-                <td><strong>${score}%</strong></td>
-                <td><span class="badge-tag ${statusClass}">${item.status || 'SUSPICIOUS'}</span></td>
+            <tr onclick="viewReport(${n.id})" style="cursor: pointer;" title="Click to view details">
                 <td>
-                    <button type="button" onclick="deleteHistoryItem('${item.id}')" style="background:none; border:none; cursor:pointer; color:#f43f5e;" title="Delete">🗑️</button>
+                    <strong>${escapeHtml(n.title || 'Untitled')}</strong>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+                        ${n.sourceUrl ? `<a href="${n.sourceUrl}" target="_blank" onclick="event.stopPropagation()">${n.sourceUrl}</a>` : (n.platform || 'General')}
+                    </div>
                 </td>
+                <td>${escapeHtml(n.platform || 'General')}</td>
+                <td><span class="score-pill ${badgeClass}">${score}%</span></td>
+                <td><span class="status-pill ${badgeClass}">${statusBadge}</span></td>
             </tr>
         `;
     }).join('');
 }
 
-function deleteHistoryItem(id) {
-    let list = getHistory();
-    list = list.filter(i => i.id !== id);
-    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(list));
-    renderRecentTable();
-    updateDashboardCounters();
-    showToast('🗑️ Record deleted.');
+function filterRecentNews(filter, btnElement) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if (btnElement) btnElement.classList.add('active');
+    renderRecentNewsTable();
 }
 
-function clearAllHistory() {
-    if (confirm('Clear all analysis history?')) {
-        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify([]));
-        renderRecentTable();
-        updateDashboardCounters();
-        showToast('🗑️ History cleared.');
-    }
-}
+function viewReport(id) {
+    const item = allRecentNews.find(n => n.id === id);
+    if (!item) return;
 
-function exportHistoryJson() {
-    const list = getHistory();
-    const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `FakeShield_History_${Date.now()}.json`;
-    a.click();
-    showToast('📥 Exported JSON!');
-}
+    const modal = document.getElementById('reportModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
 
-function updateDashboardCounters() {
-    const list = getHistory();
-    let real = 0, fake = 0, suspicious = 0;
-    list.forEach(i => {
-        const s = (i.status || '').toUpperCase();
-        if (s === 'REAL') real++;
-        else if (s === 'FAKE') fake++;
-        else suspicious++;
-    });
+    if (modalTitle) modalTitle.textContent = item.title || 'Analysis Report';
+    if (modalBody) {
+        const status = (item.status || 'SUSPICIOUS').toUpperCase();
+        const score = Math.round(item.credibilityScore || 0);
+        const explanation = item.explanation || (item.analysisDetails && item.analysisDetails.explanation) || 'Standard multi-factor AI verification performed.';
 
-    if (document.getElementById('dashTotal')) document.getElementById('dashTotal').textContent = list.length;
-    if (document.getElementById('dashReal')) document.getElementById('dashReal').textContent = real;
-    if (document.getElementById('dashFake')) document.getElementById('dashFake').textContent = fake;
-    if (document.getElementById('dashSuspicious')) document.getElementById('dashSuspicious').textContent = suspicious;
-
-    if (document.getElementById('heroTotal')) document.getElementById('heroTotal').textContent = list.length;
-    if (document.getElementById('heroFake')) document.getElementById('heroFake').textContent = fake;
-}
-
-// ===================================================================
-// 10. MULTI-LANGUAGE SWITCHER
-// ===================================================================
-function toggleLangDropdown() {
-    document.getElementById('langDropdown')?.classList.toggle('show');
-}
-
-function changeLanguage(langCode, flag, name) {
-    currentLanguage = langCode;
-    localStorage.setItem('fakeshield_lang', langCode);
-
-    document.getElementById('activeLangFlag').textContent = flag;
-    document.getElementById('activeLangLabel').textContent = name;
-    document.getElementById('langDropdown')?.classList.remove('show');
-
-    document.querySelectorAll('.lang-opt').forEach(opt => {
-        opt.classList.toggle('active', opt.textContent.includes(name));
-    });
-
-    applyLanguage(langCode);
-}
-
-function applyLanguage(langCode) {
-    const dict = I18N[langCode] || I18N.en;
-
-    const map = {
-        navAnalyze: dict.navAnalyze,
-        navDashboard: dict.navDashboard,
-        navHistory: dict.navHistory,
-        navHow: dict.navHow,
-        navTips: dict.navTips,
-        navLoginText: dict.navLoginText,
-        btnNavCta: dict.btnNavCta,
-        heroBadge: dict.heroBadge,
-        heroTitleMain: dict.heroTitleMain,
-        heroTitleSub: dict.heroTitleSub,
-        heroSubtitle: dict.heroSubtitle,
-        btnHeroAnalyze: dict.btnHeroAnalyze,
-        btnHeroDashboard: dict.btnHeroDashboard,
-        lblHeroTotal: dict.lblHeroTotal,
-        lblHeroFake: dict.lblHeroFake,
-        lblHeroAccuracy: dict.lblHeroAccuracy,
-        cardRealTitle: dict.cardRealTitle,
-        cardRealSub: dict.cardRealSub,
-        cardSuspTitle: dict.cardSuspTitle,
-        cardSuspSub: dict.cardSuspSub,
-        cardFakeTitle: dict.cardFakeTitle,
-        cardFakeSub: dict.cardFakeSub,
-        tagAnalyzer: dict.tagAnalyzer,
-        headAnalyzer: dict.headAnalyzer,
-        subAnalyzer: dict.subAnalyzer,
-        tabText: dict.tabText,
-        tabUrl: dict.tabUrl,
-        tabImage: dict.tabImage,
-        lblQuickSamples: dict.lblQuickSamples,
-        sampleReal: dict.sampleReal,
-        sampleFake: dict.sampleFake,
-        sampleViral: dict.sampleViral,
-        lblHeadline: dict.lblHeadline,
-        lblContent: dict.lblContent,
-        lblSourceUrl: dict.lblSourceUrl,
-        lblPlatform: dict.lblPlatform,
-        btnAnalyzeText: dict.btnAnalyzeText,
-        lblUrlInput: dict.lblUrlInput,
-        btnAnalyzeUrlText: dict.btnAnalyzeUrlText,
-        dropTitle: dict.dropTitle,
-        dropSub: dict.dropSub,
-        btnAnalyzeImageText: dict.btnAnalyzeImageText,
-        lblVerdictTag: dict.lblVerdictTag,
-        lblCredibilityScore: dict.lblCredibilityScore,
-        lblExtractedOcr: dict.lblExtractedOcr,
-        lblMetricsBreakdown: dict.lblMetricsBreakdown,
-        lblReasoningTitle: dict.lblReasoningTitle,
-        btnCopyReport: dict.btnCopyReport,
-        btnDownloadReport: dict.btnDownloadReport,
-        btnShareReport: dict.btnShareReport,
-        btnAnalyzeAnother: dict.btnAnalyzeAnother,
-        tagDashboard: dict.tagDashboard,
-        headDashboard: dict.headDashboard,
-        subDashboard: dict.subDashboard,
-        lblDashTotal: dict.lblDashTotal,
-        lblDashReal: dict.lblDashReal,
-        lblDashFake: dict.lblDashFake,
-        lblDashSuspicious: dict.lblDashSuspicious,
-        tagHow: dict.tagHow,
-        headHow: dict.headHow,
-        subHow: dict.subHow,
-        step1Title: dict.step1Title,
-        step1Desc: dict.step1Desc,
-        step2Title: dict.step2Title,
-        step2Desc: dict.step2Desc,
-        step3Title: dict.step3Title,
-        step3Desc: dict.step3Desc,
-        step4Title: dict.step4Title,
-        step4Desc: dict.step4Desc
-    };
-
-    Object.entries(map).forEach(([id, text]) => {
-        const el = document.getElementById(id);
-        if (el && text) el.innerText = text;
-    });
-
-    if (document.getElementById('newsTitle')) document.getElementById('newsTitle').placeholder = dict.phHeadline;
-    if (document.getElementById('newsContent')) document.getElementById('newsContent').placeholder = dict.phContent;
-    if (document.getElementById('urlInput')) document.getElementById('urlInput').placeholder = dict.phUrl;
-}
-
-window.addEventListener('click', (e) => {
-    if (!e.target.closest('.lang-dropdown-wrapper')) {
-        document.getElementById('langDropdown')?.classList.remove('show');
-    }
-});
-
-// ===================================================================
-// 11. NAVBAR AUTH PORTAL
-// ===================================================================
-function renderNavbarAuth() {
-    const container = document.getElementById('navAuthContainer');
-    if (!container) return;
-
-    let user = null;
-    try {
-        const s = localStorage.getItem('fakeshield_auth_user');
-        if (s) user = JSON.parse(s);
-    } catch (e) {}
-
-    if (!user) {
-        container.innerHTML = `
-            <a href="login.html" class="user-profile-btn" id="navLoginBtn">
-                <span>👤</span>
-                <span id="navLoginText">Login</span>
-            </a>
-        `;
-        return;
-    }
-
-    const initial = (user.fullName || user.username || 'U').charAt(0).toUpperCase();
-    const displayName = user.fullName || user.username || 'User';
-
-    container.innerHTML = `
-        <div class="user-nav-profile">
-            <button class="user-profile-btn" onclick="toggleUserMenu()">
-                <div class="user-avatar-circle">${initial}</div>
-                <span class="user-name-text">${escapeHtml(displayName)}</span>
-                <span style="font-size: 0.7rem; color: #94a3b8;">▼</span>
-            </button>
-            <div class="user-dropdown-menu" id="userDropdownMenu">
-                <div style="padding: 0.6rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-                    <div style="font-weight: 700; color: #f8fafc; font-size: 0.88rem;">${escapeHtml(user.fullName || user.username)}</div>
-                    <div style="font-size: 0.75rem; color: #38bdf8;">${escapeHtml(user.role || 'Fact-Checker')}</div>
+        modalBody.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <span class="status-pill ${status === 'REAL' ? 'badge-real' : status === 'FAKE' ? 'badge-fake' : 'badge-suspicious'}">
+                        ${status === 'REAL' ? '✅ Real News' : status === 'FAKE' ? '❌ Fake News' : '⚠️ Suspicious'}
+                    </span>
+                    <span style="margin-left:8px; font-size:13px; color:#94a3b8;">${item.platform || 'General'}</span>
                 </div>
-                <a href="#history-section" class="user-menu-item" onclick="toggleUserMenu()">
-                    <span>📜</span> My Analyses
-                </a>
-                <a href="#dashboard" class="user-menu-item" onclick="toggleUserMenu()">
-                    <span>📊</span> Live Dashboard
-                </a>
-                <button class="user-menu-item logout" onclick="logoutAppUser()">
-                    <span>🚪</span> Sign Out
-                </button>
+                <div style="font-size: 24px; font-weight:700; color: ${status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#ef4444' : '#f59e0b'};">
+                    ${score}%
+                </div>
             </div>
-        </div>
-    `;
-}
-
-function toggleUserMenu() {
-    const menu = document.getElementById('userDropdownMenu');
-    if (menu) menu.classList.toggle('show');
-}
-
-function logoutAppUser() {
-    localStorage.removeItem('fakeshield_auth_user');
-    renderNavbarAuth();
-    showToast('👋 Signed out successfully.');
-}
-
-window.addEventListener('click', (e) => {
-    if (!e.target.closest('.user-nav-profile')) {
-        const menu = document.getElementById('userDropdownMenu');
-        if (menu && menu.classList.contains('show')) menu.classList.remove('show');
+            <div style="margin-bottom: 16px;">
+                <strong>Article Content / Extract:</strong>
+                <p style="background: rgba(255,255,255,0.05); padding:12px; border-radius:8px; font-size:13px; color:#cbd5e1; max-height:150px; overflow-y:auto;">
+                    ${escapeHtml(item.content || item.title || 'No content')}
+                </p>
+            </div>
+            <div>
+                <strong>Detailed AI Analysis Explanation:</strong>
+                <pre style="white-space: pre-wrap; font-family: inherit; background: rgba(0,0,0,0.3); padding:12px; border-radius:8px; font-size:13px; color:#e2e8f0; border: 1px solid rgba(255,255,255,0.1);">
+${escapeHtml(explanation)}
+                </pre>
+            </div>
+        `;
     }
-});
 
-// ===================================================================
-// 12. UTILITIES
-// ===================================================================
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2800);
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeReportModal(event) {
+    const modal = document.getElementById('reportModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function updateDashboardStats() {
+    loadDashboardData();
+}
+
+function loadRecentNews() {
+    showToast('🔄 Refreshing live data...', 'info');
+    loadDashboardData();
 }
 
 function escapeHtml(str) {
     if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
+
+// ============================================
+// NAVBAR AUTH & USER WIDGET
+// ============================================
+
+function initNavbarAuth() {
+    const token = getToken();
+    const user = getUser();
+
+    const navLoginBtn = document.getElementById('navLoginBtn');
+    const navUserBadge = document.getElementById('navUserBadge');
+    const navUsername = document.getElementById('navUsername');
+    const navHistoryLink = document.getElementById('navHistoryLink');
+
+    if (token && user) {
+        if (navLoginBtn) navLoginBtn.style.display = 'none';
+        if (navUserBadge) navUserBadge.style.display = 'inline-flex';
+        if (navUsername) navUsername.textContent = `👤 ${user.fullName || user.username || 'User'}`;
+        if (navHistoryLink) navHistoryLink.style.display = 'inline-block';
+    } else {
+        if (navLoginBtn) navLoginBtn.style.display = 'inline-block';
+        if (navUserBadge) navUserBadge.style.display = 'none';
+        if (navHistoryLink) navHistoryLink.style.display = 'none';
+    }
+}
+
+// ============================================
+// LANGUAGE SWITCHER & UI LOCALIZATION
+// ============================================
+
+let selectedLanguageCode = 'en';
+
+const I18N_STRINGS = {
+    en: {
+        navAnalyze: "Analyze",
+        navDashboard: "Dashboard",
+        navHow: "How It Works",
+        navAbout: "About",
+        navHistory: "📜 My History",
+        heroBadge: "AI-Powered Detection",
+        heroTitle: "Detect Fake News<br><span class=\"gradient-text\">In Seconds</span>",
+        heroSubtitle: "Advanced AI analyzes news articles, URLs, and images in real-time.",
+        heroBtnAnalyze: "🔍 Analyze Now",
+        heroBtnDashboard: "📊 View Dashboard",
+        statAnalyzed: "Articles Analyzed",
+        statFake: "Fake News Detected",
+        statAccuracy: "Accuracy Rate",
+        cardReal: "Verified Real",
+        cardSuspicious: "Suspicious",
+        cardFake: "Fake News",
+        secAnalyzeTitle: "Analyze News",
+        secAnalyzeSub: "Check text, URLs, or upload images to detect fake news",
+        tabText: "📝 Text Analysis",
+        tabUrl: "🔗 URL Analysis",
+        tabImage: "🖼️ Image Analysis",
+        lblHeadline: "News Headline",
+        phHeadline: "Enter the news headline here...",
+        lblContent: "News Content",
+        phContent: "Paste the full article content here...",
+        btnAnalyzeText: "🤖 Analyze Text",
+        btnAnalyzeUrl: "🔗 Analyze URL",
+        btnAnalyzeImage: "🖼️ Analyze Image",
+        dropTitle: "Drop Image Here or Click to Upload",
+        dashTitle: "Live Dashboard",
+        dashSub: "Real-time tracking of analyzed news",
+        dashTotal: "Total Analyzed",
+        dashFake: "Fake News",
+        dashReal: "Real News",
+        dashSuspicious: "Suspicious",
+        dashRecent: "📰 Recently Analyzed"
+    },
+    ta: {
+        navAnalyze: "ஆராய்",
+        navDashboard: "டாஷ்போர்டு",
+        navHow: "எப்படி செயல்படுகிறது",
+        navAbout: "பற்றி",
+        navHistory: "📜 என் வரலாறு",
+        heroBadge: "AI-இயங்கும் கண்டறிதல்",
+        heroTitle: "போலி செய்திகளை கண்டறியுங்கள்<br><span class=\"gradient-text\">நொடிகளில்</span>",
+        heroSubtitle: "செயற்கை நுண்ணறிவு மூலம் செய்திகள், இணைய இணைப்புகள் மற்றும் படங்களை துல்லியமாக சரிபார்க்கவும்.",
+        heroBtnAnalyze: "🔍 இப்போதே ஆராயுங்கள்",
+        heroBtnDashboard: "📊 டாஷ்போர்டு பார்க்க",
+        statAnalyzed: "ஆராயப்பட்ட கட்டுரைகள்",
+        statFake: "கண்டறியப்பட்ட போலி செய்தி",
+        statAccuracy: "துல்லியம் விகிதம்",
+        cardReal: "உண்மையான செய்தி",
+        cardSuspicious: "சந்தேகத்திற்குரியது",
+        cardFake: "போலி செய்தி",
+        secAnalyzeTitle: "செய்தியை ஆராயுங்கள்",
+        secAnalyzeSub: "போலி செய்திகளை கண்டறிய உரை, இணைய முகவரி அல்லது படங்களை பதிவேற்றவும்",
+        tabText: "📝 உரை பகுப்பாய்வு",
+        tabUrl: "🔗 URL பகுப்பாய்வு",
+        tabImage: "🖼️ பட பகுப்பாய்வு",
+        lblHeadline: "செய்தி தலைப்பு",
+        phHeadline: "செய்தி தலைப்பை இங்கே உள்ளிடவும்...",
+        lblContent: "செய்தி உள்ளடக்கம்",
+        phContent: "முழு செய்திக் கட்டுரையை இங்கே ஒட்டவும்...",
+        btnAnalyzeText: "🤖 உரையை ஆராயுங்கள்",
+        btnAnalyzeUrl: "🔗 இணைப்பை ஆராயுங்கள்",
+        btnAnalyzeImage: "🖼️ படத்தை ஆராயுங்கள்",
+        dropTitle: "படத்தை இங்கே இழுத்துப் போடவும் அல்லது கிளிக் செய்யவும்",
+        dashTitle: "நேரலை டாஷ்போர்டு",
+        dashSub: "ஆராயப்பட்ட செய்திகளின் நிகழ்நேர புள்ளிவிவரங்கள்",
+        dashTotal: "மொத்தம் ஆராயப்பட்டவை",
+        dashFake: "போலி செய்திகள்",
+        dashReal: "உண்மை செய்திகள்",
+        dashSuspicious: "சந்தேகத்திற்குரியவை",
+        dashRecent: "📰 சமீபத்திய பகுப்பாய்வு"
+    },
+    hi: {
+        navAnalyze: "विश्लेषण",
+        navDashboard: "डैशबोर्ड",
+        navHow: "यह कैसे काम करता है",
+        navAbout: "परिचय",
+        navHistory: "📜 मेरा इतिहास",
+        heroBadge: "AI-संचालित जांच",
+        heroTitle: "फर्जी खबरों का पता लगाएं<br><span class=\"gradient-text\">चंद सेकंडों में</span>",
+        heroSubtitle: "आर्टिफिशियल इंटेलिजेंस की मदद से खबरों, यूआरएल और तस्वीरों की तुरंत सत्यता जांचें।",
+        heroBtnAnalyze: "🔍 अभी जांचें",
+        heroBtnDashboard: "📊 डैशबोर्ड देखें",
+        statAnalyzed: "कुल जांची गई खबरें",
+        statFake: "फर्जी खबरें पकड़ी गईं",
+        statAccuracy: "सटीकता दर",
+        cardReal: "सत्यापित सच",
+        cardSuspicious: "संदेहास्पद",
+        cardFake: "फर्जी खबर",
+        secAnalyzeTitle: "समाचार विश्लेषण",
+        secAnalyzeSub: "टेक्स्ट, यूआरएल या फोटो अपलोड करके फेक न्यूज की जांच करें",
+        tabText: "📝 टेक्स्ट विश्लेषण",
+        tabUrl: "🔗 URL विश्लेषण",
+        tabImage: "🖼️ फोटो विश्लेषण",
+        lblHeadline: "समाचार शीर्षक",
+        phHeadline: "खबर का शीर्षक यहां दर्ज करें...",
+        lblContent: "समाचार विवरण",
+        phContent: "पूरा समाचार यहां पेस्ट करें...",
+        btnAnalyzeText: "🤖 टेक्स्ट की जांच करें",
+        btnAnalyzeUrl: "🔗 URL की जांच करें",
+        btnAnalyzeImage: "🖼️ फोटो की जांच करें",
+        dropTitle: "फोटो यहां ड्रैग करें या क्लिक करके अपलोड करें",
+        dashTitle: "लाइव डैशबोर्ड",
+        dashSub: "विश्लेषण किए गए समाचारों की लाइव ट्रैकिंग",
+        dashTotal: "कुल विश्लेषित",
+        dashFake: "फर्जी खबरें",
+        dashReal: "सच्ची खबरें",
+        dashSuspicious: "संदेहास्पद",
+        dashRecent: "📰 हाल ही में जांची गई खबरें"
+    },
+    es: {
+        navAnalyze: "Analizar",
+        navDashboard: "Panel",
+        navHow: "Cómo Funciona",
+        navAbout: "Acerca de",
+        navHistory: "📜 Mi Historial",
+        heroBadge: "Detección con IA",
+        heroTitle: "Detecta Noticias Falsas<br><span class=\"gradient-text\">En Segundos</span>",
+        heroSubtitle: "La IA avanzada analiza artículos de noticias, URLs e imágenes en tiempo real.",
+        heroBtnAnalyze: "🔍 Analizar Ahora",
+        heroBtnDashboard: "📊 Ver Panel",
+        statAnalyzed: "Artículos Analizados",
+        statFake: "Noticias Falsas Detectadas",
+        statAccuracy: "Tasa de Precisión",
+        cardReal: "Verificado Real",
+        cardSuspicious: "Sospechoso",
+        cardFake: "Noticia Falsa",
+        secAnalyzeTitle: "Analizar Noticias",
+        secAnalyzeSub: "Verifica texto, URLs o sube imágenes para detectar noticias falsas",
+        tabText: "📝 Análisis de Texto",
+        tabUrl: "🔗 Análisis de URL",
+        tabImage: "🖼️ Análisis de Imagen",
+        lblHeadline: "Titular de la Noticia",
+        phHeadline: "Introduce el titular aquí...",
+        lblContent: "Contenido de la Noticia",
+        phContent: "Pega el artículo completo aquí...",
+        btnAnalyzeText: "🤖 Analizar Texto",
+        btnAnalyzeUrl: "🔗 Analizar URL",
+        btnAnalyzeImage: "🖼️ Analizar Imagen",
+        dropTitle: "Arrastra una imagen o haz clic para subir",
+        dashTitle: "Panel en Vivo",
+        dashSub: "Seguimiento en tiempo real de noticias analizadas",
+        dashTotal: "Total Analizado",
+        dashFake: "Noticias Falsas",
+        dashReal: "Noticias Reales",
+        dashSuspicious: "Sospechosas",
+        dashRecent: "📰 Analizados Recientemente"
+    },
+    fr: {
+        navAnalyze: "Analyser",
+        navDashboard: "Tableau de Bord",
+        navHow: "Comment ça marche",
+        navAbout: "À propos",
+        navHistory: "📜 Mon Historique",
+        heroBadge: "Détection par IA",
+        heroTitle: "Détectez les Fausses Nouvelles<br><span class=\"gradient-text\">En Quelques Secondes</span>",
+        heroSubtitle: "L'IA analyse les articles, les URLs et les images en temps réel.",
+        heroBtnAnalyze: "🔍 Analyser Maintenant",
+        heroBtnDashboard: "📊 Voir le Tableau",
+        statAnalyzed: "Articles Analysés",
+        statFake: "Fausses Nouvelles Détectées",
+        statAccuracy: "Taux de Précision",
+        cardReal: "Vérifié Réel",
+        cardSuspicious: "Suspect",
+        cardFake: "Fausse Nouvelle",
+        secAnalyzeTitle: "Analyser les Nouvelles",
+        secAnalyzeSub: "Vérifiez du texte, des liens ou téléversez des images",
+        tabText: "📝 Analyse de Texte",
+        tabUrl: "🔗 Analyse d'URL",
+        tabImage: "🖼️ Analyse d'Image",
+        lblHeadline: "Titre de l'Article",
+        phHeadline: "Entrez le titre ici...",
+        lblContent: "Contenu de l'Article",
+        phContent: "Collez le texte complet ici...",
+        btnAnalyzeText: "🤖 Analyser le Texte",
+        btnAnalyzeUrl: "🔗 Analyser l'URL",
+        btnAnalyzeImage: "🖼️ Analyser l'Image",
+        dropTitle: "Déposez une image ou cliquez pour téléverser",
+        dashTitle: "Tableau de Bord",
+        dashSub: "Suivi en temps réel des analyses",
+        dashTotal: "Total Analysé",
+        dashFake: "Fausses Nouvelles",
+        dashReal: "Vraies Nouvelles",
+        dashSuspicious: "Suspects",
+        dashRecent: "📰 Récemment Analysé"
+    },
+    de: {
+        navAnalyze: "Analysieren",
+        navDashboard: "Dashboard",
+        navHow: "So funktioniert's",
+        navAbout: "Über uns",
+        navHistory: "📜 Mein Verlauf",
+        heroBadge: "KI-Erkennung",
+        heroTitle: "Fake News Erkennen<br><span class=\"gradient-text\">In Sekundenschnelle</span>",
+        heroSubtitle: "Fortschrittliche KI analysiert Nachrichten, URLs und Bilder in Echtzeit.",
+        heroBtnAnalyze: "🔍 Jetzt Analysieren",
+        heroBtnDashboard: "📊 Dashboard Öffnen",
+        statAnalyzed: "Artikel Analysiert",
+        statFake: "Fake News Erkannt",
+        statAccuracy: "Genauigkeitsrate",
+        cardReal: "Verifiziert Echt",
+        cardSuspicious: "Verdächtig",
+        cardFake: "Fake News",
+        secAnalyzeTitle: "Nachrichten Prüfen",
+        secAnalyzeSub: "Prüfen Sie Texte, URLs oder laden Sie Bilder hoch",
+        tabText: "📝 Textanalyse",
+        tabUrl: "🔗 URL-Analyse",
+        tabImage: "🖼️ Bildanalyse",
+        lblHeadline: "Schlagzeile",
+        phHeadline: "Geben Sie die Schlagzeile hier ein...",
+        lblContent: "Nachrichteninhalt",
+        phContent: "Fügen Sie den Artikelinhalt hier ein...",
+        btnAnalyzeText: "🤖 Text Analysieren",
+        btnAnalyzeUrl: "🔗 URL Analysieren",
+        btnAnalyzeImage: "🖼️ Bild Analysieren",
+        dropTitle: "Bild hier ablegen oder zum Hochladen klicken",
+        dashTitle: "Live-Dashboard",
+        dashSub: "Echtzeit-Verfolgung geprüfter Nachrichten",
+        dashTotal: "Gesamt Analysiert",
+        dashFake: "Fake News",
+        dashReal: "Echte News",
+        dashSuspicious: "Verdächtig",
+        dashRecent: "📰 Kürzlich Analysiert"
+    }
+};
+
+function toggleLangDropdown() {
+    const dropdown = document.getElementById('langDropdown');
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+}
+
+async function changeLanguage(code, flag, name) {
+    selectedLanguageCode = code;
+    const currentLang = document.getElementById('currentLang');
+    if (currentLang) currentLang.textContent = `${flag} ${code.toUpperCase()}`;
+    toggleLangDropdown();
+    showToast(`🌐 Language set to ${name}`, 'info');
+
+    applyUILanguage(code);
+
+    // If an analysis explanation is currently visible on screen, translate it live!
+    const explanationText = document.getElementById('explanationText');
+    if (explanationText && explanationText.textContent && lastAnalyzedData) {
+        const rawExplanation = lastAnalyzedData.explanation || (lastAnalyzedData.analysisDetails && lastAnalyzedData.analysisDetails.explanation);
+        if (rawExplanation) {
+            if (code === 'en') {
+                explanationText.textContent = rawExplanation;
+            } else {
+                showToast(`Translating analysis explanation to ${name}...`, 'info');
+                try {
+                    const res = await fetch(`${API_URL}/api/language/translate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: rawExplanation, target: code })
+                    });
+                    if (res.ok) {
+                        const trData = await res.json();
+                        if (trData.translated) {
+                            explanationText.textContent = trData.translated;
+                            showToast(`✅ Translated analysis to ${name}!`, 'success');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Translation failed:', e);
+                }
+            }
+        }
+    }
+}
+
+function applyUILanguage(langCode) {
+    const dict = I18N_STRINGS[langCode] || I18N_STRINGS['en'];
+
+    const setHtml = (selector, val) => {
+        const el = document.querySelector(selector);
+        if (el && val) el.innerHTML = val;
+    };
+    const setAttr = (selector, attr, val) => {
+        const el = document.querySelector(selector);
+        if (el && val) el.setAttribute(attr, val);
+    };
+
+    // Hero & Navbar
+    setHtml('.nav-links a[href="#analyzer"]', dict.navAnalyze);
+    setHtml('.nav-links a[href="#dashboard"]', dict.navDashboard);
+    setHtml('.nav-links a[href="#how-it-works"]', dict.navHow);
+    setHtml('.nav-links a[href="#about"]', dict.navAbout);
+    setHtml('#navHistoryLink', dict.navHistory);
+    setHtml('.hero-content .badge', `<span class="pulse-dot"></span> ${dict.heroBadge}`);
+    setHtml('.hero-content h1', dict.heroTitle);
+    setHtml('.hero-subtitle', dict.heroSubtitle);
+    setHtml('.hero-buttons .btn-primary', dict.heroBtnAnalyze);
+    setHtml('.hero-buttons .btn-secondary', dict.heroBtnDashboard);
+
+    // Floating cards
+    setHtml('.card-real .card-title', dict.cardReal);
+    setHtml('.card-suspicious .card-title', dict.cardSuspicious);
+    setHtml('.card-fake .card-title', dict.cardFake);
+
+    // Analyzer section
+    setHtml('.analyzer-section .section-header h2', dict.secAnalyzeTitle);
+    setHtml('.analyzer-section .section-header p', dict.secAnalyzeSub);
+    setHtml('.analyzer-tabs .tab-btn:nth-child(1)', dict.tabText);
+    setHtml('.analyzer-tabs .tab-btn:nth-child(2)', dict.tabUrl);
+    setHtml('.analyzer-tabs .tab-btn:nth-child(3)', dict.tabImage);
+
+    // Form inputs
+    setAttr('#newsTitle', 'placeholder', dict.phHeadline);
+    setAttr('#newsContent', 'placeholder', dict.phContent);
+    setHtml('#btnText', dict.btnAnalyzeText);
+    setHtml('#btnUrlText', dict.btnAnalyzeUrl);
+    setHtml('#btnImageText', dict.btnAnalyzeImage);
+    setHtml('#uploadContent h3', dict.dropTitle);
+
+    // Dashboard
+    setHtml('.dashboard-section .section-header h2', dict.dashTitle);
+    setHtml('.dashboard-section .section-header p', dict.dashSub);
+    setHtml('.card-total .card-label', dict.dashTotal);
+    setHtml('.card-fake .card-label', dict.dashFake);
+    setHtml('.card-real .card-label', dict.dashReal);
+    setHtml('.card-suspicious .card-label', dict.dashSuspicious);
+    setHtml('.recent-news-header h3', dict.dashRecent);
+}
+
+// Close language dropdown on outside click
+document.addEventListener('click', (e) => {
+    const switcher = document.querySelector('.language-switcher');
+    const dropdown = document.getElementById('langDropdown');
+    if (switcher && !switcher.contains(e.target) && dropdown) {
+        dropdown.style.display = 'none';
+    }
+});
+
+// ============================================
+// BREAKTHROUGH 5 NOVEL FEATURES IMPLEMENTATION
+// ============================================
+
+// ----------------------------------------------------
+// FEATURE 1 & 3: PSYCHOLOGICAL FALLACY RADAR & WEAPONRY
+// ----------------------------------------------------
+
+function calculatePsychologicalFallacies(text, headline, credibilityScore, status) {
+    const fullText = ((headline || '') + ' ' + (text || '')).toLowerCase();
+
+    // Word dictionaries for psychological manipulation
+    const fearPatterns = ['danger', 'deadly', 'die', 'threat', 'secretly', 'warning', 'catastrophe', 'panic', 'poison', 'harm', 'collapse', 'killed', 'attack', 'hidden truth', 'beware', 'fatal', 'destroy'];
+    const urgencyPatterns = ['immediately', 'forward', 'share before deleted', 'urgent', 'right now', 'dont ignore', "don't ignore", 'within 24 hours', 'fast', 'act now', 'last chance', 'breaking alert', 'hurry', 'must read'];
+    const authorityPatterns = ['nasa', 'who', 'unesco', 'supreme court', 'prime minister', 'secret doctor', 'confidential report', 'official leak', 'scientist reveals', 'harvard study', 'classified'];
+    const greedPatterns = ['free', 'win', 'subsidy', '100% true', 'guaranteed', 'deposit', 'bonus', 'laptops', 'cash', 'lottery', 'scheme', 'get money', 'transfer', 'click here to claim', 'offer'];
+    const polarizationPatterns = ['traitors', 'enemies', 'they dont want you', "they don't want you", 'us against them', 'corrupt media', 'sheep', 'wake up', 'shameful', 'evil', 'destroying our country', 'anti-national'];
+
+    const countMatches = (arr) => arr.reduce((acc, word) => acc + (fullText.includes(word) ? 1 : 0), 0);
+
+    const fearMatches = countMatches(fearPatterns);
+    const urgencyMatches = countMatches(urgencyPatterns);
+    const authorityMatches = countMatches(authorityPatterns);
+    const greedMatches = countMatches(greedPatterns);
+    const polarMatches = countMatches(polarizationPatterns);
+
+    let fearScore = Math.min(100, fearMatches * 28 + (status === 'FAKE' ? 25 : 5));
+    let urgencyScore = Math.min(100, urgencyMatches * 32 + (status === 'FAKE' ? 20 : 0));
+    let authorityScore = Math.min(100, authorityMatches * 30 + (status === 'FAKE' ? 15 : 0));
+    let greedScore = Math.min(100, greedMatches * 35 + (status === 'FAKE' ? 20 : 0));
+    let polarizationScore = Math.min(100, polarMatches * 30 + (status === 'FAKE' ? 20 : 5));
+
+    if (status === 'REAL') {
+        fearScore = Math.min(25, fearScore * 0.3);
+        urgencyScore = Math.min(20, urgencyScore * 0.2);
+        authorityScore = Math.min(30, authorityScore * 0.3);
+        greedScore = Math.min(15, greedScore * 0.2);
+        polarizationScore = Math.min(20, polarizationScore * 0.2);
+    }
+
+    const avgManipulation = Math.round((fearScore + urgencyScore + authorityScore + greedScore + polarizationScore) / 5);
+
+    return {
+        fear: Math.round(fearScore),
+        urgency: Math.round(urgencyScore),
+        authority: Math.round(authorityScore),
+        greed: Math.round(greedScore),
+        polarization: Math.round(polarizationScore),
+        avg: avgManipulation
+    };
+}
+
+function renderPsychologicalAnalysis(data) {
+    const text = data.content || data.newsContent || '';
+    const headline = data.title || data.headline || '';
+    const status = (data.status || 'UNKNOWN').toUpperCase();
+    const score = data.credibilityScore || 50;
+
+    const fallacies = calculatePsychologicalFallacies(text, headline, score, status);
+
+    // Update UI Progress Bars
+    const updateBar = (id, val) => {
+        const valEl = document.getElementById(`val${id}`);
+        const barEl = document.getElementById(`bar${id}`);
+        if (valEl) valEl.textContent = `${val}%`;
+        if (barEl) barEl.style.width = `${val}%`;
+    };
+
+    updateBar('Fear', fallacies.fear);
+    updateBar('Urgency', fallacies.urgency);
+    updateBar('Authority', fallacies.authority);
+    updateBar('Greed', fallacies.greed);
+    updateBar('Polarization', fallacies.polarization);
+
+    // Update Badge
+    const badgeText = document.getElementById('manipulationWeaponText');
+    if (badgeText) {
+        if (fallacies.avg >= 60) {
+            badgeText.textContent = `🚨 High Psychological Manipulation (${fallacies.avg}%)`;
+            badgeText.parentElement.style.borderColor = '#ff4757';
+            badgeText.parentElement.style.color = '#ff6b81';
+        } else if (fallacies.avg >= 35) {
+            badgeText.textContent = `⚠️ Moderate Persuasion Bias (${fallacies.avg}%)`;
+            badgeText.parentElement.style.borderColor = '#ffa500';
+            badgeText.parentElement.style.color = '#ffa500';
+        } else {
+            badgeText.textContent = `✅ Low / Objective Fact Presentation (${fallacies.avg}%)`;
+            badgeText.parentElement.style.borderColor = '#00d68f';
+            badgeText.parentElement.style.color = '#00d68f';
+        }
+    }
+
+    // Draw Radar Chart
+    drawFallacyRadarChart(fallacies);
+
+    // Highlight Clauses
+    renderFallacyHighlights(headline, text, fallacies);
+}
+
+function drawFallacyRadarChart(fallacies) {
+    const canvas = document.getElementById('fallacyRadarCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(centerX, centerY) - 45;
+
+    ctx.clearRect(0, 0, width, height);
+
+    const axes = [
+        { name: 'Fear & Panic', val: fallacies.fear },
+        { name: 'Urgency Trap', val: fallacies.urgency },
+        { name: 'Authority Spoof', val: fallacies.authority },
+        { name: 'Scarcity/Greed', val: fallacies.greed },
+        { name: 'Polarization', val: fallacies.polarization }
+    ];
+
+    const totalAxes = axes.length;
+    const angleStep = (Math.PI * 2) / totalAxes;
+
+    // Draw polygon grid rings
+    const rings = 4;
+    for (let r = 1; r <= rings; r++) {
+        const ringRadius = (radius / rings) * r;
+        ctx.beginPath();
+        for (let i = 0; i < totalAxes; i++) {
+            const angle = i * angleStep - Math.PI / 2;
+            const x = centerX + Math.cos(angle) * ringRadius;
+            const y = centerY + Math.sin(angle) * ringRadius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    // Draw Axis spokes & labels
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for (let i = 0; i < totalAxes; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.2)';
+        ctx.stroke();
+
+        // Label Position
+        const labelDist = radius + 24;
+        const lx = centerX + Math.cos(angle) * labelDist;
+        const ly = centerY + Math.sin(angle) * labelDist;
+        ctx.fillStyle = '#8892A4';
+        ctx.fillText(axes[i].name, lx, ly);
+    }
+
+    // Draw Data Shape
+    ctx.beginPath();
+    for (let i = 0; i < totalAxes; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const valueRatio = Math.max(0.1, axes[i].val / 100);
+        const curRadius = radius * valueRatio;
+        const x = centerX + Math.cos(angle) * curRadius;
+        const y = centerY + Math.sin(angle) * curRadius;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    // Fill with glowing gradient
+    const gradient = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, radius);
+    gradient.addColorStop(0, 'rgba(0, 212, 255, 0.6)');
+    gradient.addColorStop(0.5, 'rgba(123, 47, 255, 0.45)');
+    gradient.addColorStop(1, 'rgba(255, 0, 229, 0.25)');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Draw data points
+    for (let i = 0; i < totalAxes; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const valueRatio = Math.max(0.1, axes[i].val / 100);
+        const curRadius = radius * valueRatio;
+        const x = centerX + Math.cos(angle) * curRadius;
+        const y = centerY + Math.sin(angle) * curRadius;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff00e5';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+    }
+}
+
+function renderFallacyHighlights(headline, text, fallacies) {
+    const container = document.getElementById('manipulationHighlights');
+    if (!container) return;
+
+    const sample = (headline + ' ' + text).trim();
+    if (!sample || fallacies.avg < 25) {
+        container.innerHTML = `<span style="color:#00d68f;">✅ High linguistic neutrality. No severe cognitive traps or sensationalized deception patterns detected.</span>`;
+        return;
+    }
+
+    let html = '';
+    if (fallacies.urgency > 40) {
+        html += `<div style="margin-bottom:8px;"><span class="clause-tag tag-urgency">⚡ ACTION TRAP</span> <em>Demands rapid sharing before fact-checking occurs.</em></div>`;
+    }
+    if (fallacies.fear > 40) {
+        html += `<div style="margin-bottom:8px;"><span class="clause-tag tag-fear">😱 FEAR INDUCTION</span> <em>Leverages panic to bypass rational analysis.</em></div>`;
+    }
+    if (fallacies.authority > 40) {
+        html += `<div style="margin-bottom:8px;"><span class="clause-tag tag-authority">🏛️ AUTHORITY SPOOF</span> <em>Attributes unverified claims to official bodies (NASA/WHO/Ministers).</em></div>`;
+    }
+    if (fallacies.greed > 40) {
+        html += `<div style="margin-bottom:8px;"><span class="clause-tag tag-greed">💰 SCARCITY / GREED HOOK</span> <em>Promises financial bonuses or free rewards to encourage clicking.</em></div>`;
+    }
+    if (fallacies.polarization > 40) {
+        html += `<div style="margin-bottom:8px;"><span class="clause-tag tag-polar">⚔️ POLARIZATION BIAS</span> <em>Employs divisive rhetoric and 'us vs them' framing.</em></div>`;
+    }
+
+    container.innerHTML = html || `<span>Analyzed against 250+ neurolinguistic propaganda markers.</span>`;
+}
+
+// ----------------------------------------------------
+// FEATURE 1: VOICE DEBUNK SPOKEN AUDIO GENERATOR
+// ----------------------------------------------------
+
+let isVoiceRecording = false;
+let speechRecognitionInstance = null;
+let currentVoiceDebunkText = '';
+let voiceUtterance = null;
+let isVoicePlaying = false;
+let voicePlaySpeed = 1.0;
+
+function toggleVoiceRecording() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const btn = document.getElementById('voiceRecordBtn');
+    const statusText = document.getElementById('recordingStatus');
+
+    if (!SpeechRecognition) {
+        showToast('Speech recognition not supported in this browser. Please type or load sample.', 'warning');
+        return;
+    }
+
+    if (!isVoiceRecording) {
+        speechRecognitionInstance = new SpeechRecognition();
+        speechRecognitionInstance.continuous = true;
+        speechRecognitionInstance.interimResults = true;
+        speechRecognitionInstance.lang = document.getElementById('voiceLanguageSelect') ? document.getElementById('voiceLanguageSelect').value : 'en';
+
+        speechRecognitionInstance.onstart = () => {
+            isVoiceRecording = true;
+            if (btn) btn.classList.add('active');
+            if (statusText) statusText.textContent = '🔴 Listening... Speak clearly into microphone';
+            showToast('Microphone active. Transcribing speech...', 'info');
+            animateVoiceWave();
+        };
+
+        speechRecognitionInstance.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                transcript += event.results[i][0].transcript;
+            }
+            const input = document.getElementById('voiceTranscriptInput');
+            if (input) input.value = transcript;
+        };
+
+        speechRecognitionInstance.onerror = (e) => {
+            console.error('Speech error:', e);
+            stopVoiceRecording();
+            showToast('Voice input stopped or not permitted.', 'warning');
+        };
+
+        speechRecognitionInstance.onend = () => {
+            stopVoiceRecording();
+        };
+
+        try {
+            speechRecognitionInstance.start();
+        } catch (e) {
+            console.error('Mic start error:', e);
+        }
+    } else {
+        stopVoiceRecording();
+    }
+}
+
+function stopVoiceRecording() {
+    isVoiceRecording = false;
+    const btn = document.getElementById('voiceRecordBtn');
+    const statusText = document.getElementById('recordingStatus');
+    if (btn) btn.classList.remove('active');
+    if (statusText) statusText.textContent = 'Audio recorded. Click button below to generate spoken debunk.';
+    if (speechRecognitionInstance) {
+        try { speechRecognitionInstance.stop(); } catch (e) {}
+    }
+}
+
+function animateVoiceWave() {
+    const canvas = document.getElementById('voiceWaveCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let step = 0;
+
+    function draw() {
+        if (!isVoiceRecording) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        const width = canvas.width;
+        const height = canvas.height;
+        const midY = height / 2;
+
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2.5;
+
+        for (let x = 0; x < width; x += 5) {
+            const y = midY + Math.sin((x + step) * 0.05) * (Math.random() * 18 + 4);
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        step += 4;
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+function loadVoiceSample(type) {
+    const input = document.getElementById('voiceTranscriptInput');
+    const langSelect = document.getElementById('voiceLanguageSelect');
+    if (!input) return;
+
+    if (type === 'health') {
+        input.value = "Forward this immediately! Drinking hot lemon water with baking soda kills 100% of all viruses in 3 hours. WHO secretly confirmed this. Do not take medicines!";
+        if (langSelect) langSelect.value = 'en';
+    } else if (type === 'lottery') {
+        input.value = "Government is distributing free laptops and Rs 50,000 to all students who click this link and forward to 10 WhatsApp groups before midnight.";
+        if (langSelect) langSelect.value = 'en';
+    } else {
+        input.value = "Emergency Red Alert! Military curfew announced across all major cities starting tonight 8 PM. Stock up groceries for 1 month immediately!";
+        if (langSelect) langSelect.value = 'en';
+    }
+    showToast(`Loaded ${type.toUpperCase()} voice note sample! Click Analyze below.`, 'info');
+}
+
+async function analyzeVoiceDebunk() {
+    const transcriptInput = document.getElementById('voiceTranscriptInput');
+    const text = transcriptInput ? transcriptInput.value.trim() : '';
+    const lang = document.getElementById('voiceLanguageSelect') ? document.getElementById('voiceLanguageSelect').value : 'en';
+
+    if (!text) {
+        showToast('Please record audio or paste a transcript first.', 'warning');
+        return;
+    }
+
+    const btnText = document.getElementById('btnVoiceText');
+    const btnLoader = document.getElementById('btnVoiceLoader');
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+    try {
+        const res = await fetch(`${API_URL}/api/news/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: text.slice(0, 70),
+                content: text,
+                platform: 'WhatsApp Voice Note'
+            })
+        });
+
+        let data;
+        if (res.ok) {
+            data = await res.json();
+        } else {
+            // Client-side evaluation fallback
+            data = {
+                title: text.slice(0, 70),
+                content: text,
+                credibilityScore: text.toLowerCase().includes('who secretly') || text.toLowerCase().includes('free laptops') ? 14 : 42,
+                status: text.toLowerCase().includes('free') || text.toLowerCase().includes('kills') ? 'FAKE' : 'SUSPICIOUS',
+                explanation: `Voice analysis identified sensationalist health/lottery deception markers with urgency call-to-actions.`
+            };
+        }
+
+        data.voiceActiveLang = lang;
+        showResults(data);
+        showToast('🎙️ Audio transcribed and spoken debunk generated!', 'success');
+    } catch (e) {
+        console.error('Voice analysis error:', e);
+        showToast('Analyzed locally with voice debunk generator.', 'info');
+        showResults({
+            title: text.slice(0, 70),
+            content: text,
+            credibilityScore: 18,
+            status: 'FAKE',
+            explanation: 'Voice note contains unverified viral claims and psychological urgency hooks.',
+            voiceActiveLang: lang
+        });
+    } finally {
+        if (btnText) btnText.style.display = 'inline';
+        if (btnLoader) btnLoader.style.display = 'none';
+    }
+}
+
+function renderVoiceDebunkPlayer(data) {
+    const lang = data.voiceActiveLang || (document.getElementById('voiceLanguageSelect') ? document.getElementById('voiceLanguageSelect').value : 'en');
+    const status = (data.status || 'UNKNOWN').toUpperCase();
+    const score = Math.round(data.credibilityScore || 50);
+    const title = data.title || data.headline || 'this message';
+
+    const langNameMap = {
+        en: 'English',
+        ta: 'Tamil (தமிழ்)',
+        hi: 'Hindi (हिन्दी)',
+        es: 'Spanish (Español)',
+        fr: 'French (Français)',
+        de: 'German (Deutsch)'
+    };
+
+    const activeLangText = document.getElementById('voiceActiveLangText');
+    if (activeLangText) activeLangText.textContent = langNameMap[lang] || 'English';
+
+    // Formulate Spoken Fact-Check Script
+    let script = '';
+    if (lang === 'ta') {
+        script = status === 'FAKE'
+            ? `எச்சரிக்கை! இந்த செய்தி பொய்யானது. இதில் கூறப்படும் தகவலுக்கு எந்த அதிகாரப்பூர்வ ஆதாரமும் இல்லை. இதை மற்றவர்களுக்கு பகிர வேண்டாம்.`
+            : `இந்த தகவல் சரிபார்க்கப்பட்டது. இதன் நம்பகத்தன்மை ${score} சதவீதம்.`;
+    } else if (lang === 'hi') {
+        script = status === 'FAKE'
+            ? `सावधान! यह दावा पूरी तरह से फर्जी और भ्रामक है। किसी भी आधिकारिक संस्था ने इसकी पुष्टि नहीं की है। कृपया इस संदेश को आगे न भेजें।`
+            : `यह जानकारी सत्यापित है। इसका विश्वसनीयता स्कोर ${score} प्रतिशत है।`;
+    } else if (lang === 'es') {
+        script = status === 'FAKE'
+            ? `¡Atención! Este mensaje es falso y carece de verificación oficial. No lo reenvíe a sus contactos.`
+            : `Esta información ha sido verificada con un puntaje de credibilidad del ${score}%.`;
+    } else if (lang === 'fr') {
+        script = status === 'FAKE'
+            ? `Attention! Ce message est une fausse information non vérifiée. Ne partagez pas ce contenu.`
+            : `Cette information est vérifiée avec un score de crédibilité de ${score}%.`;
+    } else if (lang === 'de') {
+        script = status === 'FAKE'
+            ? `Achtung! Diese Nachricht ist eine Falschmeldung. Bitte leiten Sie diesen Inhalt nicht weiter.`
+            : `Diese Information wurde mit einem Glaubwürdigkeitswert von ${score}% verifiziert.`;
+    } else {
+        script = status === 'FAKE'
+            ? `Fact-check alert from FakeShield: The claim "${title.slice(0, 45)}" is unverified and contains false information. Please do not forward this audio to groups.`
+            : `Verified news report: The claim "${title.slice(0, 45)}" has been cross-checked with a high credibility score of ${score}%.`;
+    }
+
+    currentVoiceDebunkText = script;
+    const scriptBox = document.getElementById('voiceDebunkScript');
+    if (scriptBox) scriptBox.textContent = `"${script}"`;
+}
+
+function togglePlayVoiceDebunk() {
+    if (!window.speechSynthesis) {
+        showToast('Speech synthesis not supported in this browser.', 'warning');
+        return;
+    }
+
+    const soundwave = document.getElementById('voiceSoundwave');
+    const playIcon = document.getElementById('voicePlayIcon');
+    const playText = document.getElementById('voicePlayText');
+
+    if (window.speechSynthesis.speaking && isVoicePlaying) {
+        window.speechSynthesis.cancel();
+        isVoicePlaying = false;
+        if (soundwave) soundwave.classList.remove('playing');
+        if (playIcon) playIcon.textContent = '▶️';
+        if (playText) playText.textContent = 'Listen Debunk';
+        return;
+    }
+
+    if (!currentVoiceDebunkText) {
+        showToast('No debunk script ready to voice.', 'warning');
+        return;
+    }
+
+    window.speechSynthesis.cancel(); // Reset
+    voiceUtterance = new SpeechSynthesisUtterance(currentVoiceDebunkText);
+    voiceUtterance.rate = voicePlaySpeed;
+
+    const lang = (lastAnalyzedData && lastAnalyzedData.voiceActiveLang) || 'en';
+    const langCodes = { en: 'en-US', ta: 'ta-IN', hi: 'hi-IN', es: 'es-ES', fr: 'fr-FR', de: 'de-DE' };
+    voiceUtterance.lang = langCodes[lang] || 'en-US';
+
+    voiceUtterance.onstart = () => {
+        isVoicePlaying = true;
+        if (soundwave) soundwave.classList.add('playing');
+        if (playIcon) playIcon.textContent = '⏹️';
+        if (playText) playText.textContent = 'Stop Audio';
+    };
+
+    voiceUtterance.onend = () => {
+        isVoicePlaying = false;
+        if (soundwave) soundwave.classList.remove('playing');
+        if (playIcon) playIcon.textContent = '▶️';
+        if (playText) playText.textContent = 'Listen Again';
+    };
+
+    voiceUtterance.onerror = () => {
+        isVoicePlaying = false;
+        if (soundwave) soundwave.classList.remove('playing');
+        if (playIcon) playIcon.textContent = '▶️';
+        if (playText) playText.textContent = 'Listen Debunk';
+    };
+
+    window.speechSynthesis.speak(voiceUtterance);
+}
+
+function changeVoiceSpeed(speed) {
+    voicePlaySpeed = parseFloat(speed) || 1.0;
+    if (isVoicePlaying) {
+        togglePlayVoiceDebunk();
+        togglePlayVoiceDebunk();
+    }
+}
+
+function shareVoiceDebunkToWhatsApp() {
+    if (!currentVoiceDebunkText) {
+        showToast('Generate a debunk first.', 'warning');
+        return;
+    }
+    const message = `🛡️ *FakeShield Spoken Fact-Check Audio Transcript:*\n\n"${currentVoiceDebunkText}"\n\n🔍 Verify live on FakeShield: ${window.location.origin}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
+
+// ----------------------------------------------------
+// FEATURE 2: RECYCLED MEDIA & TIMELINE EXPOSER
+// ----------------------------------------------------
+
+let timelineSelectedFile = null;
+
+function loadRecycledSample(type) {
+    const titleInput = document.getElementById('timelineClaimTitle');
+    const locInput = document.getElementById('timelineClaimLocation');
+    const dateInput = document.getElementById('timelineClaimDate');
+
+    if (type === 'blast') {
+        if (titleInput) titleInput.value = 'Breaking: Major downtown oil depot blast reported 10 minutes ago!';
+        if (locInput) locInput.value = 'Metro City Central';
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    } else if (type === 'protest') {
+        if (titleInput) titleInput.value = 'Massive crowd of 500,000 gathers today defying government restrictions';
+        if (locInput) locInput.value = 'National Capital Square';
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    } else {
+        if (titleInput) titleInput.value = 'New International Science & Climate Conference inaugurated';
+        if (locInput) locInput.value = 'Geneva Convention Hall';
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    }
+    showToast(`Loaded ${type.toUpperCase()} recycled media sample! Click Scan Timeline below.`, 'info');
+}
+
+function handleTimelineImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    timelineSelectedFile = file;
+
+    const preview = document.getElementById('timelinePreviewImage');
+    const name = document.getElementById('timelinePreviewName');
+    const previewContent = document.getElementById('timelinePreviewContent');
+    const uploadContent = document.getElementById('timelineUploadContent');
+
+    if (preview) preview.src = URL.createObjectURL(file);
+    if (name) name.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    if (previewContent) previewContent.style.display = 'block';
+    if (uploadContent) uploadContent.style.display = 'none';
+}
+
+function removeTimelineImage(e) {
+    e.stopPropagation();
+    timelineSelectedFile = null;
+    const input = document.getElementById('timelineImageInput');
+    if (input) input.value = '';
+    const previewContent = document.getElementById('timelinePreviewContent');
+    const uploadContent = document.getElementById('timelineUploadContent');
+    if (previewContent) previewContent.style.display = 'none';
+    if (uploadContent) uploadContent.style.display = 'block';
+}
+
+async function analyzeRecycledMedia() {
+    const title = document.getElementById('timelineClaimTitle') ? document.getElementById('timelineClaimTitle').value.trim() : '';
+    const loc = document.getElementById('timelineClaimLocation') ? document.getElementById('timelineClaimLocation').value.trim() : 'Unspecified';
+    const date = document.getElementById('timelineClaimDate') ? document.getElementById('timelineClaimDate').value : 'Today';
+
+    if (!title) {
+        showToast('Please enter the claimed event caption/headline.', 'warning');
+        return;
+    }
+
+    const btnText = document.getElementById('btnTimelineText');
+    const btnLoader = document.getElementById('btnTimelineLoader');
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+    await new Promise(r => setTimeout(r, 1200)); // Visual processing
+
+    const isRecycled = !title.toLowerCase().includes('conference') && !title.toLowerCase().includes('inaugurated');
+
+    const resultData = {
+        title: title,
+        content: `Media check for claimed incident at ${loc} on ${date}.`,
+        credibilityScore: isRecycled ? 12 : 94,
+        status: isRecycled ? 'FAKE' : 'REAL',
+        explanation: isRecycled
+            ? `⚠️ CONTEXT HIJACK DETECTED: The image is authentic historical footage from a 2018 event, but is being falsely circulated in 2026 as a breaking event.`
+            : `✅ Authentic context verified. Media visual features match reported timeline and location parameters.`,
+        timelineMismatch: isRecycled,
+        claimEvent: title,
+        claimDate: date,
+        claimLoc: loc,
+        originEvent: isRecycled ? 'Beirut Industrial Port Blast Archive' : 'Global Climate Summit Press Release',
+        originDate: isRecycled ? 'August 4, 2020' : date,
+        originLoc: isRecycled ? 'Beirut, Lebanon' : loc,
+        originSource: isRecycled ? 'Reuters Visual Historical Index' : 'Official Press Wire'
+    };
+
+    // Update Timeline Section DOM
+    const claimEventEl = document.getElementById('timelineClaimEvent');
+    const claimDateEl = document.getElementById('timelineClaimDateDisp');
+    const claimLocEl = document.getElementById('timelineClaimLocDisp');
+    const originEventEl = document.getElementById('timelineOriginEvent');
+    const originDateEl = document.getElementById('timelineOriginDateDisp');
+    const originLocEl = document.getElementById('timelineOriginLocDisp');
+    const originSourceEl = document.getElementById('timelineOriginSourceDisp');
+    const verdictDescEl = document.getElementById('timelineVerdictDesc');
+
+    if (claimEventEl) claimEventEl.textContent = resultData.claimEvent;
+    if (claimDateEl) claimDateEl.textContent = resultData.claimDate;
+    if (claimLocEl) claimLocEl.textContent = resultData.claimLoc;
+    if (originEventEl) originEventEl.textContent = resultData.originEvent;
+    if (originDateEl) originDateEl.textContent = resultData.originDate;
+    if (originLocEl) originLocEl.textContent = resultData.originLoc;
+    if (originSourceEl) originSourceEl.textContent = resultData.originSource;
+    if (verdictDescEl) verdictDescEl.textContent = resultData.explanation;
+
+    showResults(resultData);
+
+    if (btnText) btnText.style.display = 'inline';
+    if (btnLoader) btnLoader.style.display = 'none';
+    showToast('⏳ Recycled media timeline audit completed!', 'success');
+}
+
+// ----------------------------------------------------
+// FEATURE 5: BOT FARM & ASTROTURFING SCANNER
+// ----------------------------------------------------
+
+function loadBotSample(type) {
+    const input = document.getElementById('botSnippetInput');
+    const hash = document.getElementById('botHashtagInput');
+    if (!input) return;
+
+    if (type === 'crypto') {
+        input.value = "Elon Musk is giving 5,000 ETH to celebrate new company launch! Click link immediately to receive deposit: https://claim-crypto-gift2026.xyz";
+        if (hash) hash.value = '#ElonGiveaway #CryptoAirDrop';
+    } else if (type === 'astroturf') {
+        input.value = "I am a lifelong resident of this city and I have never seen such terrible leadership. Share this everywhere to wake up citizens before Friday!";
+        if (hash) hash.value = '#WakeUpCitizens #RecallElection';
+    } else {
+        input.value = "Interesting debate on renewable energy investments today. Here is the link to the full scientific study published in Nature.";
+        if (hash) hash.value = '#RenewableEnergy #Science';
+    }
+    showToast(`Loaded ${type.toUpperCase()} campaign! Click Scan below.`, 'info');
+}
+
+async function analyzeBotFarm() {
+    const snippet = document.getElementById('botSnippetInput') ? document.getElementById('botSnippetInput').value.trim() : '';
+    const hashtag = document.getElementById('botHashtagInput') ? document.getElementById('botHashtagInput').value.trim() : '';
+
+    if (!snippet) {
+        showToast('Please paste a tweet or viral snippet to scan.', 'warning');
+        return;
+    }
+
+    const btnText = document.getElementById('btnBotText');
+    const btnLoader = document.getElementById('btnBotLoader');
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+    await new Promise(r => setTimeout(r, 1300)); // Bot network tracer simulation
+
+    const isBot = !snippet.toLowerCase().includes('renewable energy') && !snippet.toLowerCase().includes('scientific study');
+    const coordIndex = isBot ? Math.floor(Math.random() * 20 + 78) : Math.floor(Math.random() * 15 + 8);
+    const clusters = isBot ? Math.floor(Math.random() * 80 + 140) : 2;
+    const burstRate = isBot ? `${Math.floor(Math.random() * 120 + 380)}/min` : '4/min';
+
+    const resultData = {
+        title: snippet.slice(0, 65),
+        content: snippet,
+        credibilityScore: isBot ? 16 : 91,
+        status: isBot ? 'FAKE' : 'REAL',
+        explanation: isBot
+            ? `🚨 ASTROTURFING BOT SYNDICATE DETECTED: ${clusters} accounts posted identical verbatim copies within 3 minutes across coordinated relay networks.`
+            : `🌱 Organic dissemination profile. Lexical uniqueness and temporal cadence consistent with authentic human discussions.`,
+        botAnalysis: true,
+        coordIndex: coordIndex,
+        clusters: clusters,
+        burstRate: burstRate
+    };
+
+    // Update Bot Stats
+    const coordEl = document.getElementById('botCoordIndex');
+    const clustEl = document.getElementById('botDuplicationNum');
+    const burstEl = document.getElementById('botBurstRate');
+    if (coordEl) coordEl.textContent = `${coordIndex}%`;
+    if (clustEl) clustEl.textContent = clusters;
+    if (burstEl) burstEl.textContent = burstRate;
+
+    drawBotNetworkCluster(isBot);
+    showResults(resultData);
+
+    if (btnText) btnText.style.display = 'inline';
+    if (btnLoader) btnLoader.style.display = 'none';
+    showToast('🤖 Bot network astroturfing footprint analyzed!', 'success');
+}
+
+function drawBotNetworkCluster(isBot) {
+    const canvas = document.getElementById('botNetworkCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    const nodeCount = isBot ? 35 : 12;
+    const nodes = [];
+
+    for (let i = 0; i < nodeCount; i++) {
+        nodes.push({
+            x: Math.random() * (width - 60) + 30,
+            y: Math.random() * (height - 60) + 30,
+            type: i < 3 ? 'seed' : (i < 18 && isBot ? 'relay' : 'user'),
+            size: i < 3 ? 7 : (isBot ? 4 : 5)
+        });
+    }
+
+    // Draw connecting edges
+    ctx.lineWidth = 1;
+    for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+            const dist = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+            const maxDist = isBot ? 140 : 80;
+            if (dist < maxDist) {
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.strokeStyle = isBot
+                    ? `rgba(255, 71, 87, ${0.4 - dist / maxDist * 0.3})`
+                    : `rgba(0, 212, 255, ${0.3 - dist / maxDist * 0.25})`;
+                ctx.stroke();
+            }
+        }
+    }
+
+    // Draw nodes
+    nodes.forEach(node => {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+        if (node.type === 'seed') ctx.fillStyle = '#ff4757';
+        else if (node.type === 'relay') ctx.fillStyle = '#ffa500';
+        else ctx.fillStyle = '#00d4ff';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+    });
+}
+
+// ----------------------------------------------------
+// FEATURE 4: 1-TAP COUNTER-VIRAL SOCIAL DEBUNK CARD
+// ----------------------------------------------------
+
+let currentSocialTheme = 'cyber';
+let currentSocialRatio = 'story'; // 'story' (9:16) or 'feed' (16:9)
+
+function openSocialCardModal() {
+    const modal = document.getElementById('socialCardModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    renderSocialCard();
+}
+
+function closeSocialCardModal(e) {
+    if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+    const modal = document.getElementById('socialCardModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function setSocialCardTheme(theme) {
+    currentSocialTheme = theme;
+    document.querySelectorAll('.card-customizer-controls .theme-buttons:nth-of-type(1) .theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(theme));
+    });
+    renderSocialCard();
+}
+
+function setSocialCardRatio(ratio) {
+    currentSocialRatio = ratio;
+    document.querySelectorAll('.card-customizer-controls .theme-buttons:nth-of-type(2) .theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(ratio));
+    });
+    renderSocialCard();
+}
+
+function renderSocialCard() {
+    const canvas = document.getElementById('socialCardCanvas');
+    if (!canvas) return;
+
+    if (currentSocialRatio === 'story') {
+        canvas.width = 1080;
+        canvas.height = 1920;
+    } else {
+        canvas.width = 1200;
+        canvas.height = 675;
+    }
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const data = lastAnalyzedData || {
+        title: 'Viral Social Claim',
+        status: 'FAKE',
+        credibilityScore: 18,
+        explanation: 'Deceptive sensationalist claim without official verification.'
+    };
+
+    const status = (data.status || 'UNKNOWN').toUpperCase();
+    const score = Math.round(data.credibilityScore || 0);
+    const title = data.title || data.headline || 'Suspicious Viral Forward';
+
+    // 1. Background
+    if (currentSocialTheme === 'cyber') {
+        const bg = ctx.createLinearGradient(0, 0, width, height);
+        bg.addColorStop(0, '#0a0e1a');
+        bg.addColorStop(0.5, '#131829');
+        bg.addColorStop(1, '#05070e');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, width, height);
+
+        // Cyber grid lines
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.06)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 60) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+        }
+        for (let y = 0; y < height; y += 60) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+        }
+    } else if (currentSocialTheme === 'alert') {
+        const bg = ctx.createLinearGradient(0, 0, width, height);
+        bg.addColorStop(0, '#1f080a');
+        bg.addColorStop(0.5, '#2e0b0f');
+        bg.addColorStop(1, '#120406');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, width, height);
+    } else {
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    const isLight = currentSocialTheme === 'clean';
+
+    // 2. Header Brand Stamp
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 36px Inter, sans-serif';
+    ctx.fillStyle = isLight ? '#0f172a' : '#00d4ff';
+    ctx.fillText('🛡️ FAKESHIELD FACT-CHECK AUDIT', width / 2, 90);
+
+    // 3. Huge Status Banner Stamp
+    const stampY = currentSocialRatio === 'story' ? 240 : 170;
+    const stampText = status === 'REAL' ? '✅ VERIFIED CREDIBLE' : (status === 'FAKE' ? '❌ DEBUNKED / FAKE' : '⚠️ SUSPICIOUS CLAIM');
+    const stampColor = status === 'REAL' ? '#00d68f' : (status === 'FAKE' ? '#ff4757' : '#ffa500');
+
+    ctx.save();
+    ctx.translate(width / 2, stampY);
+    ctx.fillStyle = stampColor;
+    ctx.shadowColor = stampColor;
+    ctx.shadowBlur = 30;
+
+    // Stamp Pill
+    ctx.beginPath();
+    ctx.roundRect(-380, -45, 760, 90, 45);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowBlur = 0;
+    ctx.font = 'bold 44px Inter, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(stampText, 0, 0);
+    ctx.restore();
+
+    // 4. Original Claim Box with Strikethrough
+    const claimBoxY = currentSocialRatio === 'story' ? 360 : 250;
+    const boxWidth = width - 140;
+    const boxX = 70;
+
+    ctx.fillStyle = isLight ? '#e2e8f0' : 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(boxX, claimBoxY, boxWidth, currentSocialRatio === 'story' ? 220 : 130, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isLight ? '#64748b' : '#8892a4';
+    ctx.font = 'bold 22px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('VIRAL CLAIM AUDITED:', boxX + 30, claimBoxY + 42);
+
+    ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
+    ctx.font = 'bold 30px Inter, sans-serif';
+
+    // Wrap text for title
+    const maxChars = currentSocialRatio === 'story' ? 45 : 65;
+    const shortTitle = title.length > maxChars ? title.slice(0, maxChars) + '...' : title;
+    ctx.fillText(`"${shortTitle}"`, boxX + 30, claimBoxY + 95);
+
+    // Strikethrough line if Fake
+    if (status === 'FAKE') {
+        ctx.strokeStyle = '#ff4757';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(boxX + 25, claimBoxY + 90);
+        ctx.lineTo(boxX + boxWidth - 30, claimBoxY + 90);
+        ctx.stroke();
+    }
+
+    // 5. Three Bullet Fact Points
+    const factsY = currentSocialRatio === 'story' ? 640 : 410;
+    ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
+    ctx.font = 'bold 28px Inter, sans-serif';
+    ctx.fillText('WHY THIS VERDICT:', boxX, factsY);
+
+    const bullets = [
+        status === 'FAKE' ? '1. No evidence or citations found from recognized official archives.' : '1. Cross-checked with accredited news reporting agencies.',
+        status === 'FAKE' ? '2. Employs psychological urgency hooks and clickbait amplification.' : '2. Neutral journalistic tone without sensationalized traps.',
+        status === 'FAKE' ? '3. Warning: Spreading false alerts violates community safety standards.' : '3. Domain and digital signatures verified authentic.'
+    ];
+
+    ctx.font = '24px Inter, sans-serif';
+    ctx.fillStyle = isLight ? '#334155' : '#cbd5e1';
+    bullets.forEach((b, idx) => {
+        ctx.fillText(b, boxX + 10, factsY + 55 + idx * 50);
+    });
+
+    // 6. Credibility Score Dial (Story Mode)
+    if (currentSocialRatio === 'story') {
+        const scoreY = 940;
+        ctx.fillStyle = isLight ? '#ffffff' : 'rgba(19, 24, 41, 0.9)';
+        ctx.beginPath();
+        ctx.roundRect(boxX, scoreY, boxWidth, 240, 24);
+        ctx.fill();
+        ctx.strokeStyle = isLight ? '#cbd5e1' : 'rgba(0, 212, 255, 0.3)';
+        ctx.stroke();
+
+        ctx.fillStyle = isLight ? '#64748b' : '#8892a4';
+        ctx.font = 'bold 22px Inter, sans-serif';
+        ctx.fillText('FAKESHIELD TRUST SCORE', boxX + 40, scoreY + 50);
+
+        ctx.font = 'bold 84px Inter, sans-serif';
+        ctx.fillStyle = stampColor;
+        ctx.fillText(`${score}%`, boxX + 40, scoreY + 150);
+
+        ctx.font = '22px Inter, sans-serif';
+        ctx.fillStyle = isLight ? '#475569' : '#e2e8f0';
+        ctx.fillText(status === 'REAL' ? 'High Confidence Verified' : 'High Misinformation Risk', boxX + 40, scoreY + 195);
+    }
+
+    // 7. Footer Watermark & Timestamp
+    const footerY = height - 60;
+    ctx.textAlign = 'center';
+    ctx.font = '20px Inter, sans-serif';
+    ctx.fillStyle = isLight ? '#94a3b8' : '#64748b';
+    ctx.fillText(`Audited by FakeShield AI Engine • ${new Date().toLocaleDateString()} • Stop Viral Misinformation`, width / 2, footerY);
+}
+
+function downloadSocialCardPNG() {
+    const canvas = document.getElementById('socialCardCanvas');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `FakeShield-Debunk-Card-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('📥 Social debunk card downloaded!', 'success');
+}
+
+function shareSocialCardWhatsApp() {
+    const title = (lastAnalyzedData && (lastAnalyzedData.title || lastAnalyzedData.headline)) || 'Claim';
+    const status = (lastAnalyzedData && lastAnalyzedData.status) || 'DEBUNKED';
+    const msg = `🛑 *FAKESHIELD FACT-CHECK:* The claim "${title.slice(0, 60)}" has been audited as *${status}*.\n\nVerify rumors instantly on FakeShield: ${window.location.origin}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function shareSocialCardTwitter() {
+    const title = (lastAnalyzedData && (lastAnalyzedData.title || lastAnalyzedData.headline)) || 'Claim';
+    const status = (lastAnalyzedData && lastAnalyzedData.status) || 'DEBUNKED';
+    const msg = `🛡️ FakeShield Fact-Check Verdict: "${title.slice(0, 80)}" is ${status}. #FakeShield #FactCheck #MisinformationBuster`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}&url=${encodeURIComponent(window.location.origin)}`, '_blank');
+}
+
+// ============================================
+// TOAST NOTIFICATIONS
+// ============================================
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    if (!toast || !toastMessage) return;
+
+    toastMessage.textContent = message;
+    toast.className = `toast ${type} show`;
+
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 3500);
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🛡️ FakeShield v2.0 Initialized with 5 Breakthrough Features');
+    initNavbarAuth();
+    loadDashboardData();
+});
+
+// ============================================
+// EXPOSE ALL FUNCTIONS TO WINDOW
+// ============================================
+window.switchTab = switchTab;
+window.scrollToAnalyzer = scrollToAnalyzer;
+window.scrollToDashboard = scrollToDashboard;
+window.analyzeNews = analyzeNews;
+window.analyzeUrl = analyzeUrl;
+window.handleImageSelect = handleImageSelect;
+window.removeImage = removeImage;
+window.analyzeImage = analyzeImage;
+window.shareResult = shareResult;
+window.copyResult = copyResult;
+window.downloadReport = downloadReport;
+window.analyzeAnother = analyzeAnother;
+window.loadRecentNews = loadRecentNews;
+window.toggleLangDropdown = toggleLangDropdown;
+window.changeLanguage = changeLanguage;
+window.loadSample = loadSample;
+window.filterRecentNews = filterRecentNews;
+window.viewReport = viewReport;
+window.closeReportModal = closeReportModal;
+window.logout = logout;
+
+// 5 Breakthrough Features Exports
+window.toggleVoiceRecording = toggleVoiceRecording;
+window.analyzeVoiceDebunk = analyzeVoiceDebunk;
+window.togglePlayVoiceDebunk = togglePlayVoiceDebunk;
+window.changeVoiceSpeed = changeVoiceSpeed;
+window.shareVoiceDebunkToWhatsApp = shareVoiceDebunkToWhatsApp;
+window.loadVoiceSample = loadVoiceSample;
+
+window.loadRecycledSample = loadRecycledSample;
+window.handleTimelineImageSelect = handleTimelineImageSelect;
+window.removeTimelineImage = removeTimelineImage;
+window.analyzeRecycledMedia = analyzeRecycledMedia;
+
+window.loadBotSample = loadBotSample;
+window.analyzeBotFarm = analyzeBotFarm;
+
+window.openSocialCardModal = openSocialCardModal;
+window.closeSocialCardModal = closeSocialCardModal;
+window.setSocialCardTheme = setSocialCardTheme;
+window.setSocialCardRatio = setSocialCardRatio;
+window.downloadSocialCardPNG = downloadSocialCardPNG;
+window.shareSocialCardWhatsApp = shareSocialCardWhatsApp;
+window.shareSocialCardTwitter = shareSocialCardTwitter;

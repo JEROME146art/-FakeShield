@@ -3,119 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - FakeShield AI Portal</title>
+    <title>Login - FakeShield</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
-<body class="auth-page">
-    <!-- Ambient glows -->
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
-
-    <div class="auth-container">
-        <div class="auth-card">
-            <!-- Language Selection Bar -->
-            <div class="auth-lang-row">
-                <select id="authLangSelect" class="auth-lang-select">
-                    <option value="en">🇬🇧 English</option>
-                    <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
-                    <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
-                    <option value="es">🇪🇸 Español (Spanish)</option>
-                    <option value="fr">🇫🇷 Français (French)</option>
-                    <option value="de">🇩🇪 Deutsch (German)</option>
-                </select>
-            </div>
-
-            <!-- Header -->
-            <div class="auth-header">
-                <a href="index.html" class="auth-brand">
-                    <span class="auth-brand-logo">🛡️</span>
-                    <span class="auth-brand-title">FakeShield</span>
-                </a>
-                <p class="auth-subtitle" id="authSubtitle">Welcome back! Login to continue</p>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form" onsubmit="handleLoginSubmit(event)">
-                <div class="form-group">
-                    <label class="form-label" for="usernameOrEmail">
-                        <span>👤</span>
-                        <span id="lblUsernameText">Username or Email</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="usernameOrEmail" 
-                        class="form-input" 
-                        placeholder="e.g. jerome or jerome@fakeshield.ai" 
-                        required
-                        autocomplete="username"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="password">
-                        <span>🔒</span>
-                        <span id="lblPasswordText">Password</span>
-                    </label>
-                    <div class="input-wrapper">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="form-input" 
-                            placeholder="Enter your password" 
-                            required
-                            autocomplete="current-password"
-                        >
-                        <button type="button" class="input-password-toggle" onclick="togglePassword('password', this)" title="Show/Hide Password">👁️</button>
-                    </div>
-                </div>
-
-                <div class="form-row-options">
-                    <label class="remember-label">
-                        <input type="checkbox" id="rememberMe" checked>
-                        <span id="rememberMeText">Remember me</span>
-                    </label>
-                    <a href="#" class="forgot-link" onclick="alert('For demo purposes, please use the 1-click Quick Demo buttons or register a new account!'); return false;">Forgot password?</a>
-                </div>
-
-                <button type="submit" class="btn-auth-primary" id="btnLoginBtn">
-                    <span id="btnLoginText">🚀 Login to FakeShield</span>
-                </button>
-
-                <!-- Divider -->
-                <div class="auth-divider">
-                    <span id="orDividerText">OR QUICK DEMO</span>
-                </div>
-
-                <!-- Quick 1-Click Demo Logins -->
-                <div class="demo-buttons-row">
-                    <button type="button" class="btn-auth-demo" onclick="quickDemoLogin('analyst')">
-                        <span id="demoAnalystText">🛡️ Demo Fact-Checker</span>
-                    </button>
-                    <button type="button" class="btn-auth-demo" onclick="quickDemoLogin('user')">
-                        <span id="demoUserText">👤 Demo Regular User</span>
-                    </button>
-                </div>
-
-                <!-- Continue as guest -->
-                <button type="button" class="btn-guest-link" onclick="continueAsGuest()">
-                    <span id="btnGuestText">⚡ Continue as Guest (No Login)</span>
-                </button>
-
-                <!-- Switch to Signup -->
-                <p class="auth-switch-text">
-                    <span id="noAccountText">Don't have an account?</span>
-                    <a href="signup.html" id="linkSignupText">Sign up here</a>
-                </p>
-            </form>
-
-            <!-- Alert notification box -->
-            <div id="authAlert" class="auth-alert"></div>
-        </div>
+<body>
+<div class="auth-container">
+    <div class="auth-background">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
     </div>
 
-    <script src="auth.js"></script>
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <span class="logo-icon">🛡️</span>
+                <h1>FakeShield</h1>
+            </div>
+            <p class="auth-subtitle">Welcome back! Login to continue</p>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="usernameOrEmail">
+                    <span class="label-icon">👤</span>
+                    Username or Email
+                </label>
+                <input
+                        type="text"
+                        id="usernameOrEmail"
+                        name="usernameOrEmail"
+                        placeholder="Enter your username or email"
+                        required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <span class="label-icon">🔒</span>
+                    Password
+                </label>
+                <div class="password-input">
+                    <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                        👁️
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="rememberMe">
+                    <span>Remember me</span>
+                </label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="auth-btn" id="loginBtn">
+                <span class="btn-text">Login</span>
+                <span class="btn-loader" style="display: none;">⏳</span>
+            </button>
+
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+
+            <button type="button" class="auth-btn guest-btn" onclick="continueAsGuest()">
+                👥 Continue as Guest
+            </button>
+
+            <p class="auth-switch">
+                Don't have an account?
+                <a href="/signup.html">Sign up here</a>
+            </p>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+</div>
+
+<script src="auth.js"></script>
 </body>
 </html>
