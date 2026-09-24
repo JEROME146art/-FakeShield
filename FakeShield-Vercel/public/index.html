@@ -131,7 +131,16 @@
                     🔗 URL Analysis
                 </button>
                 <button class="tab-btn" onclick="switchTab('image', this)">
-                    🖼️ Image Analysis
+                    🖼️ Image Forensics
+                </button>
+                <button class="tab-btn" onclick="switchTab('voice', this)">
+                    🎙️ Voice Debunk
+                </button>
+                <button class="tab-btn" onclick="switchTab('timeline', this)">
+                    ⏳ Recycled Media
+                </button>
+                <button class="tab-btn" onclick="switchTab('bots', this)">
+                    🤖 Bot Farm Scanner
                 </button>
             </div>
 
@@ -171,7 +180,7 @@
                         </div>
                     </div>
                     <button class="btn-analyze" id="btnAnalyze" onclick="analyzeNews()">
-                        <span id="btnText">🤖 Analyze Text</span>
+                        <span id="btnText">🤖 Analyze Text & Psychology</span>
                         <span id="btnLoader" style="display:none">
                             <span class="loader"></span> Analyzing...
                         </span>
@@ -270,6 +279,164 @@
                 </div>
             </div>
 
+            <!-- TAB 4: VOICE DEBUNK -->
+            <div id="tab-voice" class="tab-content">
+                <div class="analyzer-card">
+                    <div class="feature-hero-badge">
+                        <span>🎙️ World-First Voice-to-Voice Misinformation Buster</span>
+                    </div>
+                    <div class="sample-presets">
+                        <span class="preset-label">⚡ Voice Rumor Samples:</span>
+                        <button class="preset-btn preset-fake" onclick="loadVoiceSample('health')">💊 Miracle Health Cure Note</button>
+                        <button class="preset-btn preset-fake" onclick="loadVoiceSample('lottery')">🎁 Free Government Scheme Note</button>
+                        <button class="preset-btn preset-viral" onclick="loadVoiceSample('emergency')">🚨 Curfew Emergency Note</button>
+                    </div>
+
+                    <div class="voice-recorder-box">
+                        <div class="voice-mic-container">
+                            <button class="voice-record-btn" id="voiceRecordBtn" onclick="toggleVoiceRecording()">
+                                <span class="mic-icon" id="micIcon">🎙️</span>
+                            </button>
+                            <div class="recording-status-text" id="recordingStatus">Tap mic to speak or select a preset sample</div>
+                        </div>
+                        <canvas id="voiceWaveCanvas" class="voice-wave-canvas" width="400" height="60"></canvas>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Audio Transcript / Spoken Claims</label>
+                        <textarea id="voiceTranscriptInput" rows="4" placeholder="Transcribed audio speech will appear here. You can also paste speech text directly..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Debunk Voice Language</label>
+                            <select id="voiceLanguageSelect">
+                                <option value="en">🇬🇧 English (Clear Fact-Checker)</option>
+                                <option value="ta">🇮🇳 Tamil (தமிழ் விளக்கம்)</option>
+                                <option value="hi">🇮🇳 Hindi (हिंदी तथ्य-जांच)</option>
+                                <option value="es">🇪🇸 Spanish (Español)</option>
+                                <option value="fr">🇫🇷 French (Français)</option>
+                                <option value="de">🇩🇪 German (Deutsch)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Audio Source / Origin</label>
+                            <select id="voicePlatformSelect">
+                                <option value="WhatsApp Voice Note">WhatsApp Voice Note</option>
+                                <option value="Telegram Audio">Telegram Audio Message</option>
+                                <option value="Robocall / Phone Audio">Robocall / Phone Audio</option>
+                                <option value="Podcast / Broadcast">Podcast / Broadcast Clip</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-analyze" id="btnAnalyzeVoice" onclick="analyzeVoiceDebunk()">
+                        <span id="btnVoiceText">🎙️ Transcribe & Synthesize Spoken Debunk</span>
+                        <span id="btnVoiceLoader" style="display:none">
+                            <span class="loader"></span> Generating Spoken Fact Debunk...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 5: RECYCLED MEDIA & TIMELINE EXPOSER -->
+            <div id="tab-timeline" class="tab-content">
+                <div class="analyzer-card">
+                    <div class="feature-hero-badge">
+                        <span>⏳ Out-of-Context Recycled Footage & Timeline Exposer</span>
+                    </div>
+                    <div class="sample-presets">
+                        <span class="preset-label">⚡ Recycled Footage Samples:</span>
+                        <button class="preset-btn preset-fake" onclick="loadRecycledSample('blast')">💣 2018 Blast Recycled as 2026 Event</button>
+                        <button class="preset-btn preset-fake" onclick="loadRecycledSample('protest')">📢 2020 Rally Recycled as Today's Protest</button>
+                        <button class="preset-btn preset-real" onclick="loadRecycledSample('genuine')">✅ Fresh Verified Event</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Claimed Current Event Title / Caption <span class="required">*</span></label>
+                        <input type="text" id="timelineClaimTitle" placeholder="e.g. Breaking: Huge explosion reported in downtown today!">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Claimed Location</label>
+                            <input type="text" id="timelineClaimLocation" placeholder="e.g. Central City / Metropolis">
+                        </div>
+                        <div class="form-group">
+                            <label>Claimed Date</label>
+                            <input type="date" id="timelineClaimDate">
+                        </div>
+                    </div>
+
+                    <div class="upload-area" id="timelineUploadArea" onclick="document.getElementById('timelineImageInput').click()">
+                        <div class="upload-content" id="timelineUploadContent">
+                            <div class="upload-icon">🎞️</div>
+                            <h3>Upload Suspicious Media Image / Screenshot</h3>
+                            <p>Perceptual hash will search historical visual archives</p>
+                        </div>
+                        <div class="preview-content" id="timelinePreviewContent" style="display:none;">
+                            <img id="timelinePreviewImage" src="" alt="Preview">
+                            <div class="preview-info">
+                                <p id="timelinePreviewName"></p>
+                            </div>
+                            <button class="btn-remove" onclick="removeTimelineImage(event)">❌ Remove</button>
+                        </div>
+                        <input type="file" id="timelineImageInput" accept="image/*" style="display:none;" onchange="handleTimelineImageSelect(event)">
+                    </div>
+
+                    <button class="btn-analyze" id="btnAnalyzeTimeline" onclick="analyzeRecycledMedia()">
+                        <span id="btnTimelineText">⏳ Expose Temporal Context Mismatch</span>
+                        <span id="btnTimelineLoader" style="display:none">
+                            <span class="loader"></span> Scanning Historical Visual Archives...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 6: BOT FARM & ASTROTURFING SCANNER -->
+            <div id="tab-bots" class="tab-content">
+                <div class="analyzer-card">
+                    <div class="feature-hero-badge">
+                        <span>🤖 Coordinated Bot Farm & Astroturfing Network Scanner</span>
+                    </div>
+                    <div class="sample-presets">
+                        <span class="preset-label">⚡ Astroturfing Waves:</span>
+                        <button class="preset-btn preset-fake" onclick="loadBotSample('crypto')">🚨 Crypto Pump Bot Wave</button>
+                        <button class="preset-btn preset-fake" onclick="loadBotSample('astroturf')">🤖 Political Copy-Paste Campaign</button>
+                        <button class="preset-btn preset-real" onclick="loadBotSample('organic')">🌱 Organic Human Discussion</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Viral Social Post Snippet or Hashtag <span class="required">*</span></label>
+                        <textarea id="botSnippetInput" rows="5" placeholder="Paste the suspicious viral tweet, comment, or copy-paste text found on multiple accounts..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Hashtag / Campaign Keyword</label>
+                            <input type="text" id="botHashtagInput" placeholder="#UrgentAlert, #BreakingGov, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label>Network Target</label>
+                            <select id="botNetworkTarget">
+                                <option value="Twitter/X Bot Ring">Twitter / X Bot Network</option>
+                                <option value="Telegram Broadcast Syndicate">Telegram Broadcast Syndicate</option>
+                                <option value="Facebook Mass Forward Ring">Facebook Mass Forward Ring</option>
+                                <option value="Reddit Astroturf Group">Reddit Astroturf Network</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-analyze" id="btnAnalyzeBots" onclick="analyzeBotFarm()">
+                        <span id="btnBotText">🔍 Scan for Coordinated Bot Astroturfing</span>
+                        <span id="btnBotLoader" style="display:none">
+                            <span class="loader"></span> Tracing Bot Clusters & Copy-Paste Footprints...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULT CARD -->
             <div class="result-card" id="resultCard" style="display:none">
                 <div class="result-header">
                     <div class="result-status">
@@ -277,6 +444,7 @@
                         <div>
                             <div class="status-label">Analysis Result</div>
                             <div class="status-text" id="statusText">Real News</div>
+                            <div class="status-subbadge" id="statusSubBadge">Verified Credible</div>
                         </div>
                     </div>
                     <div class="credibility-score">
@@ -293,6 +461,163 @@
                     </div>
                 </div>
 
+                <!-- Recycled Media Timeline Alert (if applicable) -->
+                <div class="timeline-verdict-section" id="timelineVerdictSection" style="display:none;">
+                    <div class="timeline-banner" id="timelineBanner">
+                        <div class="timeline-banner-header">
+                            <span class="timeline-icon">⏳</span>
+                            <span class="timeline-title" id="timelineVerdictTitle">Recycled Media Context Audit</span>
+                        </div>
+                        <p id="timelineVerdictDesc"></p>
+                    </div>
+                    <div class="timeline-compare-grid">
+                        <div class="timeline-node claimed-node">
+                            <div class="node-tag">🔴 Claimed Modern Context</div>
+                            <h4 id="timelineClaimEvent">Current Event</h4>
+                            <p><strong>Date:</strong> <span id="timelineClaimDateDisp">2026</span></p>
+                            <p><strong>Location:</strong> <span id="timelineClaimLocDisp">City</span></p>
+                        </div>
+                        <div class="timeline-node verified-node">
+                            <div class="node-tag">🟢 True Historical Origin</div>
+                            <h4 id="timelineOriginEvent">Original Archive</h4>
+                            <p><strong>True Date:</strong> <span id="timelineOriginDateDisp">2018</span></p>
+                            <p><strong>True Location:</strong> <span id="timelineOriginLocDisp">Historical Source</span></p>
+                            <p><strong>Source:</strong> <span id="timelineOriginSourceDisp">Archived Database</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bot Network Astroturfing Section (if applicable) -->
+                <div class="bot-analysis-section" id="botAnalysisSection" style="display:none;">
+                    <h3>🤖 Bot Astroturfing & Copy-Paste Cluster Map</h3>
+                    <div class="bot-grid">
+                        <div class="bot-stat-box">
+                            <div class="bot-stat-num" id="botCoordIndex">0%</div>
+                            <div class="bot-stat-lbl">Coordinated Astroturfing Index</div>
+                        </div>
+                        <div class="bot-stat-box">
+                            <div class="bot-stat-num" id="botDuplicationNum">0</div>
+                            <div class="bot-stat-lbl">Identical Copy-Paste Clusters</div>
+                        </div>
+                        <div class="bot-stat-box">
+                            <div class="bot-stat-num" id="botBurstRate">0/min</div>
+                            <div class="bot-stat-lbl">Propagation Burst Velocity</div>
+                        </div>
+                    </div>
+                    <div class="network-canvas-wrapper">
+                        <canvas id="botNetworkCanvas" width="600" height="240"></canvas>
+                        <div class="canvas-legend">
+                            <span><span class="dot-red"></span> Bot Seed Node</span>
+                            <span><span class="dot-orange"></span> Relay Bot</span>
+                            <span><span class="dot-blue"></span> Organic User Caught in Wave</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voice Debunk Audio Player (Feature 1) -->
+                <div class="voice-debunk-player-section" id="voiceDebunkSection">
+                    <div class="voice-player-header">
+                        <div class="voice-header-left">
+                            <span class="player-icon">🎙️</span>
+                            <div>
+                                <h4>Instant Spoken Audio Debunk</h4>
+                                <p>Forwardable 15-second voice note fact-check in <span id="voiceActiveLangText">English</span></p>
+                            </div>
+                        </div>
+                        <div class="voice-player-actions">
+                            <button class="btn-voice-play" id="btnVoicePlay" onclick="togglePlayVoiceDebunk()">
+                                <span id="voicePlayIcon">▶️</span> <span id="voicePlayText">Listen Debunk</span>
+                            </button>
+                            <select id="voiceSpeedSelect" onchange="changeVoiceSpeed(this.value)" class="voice-speed-select">
+                                <option value="1">1.0x</option>
+                                <option value="1.2">1.2x</option>
+                                <option value="1.4">1.4x</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="voice-waveform-preview">
+                        <div class="voice-soundwave" id="voiceSoundwave">
+                            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <div class="voice-quote-text" id="voiceDebunkScript">
+                            "Generating spoken audio debunk..."
+                        </div>
+                    </div>
+                    <div class="voice-share-bar">
+                        <button class="btn-voice-share" onclick="shareVoiceDebunkToWhatsApp()">
+                            💬 Forward Spoken Fact-Check to WhatsApp
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Psychological Fallacy Radar (Feature 3) -->
+                <div class="psychological-radar-section">
+                    <div class="radar-header">
+                        <div>
+                            <h3>🧠 Psychological Manipulation Radar</h3>
+                            <p>Neurolinguistic breakdown of cognitive biases & propaganda weapons</p>
+                        </div>
+                        <div class="manipulation-badge" id="manipulationBadge">
+                            <span id="manipulationWeaponText">Low Manipulation</span>
+                        </div>
+                    </div>
+                    <div class="radar-content-grid">
+                        <div class="radar-chart-container">
+                            <canvas id="fallacyRadarCanvas" width="360" height="300"></canvas>
+                        </div>
+                        <div class="radar-fallacy-list">
+                            <div class="fallacy-item" id="fallacyFear">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">😱</span>
+                                    <span class="fallacy-name">Fear & Panic Induction</span>
+                                    <span class="fallacy-val" id="valFear">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barFear" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyUrgency">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">⚡</span>
+                                    <span class="fallacy-name">Urgency & Action Trap</span>
+                                    <span class="fallacy-val" id="valUrgency">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barUrgency" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyAuthority">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">🏛️</span>
+                                    <span class="fallacy-name">Authority Spoofing</span>
+                                    <span class="fallacy-val" id="valAuthority">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barAuthority" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyGreed">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">💰</span>
+                                    <span class="fallacy-name">Scarcity & Greed Bait</span>
+                                    <span class="fallacy-val" id="valGreed">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barGreed" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyPolarization">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">⚔️</span>
+                                    <span class="fallacy-name">Polarization / Tribalism</span>
+                                    <span class="fallacy-val" id="valPolarization">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barPolarization" style="width:0%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlighted Manipulative Clauses -->
+                    <div class="manipulation-clauses-box" id="manipulationClausesBox">
+                        <h4>🔍 Cognitive Weaponry Identified in Text:</h4>
+                        <div id="manipulationHighlights" class="highlights-content">
+                            No severe psychological traps detected in this content.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="extracted-text-section" id="extractedTextSection" style="display:none;">
                     <h3>📝 Extracted Information</h3>
                     <div class="extracted-text-box" id="extractedTextBox">
@@ -301,18 +626,21 @@
                 </div>
 
                 <div class="score-breakdown">
-                    <h3>📊 Analysis Breakdown</h3>
+                    <h3>📊 Multi-Factor Analysis Breakdown</h3>
                     <div class="breakdown-grid" id="breakdownGrid"></div>
                 </div>
 
                 <div class="explanation-section">
-                    <h3>💡 Detailed Analysis</h3>
+                    <h3>💡 Detailed Forensic Verdict</h3>
                     <div class="explanation-text" id="explanationText">
                         Analysis details will appear here...
                     </div>
                 </div>
 
                 <div class="result-actions">
+                    <button class="btn-action btn-social-card" onclick="openSocialCardModal()">
+                        🎨 Generate Social Debunk Card
+                    </button>
                     <button class="btn-action btn-share" onclick="shareResult()">
                         📤 Share Result
                     </button>
@@ -329,6 +657,52 @@
             </div>
         </div>
     </section>
+
+    <!-- Social Debunk Card Generator Modal (Feature 4) -->
+    <div class="modal-overlay" id="socialCardModal" onclick="closeSocialCardModal(event)">
+        <div class="modal-content social-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📲 1-Tap Counter-Viral Social Debunk Card</h3>
+                <button class="modal-close" onclick="closeSocialCardModal()">❌</button>
+            </div>
+            <div class="modal-body social-modal-body">
+                <p class="modal-sub">Generate a high-impact viral debunk card ready to post on Instagram Stories, WhatsApp Status, or Twitter.</p>
+                <div class="card-generator-layout">
+                    <div class="canvas-preview-wrapper">
+                        <canvas id="socialCardCanvas" width="1080" height="1350"></canvas>
+                    </div>
+                    <div class="card-customizer-controls">
+                        <div class="control-group">
+                            <label>Card Theme Style</label>
+                            <div class="theme-buttons">
+                                <button class="theme-btn active" onclick="setSocialCardTheme('cyber')">🌌 Cyber Dark</button>
+                                <button class="theme-btn" onclick="setSocialCardTheme('alert')">🚨 Red Alert</button>
+                                <button class="theme-btn" onclick="setSocialCardTheme('clean')">⚪ Clean Minimal</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>Format Ratio</label>
+                            <div class="theme-buttons">
+                                <button class="theme-btn active" onclick="setSocialCardRatio('story')">📱 Story / Status (9:16)</button>
+                                <button class="theme-btn" onclick="setSocialCardRatio('feed')">🖼️ Feed / Tweet (16:9)</button>
+                            </div>
+                        </div>
+                        <div class="social-action-buttons">
+                            <button class="btn-download-card" onclick="downloadSocialCardPNG()">
+                                📥 Download PNG Story Card
+                            </button>
+                            <button class="btn-whatsapp-card" onclick="shareSocialCardWhatsApp()">
+                                💬 Share Directly to WhatsApp
+                            </button>
+                            <button class="btn-twitter-card" onclick="shareSocialCardTwitter()">
+                                🐦 Share on Twitter / X
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Report Modal Popup -->
     <div class="modal-overlay" id="reportModal" onclick="closeReportModal(event)">

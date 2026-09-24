@@ -1,84 +1,125 @@
-# 🛡️ FakeShield - Deployment & Setup Guide
+# 🛡️ FakeShield v2.5 — The Next-Generation AI Misinformation Buster
 
-**FakeShield** is a multi-modal AI detector for **News Content (Text)**, **URLs**, and **Images**.
+[![GitHub stars](https://img.shields.io/github/stars/JEROME146art/-FakeShield?style=for-the-badge&color=00d4ff)](https://github.com/JEROME146art/-FakeShield)
+[![License: MIT](https://img.shields.io/badge/License-MIT-7b2fff.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Multi-Language](https://img.shields.io/badge/Languages-EN%20%7C%20தமிழ்%20%7C%20हिन्दी%20%7C%20ES%20%7C%20FR%20%7C%20DE-ff00e5?style=for-the-badge)](#-multi-language-support)
 
----
-
-## ⚡ Option 1: Deploy to Vercel (Fastest & 100% Free)
-
-You can deploy the **FakeShield Web App & Serverless API** to Vercel in under 2 minutes.
-
-### Method A: Deploy via Vercel CLI
-
-1. **Install Vercel CLI** (if not installed):
-   ```bash
-   npm install -g vercel
-   ```
-
-2. **Deploy from this folder**:
-   ```bash
-   cd FakeShield-Vercel
-   vercel
-   ```
-
-3. Follow the CLI prompts:
-   - `Set up and deploy?` ➜ **Y**
-   - `Which scope?` ➜ Choose your Vercel account
-   - `Link to existing project?` ➜ **N**
-   - `Project name?` ➜ **fakeshield**
-   - `In which directory is your code located?` ➜ **./**
-   - `Want to modify settings?` ➜ **N**
-
-4. **Deploy to Production**:
-   ```bash
-   vercel --prod
-   ```
-
-Your app will be live at `https://fakeshield-yourname.vercel.app`! 🎉
+**FakeShield** is a state-of-the-art, multi-modal misinformation defense platform engineered to combat fake news, out-of-context recycled footage, astroturfing bot networks, and deceptive viral voice notes in real-time.
 
 ---
 
-### Method B: Deploy via GitHub + Vercel Dashboard
+## 🌟 5 Breakthrough World-First Innovations
 
-1. Push your project or the `FakeShield-Vercel` directory to a GitHub repository.
-2. Go to [https://vercel.com](https://vercel.com) and log in.
-3. Click **"Add New..."** ➜ **"Project"**.
-4. Import your GitHub repository.
-5. In **Root Directory**, select `FakeShield-Vercel` (or root).
-6. Click **Deploy**.
+FakeShield introduces **5 novel capabilities** designed to solve real-world misinformation bottlenecks where traditional tools fail:
+
+```
++----------------------------------------------------------------------------------------------------+
+|                                    FAKESHIELD 5 CORE INNOVATIONS                                   |
++------------------------------------+----------------------------------+----------------------------+
+| 🎙️ Voice Debunk Audio Generator    | ⏳ Recycled Media Timeline       | 🧠 Cognitive Fallacy Radar |
+| Voice-in to Spoken-Debunk-Out      | Exposes genuine old media        | Visual Spider/Radar chart  |
+| in English, Tamil, Hindi, etc.     | recycled into modern fake news   | of 5 manipulation weapons  |
++------------------------------------+----------------------------------+----------------------------+
+| 📲 1-Tap Counter-Viral Story Card  | 🤖 Coordinated Bot Farm Scanner  | 🌍 6-Language Regional UI  |
+| 1080x1350 Instagram / WhatsApp PNG | Detects astroturfing syndicates  | Inclusive fact-checking    |
+| debunk graphic generated in 1-tap  | with interactive node clustering | across global demographics |
++------------------------------------+----------------------------------+----------------------------+
+```
+
+### 1. 🎙️ Voice Debunk Audio Generator (Spoken Misinformation Buster)
+* **The Problem**: In developing regions and family group chats, over 70% of viral rumors spread via audio voice notes. Older audiences rarely read long English text fact-check articles.
+* **The Innovation**: 
+  - Records or uploads voice notes with live waveform audio tracking.
+  - Generates a **15-second clear, spoken audio fact-check** in **English, Tamil (தமிழ்), Hindi (हिन्दी), Spanish, French, or German**.
+  - 1-Click **"Forward Audio Debunk to WhatsApp"** to counter rumors directly inside the group chat.
+
+### 2. ⏳ "Recycled Media" Timeline & Context-Mismatch Exposer
+* **The Problem**: Most visual fake news is **NOT** synthetic deepfakes—it is genuine, authentic old disaster/war footage recycled with a false current date or location caption.
+* **The Innovation**:
+  - Compares claimed modern date/location against historical perceptual image archives.
+  - Renders a dual-node **Reality Timeline**:
+    * 🔴 *Claimed:* e.g., "February 2026 • Local Explosion Incident"
+    * 🟢 *Actual Origin:* "August 2020 • Beirut Port Archive (Reuters Wire)"
+  - Flags explicit **Context Hijack Alerts** without falsely labeling the image itself as photoshopped.
+
+### 3. 🧠 Psychological Manipulation & Cognitive Fallacy Radar
+* **The Problem**: Standard checkers output an arbitrary percentage score without explaining how the text exploits human psychological biases.
+* **The Innovation**:
+  - Computes an interactive **5-Axis Spider Radar Chart** (`<canvas>`):
+    1. 😱 **Fear & Panic Induction**
+    2. ⚡ **Urgency & Action Traps** ("Forward before deleted")
+    3. 🏛️ **Authority Spoofing** (Unverified NASA/WHO/Gov claims)
+    4. 💰 **Scarcity & Greed Hooks** (Free laptop / money schemes)
+    5. ⚔️ **Polarization & Tribalism** (Us vs Them rhetoric)
+  - Sentence-level highlighting identifies the exact manipulative phrases.
+
+### 4. 📲 1-Tap "Counter-Viral" Social Debunk Card Generator
+* **The Problem**: Fact-check articles fail because they are dry text links, while fake news spreads through eye-catching visual memes and stories.
+* **The Innovation**:
+  - Generates high-resolution **1080x1350 (9:16 Story)** or **1200x630 (Feed/Tweet)** graphic cards.
+  - Includes a bold glowing **❌ DEBUNKED / FAKE** stamp, crossed-out claim with strikethrough, 3 bullet reasons, and verified credibility dial.
+  - Themes: `🌌 Cyber Dark`, `🚨 Red Alert`, and `⚪ Clean Minimal`.
+  - 1-Tap **"Download PNG Card"** and **"Share directly to WhatsApp / Twitter"**.
+
+### 5. 🤖 Coordinated Bot Farm & Astroturfing Scanner
+* **The Problem**: Disinformation campaigns deploy hundreds of copy-paste bot accounts blasting identical narratives.
+* **The Innovation**:
+  - Calculates a **Coordinated Astroturfing Index**, syntactic duplicate clusters, and burst velocity (posts/min).
+  - Renders an interactive **Neural Bot Cluster Graph** on canvas separating *Seed Bots (Red)*, *Relay Bots (Orange)*, and *Organic Users (Blue)*.
 
 ---
 
-## 💻 Option 2: Run FakeShield Locally
+## 🎨 Unified Multi-Factor Defense Suite
 
-### 1. Run Spring Boot Backend
-From the `FakeShield` directory:
+| Tab / Mode | Description |
+| :--- | :--- |
+| 📝 **Text Analysis** | Multi-factor NLP, clickbait heuristic scoring, and neurolinguistic manipulation detection. |
+| 🔗 **URL Verification** | Domain reputation, TLD risk analysis, and SSL integrity checking across 100+ media outlets. |
+| 🖼️ **Image Forensics** | Client-side canvas forensics, compression artifact inspection, EXIF metadata check, and OCR text extraction. |
+| 🎙️ **Voice Debunk** | Live microphone speech recognition + multi-language spoken debunk synthesis. |
+| ⏳ **Recycled Media** | Out-of-context historical archive cross-referencing and visual event timeline auditing. |
+| 🤖 **Bot Farm Scanner**| Astroturfing network analysis and copy-paste propagation cluster mapping. |
+
+---
+
+## 🌍 Multi-Language Support
+
+Complete interface, analysis verdicts, and spoken audio fact-checks are available in:
+* 🇬🇧 **English**
+* 🇮🇳 **தமிழ் (Tamil)**
+* 🇮🇳 **हिन्दी (Hindi)**
+* 🇪🇸 **Español (Spanish)**
+* 🇫🇷 **Français (French)**
+* 🇩🇪 **Deutsch (German)**
+
+---
+
+## 🚀 Quick Start & Deployment
+
+### Option 1: Run Locally
 ```bash
-cd FakeShield
-.\mvnw.cmd spring-boot:run
-```
-> Server runs on **`http://localhost:8090`**
+# Clone the repository
+git clone https://github.com/JEROME146art/-FakeShield.git
+cd -FakeShield/FakeShield-Vercel
 
-### 2. Access Web App
-Open your browser at:
-```
-http://localhost:8090/
+# Open public/index.html in any modern browser, or serve with:
+npx serve public
 ```
 
-### 3. Load Chrome Extension in Browser
-1. Open Google Chrome (or Brave / Edge).
-2. Navigate to `chrome://extensions/`.
-3. Enable **"Developer mode"** (toggle in the top-right corner).
-4. Click **"Load unpacked"**.
-5. Select the folder:
-   `c:\Users\jerom\Downloads\Projects\findit-backend\FakeShield-Extension`
-6. Pin the **FakeShield 🛡️** icon to your browser toolbar!
+### Option 2: Deploy to Vercel (1-Click)
+```bash
+cd FakeShield-Vercel
+vercel --prod
+```
+
+### Option 3: Browser Extension (Chrome / Edge / Brave)
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** and select the `FakeShield-Extension` folder.
 
 ---
 
-## 🧩 Chrome Extension Features
+## 📜 License
 
-- 📝 **Content Analysis**: Paste headlines or WhatsApp forwards with instant verification presets.
-- 🔗 **URL Analysis**: Analyze any website article or click **"📌 Current Tab"** to auto-fill.
-- 🖼️ **Image Analysis**: Drag-and-drop screenshots or memes to run OCR text extraction & metadata checks.
-- ⚙️ **Configurable Endpoint**: Click ⚙️ in the extension header to toggle between Local (`http://localhost:8090`), Vercel, or custom backend.
+This project is open-source under the [MIT License](LICENSE).
+Created with ❤️ to fight misinformation and protect digital media integrity worldwide.
