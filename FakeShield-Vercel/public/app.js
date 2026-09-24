@@ -1051,20 +1051,37 @@ const I18N_STRINGS = {
     }
 };
 
-function toggleLangDropdown() {
+function toggleLangDropdown(event) {
+    if (event) event.stopPropagation();
     const dropdown = document.getElementById('langDropdown');
     if (dropdown) {
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        dropdown.classList.toggle('show');
     }
 }
 
-async function changeLanguage(code, flag, name) {
+async function changeLanguage(code, flag, name, event) {
+    if (event) event.stopPropagation();
     selectedLanguageCode = code;
+    localStorage.setItem('fakeshield_lang', code);
+    localStorage.setItem('fakeshield_lang_flag', flag);
+    localStorage.setItem('fakeshield_lang_name', name);
+
     const currentLang = document.getElementById('currentLang');
     if (currentLang) currentLang.textContent = `${flag} ${code.toUpperCase()}`;
-    toggleLangDropdown();
-    showToast(`🌐 Language set to ${name}`, 'info');
 
+    const dropdown = document.getElementById('langDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+
+    // Update active highlight in dropdown
+    document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('active', opt.getAttribute('onclick') && opt.getAttribute('onclick').includes(`'${code}'`));
+    });
+
+    // Sync voice debunk language selector
+    const voiceLangSelect = document.getElementById('voiceLanguageSelect');
+    if (voiceLangSelect) voiceLangSelect.value = code;
+
+    showToast(`🌐 Language set to ${name}`, 'info');
     applyUILanguage(code);
 
     // If an analysis explanation is currently visible on screen, translate it live!
@@ -1155,8 +1172,8 @@ function applyUILanguage(langCode) {
 document.addEventListener('click', (e) => {
     const switcher = document.querySelector('.language-switcher');
     const dropdown = document.getElementById('langDropdown');
-    if (switcher && !switcher.contains(e.target) && dropdown) {
-        dropdown.style.display = 'none';
+    if (dropdown && (!switcher || !switcher.contains(e.target))) {
+        dropdown.classList.remove('show');
     }
 });
 
@@ -2203,6 +2220,12 @@ function showToast(message, type = 'info') {
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🛡️ FakeShield v2.0 Initialized with 5 Breakthrough Features');
+    const savedLang = localStorage.getItem('fakeshield_lang') || 'en';
+    const savedFlag = localStorage.getItem('fakeshield_lang_flag') || '🇬🇧';
+    const savedName = localStorage.getItem('fakeshield_lang_name') || 'English';
+    if (savedLang !== 'en') {
+        changeLanguage(savedLang, savedFlag, savedName);
+    }
     initNavbarAuth();
     loadDashboardData();
 });
