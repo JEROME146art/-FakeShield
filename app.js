@@ -358,7 +358,92 @@ function loadSample(type) {
     if (urlInput) urlInput.value = sample.sourceUrl;
     if (platformSelect) platformSelect.value = sample.platform;
 
-    showToast(`Loaded ${type.toUpperCase()} sample! Click 'Analyze Text' below.`, 'info');
+    showToast(`Loaded ${type.toUpperCase()} sample! Click 'Scan & Verify' below.`, 'info');
+}
+
+function loadSampleAndScroll(type) {
+    const textTabBtn = document.querySelector('.tab-btn');
+    switchTab('text', textTabBtn);
+    loadSample(type);
+    scrollToAnalyzer();
+}
+
+// ============================================
+// LIVE SCANNING PROGRESS ANIMATION HELPER
+// ============================================
+
+async function runScanAnimationSequence() {
+    const scanBox = document.getElementById('scanningProgressBox');
+    const barFill = document.getElementById('scannerBarFill');
+    const s1 = document.getElementById('scanStep1');
+    const s2 = document.getElementById('scanStep2');
+    const s3 = document.getElementById('scanStep3');
+    const s4 = document.getElementById('scanStep4');
+
+    if (!scanBox) return;
+
+    scanBox.style.display = 'block';
+    if (barFill) barFill.style.width = '0%';
+    [s1, s2, s3, s4].forEach(s => {
+        if (s) {
+            s.className = 'scan-step';
+            const c = s.querySelector('.step-check');
+            if (c) c.textContent = '○';
+        }
+    });
+
+    const setStepState = (stepEl, state) => {
+        if (!stepEl) return;
+        stepEl.className = `scan-step ${state}`;
+        const c = stepEl.querySelector('.step-check');
+        if (c) c.textContent = state === 'done' ? '✓' : state === 'active' ? '⚡' : '○';
+    };
+
+    // Step 1
+    setStepState(s1, 'active');
+    if (barFill) barFill.style.width = '25%';
+    await new Promise(r => setTimeout(r, 300));
+    setStepState(s1, 'done');
+
+    // Step 2
+    setStepState(s2, 'active');
+    if (barFill) barFill.style.width = '55%';
+    await new Promise(r => setTimeout(r, 350));
+    setStepState(s2, 'done');
+
+    // Step 3
+    setStepState(s3, 'active');
+    if (barFill) barFill.style.width = '80%';
+    await new Promise(r => setTimeout(r, 300));
+    setStepState(s3, 'done');
+
+    // Step 4
+    setStepState(s4, 'active');
+    if (barFill) barFill.style.width = '100%';
+    await new Promise(r => setTimeout(r, 250));
+    setStepState(s4, 'done');
+
+    scanBox.style.display = 'none';
+}
+
+async function analyzeNewsWithAnimation() {
+    await runScanAnimationSequence();
+    await analyzeNews();
+}
+
+async function analyzeUrlWithAnimation() {
+    await runScanAnimationSequence();
+    await analyzeUrl();
+}
+
+async function analyzeImageWithAnimation() {
+    await runScanAnimationSequence();
+    await analyzeImage();
+}
+
+async function analyzeVoiceDebunkWithAnimation() {
+    await runScanAnimationSequence();
+    await analyzeVoiceDebunk();
 }
 
 // Global cached news data
@@ -375,15 +460,31 @@ function showResults(data) {
     const resultCard = document.getElementById('resultCard');
     if (!resultCard) return;
 
+    resultCard.style.display = 'block';
+
     const status = (data.status || 'UNKNOWN').toUpperCase();
     const score = Math.round(data.credibilityScore || 0);
 
     // Update Status Text & Icon
     const statusText = document.getElementById('statusText');
     const statusIcon = document.getElementById('statusIcon');
+    const statusSubBadge = document.getElementById('statusSubBadge');
+    const resultSourceDomain = document.getElementById('resultSourceDomain');
 
-    if (statusText) statusText.textContent = status === 'REAL' ? 'Verified Real News' : status === 'FAKE' ? 'Fake News Detected' : 'Suspicious Content';
-    if (statusIcon) statusIcon.textContent = status === 'REAL' ? '✅' : status === 'FAKE' ? '❌' : '⚠️';
+    if (statusText) {
+        statusText.textContent = status === 'REAL' ? 'Verified Authentic News' : status === 'FAKE' ? 'High-Risk Misinformation' : 'Suspicious / Unverified';
+    }
+    if (statusIcon) {
+        statusIcon.textContent = status === 'REAL' ? '✅' : status === 'FAKE' ? '❌' : '⚠️';
+        statusIcon.style.background = status === 'REAL' ? 'rgba(16, 185, 129, 0.15)' : status === 'FAKE' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+    }
+    if (statusSubBadge) {
+        statusSubBadge.textContent = status === 'REAL' ? 'Trust Shield: Verified' : status === 'FAKE' ? 'Alert: Debunked Hoax' : 'Warning: Unverified Claims';
+    }
+    if (resultSourceDomain) {
+        const src = data.sourceUrl || data.source || (data.analysisDetails && data.analysisDetails.source) || 'Global Media Feed';
+        resultSourceDomain.textContent = `Source Domain: ${src}`;
+    }
 
     // Update Score Circle & Number
     const scoreValue = document.getElementById('scoreValue');
@@ -392,21 +493,35 @@ function showResults(data) {
     if (scoreValue) scoreValue.textContent = score;
 
     if (scoreCircle) {
-        const circumference = 377; // 2 * pi * r (60)
+        const circumference = 364.4; // 2 * pi * 58
         const offset = circumference - (score / 100) * circumference;
         scoreCircle.style.strokeDashoffset = offset;
-        scoreCircle.style.color = status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#ef4444' : '#f59e0b';
+        scoreCircle.style.color = status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#f43f5e' : '#f59e0b';
     }
 
-    // Extracted Text (OCR / Summary)
-    const extractedSection = document.getElementById('extractedTextSection');
-    const extractedBox = document.getElementById('extractedTextBox');
-    if (data.extractedText) {
-        if (extractedSection) extractedSection.style.display = 'block';
-        if (extractedBox) extractedBox.textContent = data.extractedText;
-    } else {
-        if (extractedSection) extractedSection.style.display = 'none';
+    // Quad Metric Cards
+    const metricAccuracy = document.getElementById('metricAccuracy');
+    const metricSourceTrust = document.getElementById('metricSourceTrust');
+    const metricClickbait = document.getElementById('metricClickbait');
+    const metricEmotionalTone = document.getElementById('metricEmotionalTone');
+
+    if (metricAccuracy) metricAccuracy.textContent = `${score}%`;
+    if (metricSourceTrust) {
+        metricSourceTrust.textContent = score >= 70 ? 'High' : score >= 40 ? 'Moderate' : 'Low / Flagged';
+        metricSourceTrust.className = `mq-value ${score >= 70 ? 'text-emerald' : score >= 40 ? 'text-yellow' : 'text-red'}`;
     }
+    if (metricClickbait) {
+        const clickPct = Math.max(5, 100 - score);
+        metricClickbait.textContent = score >= 70 ? `Low (${clickPct}%)` : `High (${clickPct}%)`;
+        metricClickbait.className = `mq-value ${score >= 70 ? 'text-purple' : 'text-red'}`;
+    }
+    if (metricEmotionalTone) {
+        metricEmotionalTone.textContent = score >= 70 ? 'Objective & Factual' : score >= 40 ? 'Sensationalized' : 'Manipulative / Alarmist';
+        metricEmotionalTone.className = `mq-value ${score >= 70 ? 'text-blue' : 'text-red'}`;
+    }
+
+    // Scroll smoothly to the results
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Breakdown Grid
     const breakdownGrid = document.getElementById('breakdownGrid');
@@ -2402,6 +2517,11 @@ window.loadRecentNews = loadRecentNews;
 window.toggleLangDropdown = toggleLangDropdown;
 window.changeLanguage = changeLanguage;
 window.loadSample = loadSample;
+window.loadSampleAndScroll = loadSampleAndScroll;
+window.analyzeNewsWithAnimation = analyzeNewsWithAnimation;
+window.analyzeUrlWithAnimation = analyzeUrlWithAnimation;
+window.analyzeImageWithAnimation = analyzeImageWithAnimation;
+window.analyzeVoiceDebunkWithAnimation = analyzeVoiceDebunkWithAnimation;
 window.filterRecentNews = filterRecentNews;
 window.viewReport = viewReport;
 window.closeReportModal = closeReportModal;
