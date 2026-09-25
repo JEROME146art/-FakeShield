@@ -3,306 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Analysis History - FakeShield</title>
+    <title>My Analysis History - FakeShield AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="auth.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            margin: 0;
+            background: #070a14 radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12), transparent 45%);
             min-height: 100vh;
-            background: linear-gradient(135deg, #0A0E1A 0%, #121829 50%, #0F172A 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #F8FAFC;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
-        .history-container {
-            max-width: 1100px;
+        .history-wrapper {
+            max-width: 1120px;
             margin: 0 auto;
-            padding: 32px 20px 60px;
+            padding: 40px 24px 80px 24px;
         }
 
-        .top-nav-bar {
+        .history-nav-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #00D4FF;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-
-        .back-btn:hover {
-            background: rgba(0, 212, 255, 0.16);
-            transform: translateX(-2px);
-        }
-
-        .history-header {
-            text-align: center;
             margin-bottom: 32px;
         }
 
-        .history-header h1 {
-            font-size: 38px;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #38bdf8;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(56, 189, 248, 0.18);
+            transform: translateX(-3px);
+        }
+
+        .history-header-card {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .history-tag {
+            font-size: 12px;
             font-weight: 800;
-            margin: 0 0 10px;
-            background: linear-gradient(135deg, #00D4FF 0%, #A855F7 100%);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 4px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .history-header-card h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .history-header p {
-            color: #94A3B8;
-            margin: 0;
-            font-size: 15px;
+        .history-header-card p {
+            color: #94a3b8;
+            font-size: 16px;
+            margin: 0 0 16px 0;
         }
 
-        .user-badge {
+        .user-status-pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 14px;
-            padding: 6px 14px;
+            padding: 6px 16px;
             border-radius: 20px;
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.25);
-            color: #00D4FF;
-            font-size: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f8fafc;
+            font-size: 13px;
             font-weight: 600;
         }
 
-        .stats-grid {
+        /* Stats Quad Grid */
+        .history-stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 36px;
         }
 
-        .stat-card {
-            background: rgba(18, 24, 41, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 20px;
+        .h-stat-card {
+            background: rgba(14, 20, 38, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 22px;
             text-align: center;
-            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: all 0.25s ease;
         }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(0, 212, 255, 0.3);
+        .h-stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.4);
         }
 
-        .stat-number {
-            font-size: 34px;
-            font-weight: 800;
-            margin-bottom: 6px;
-            line-height: 1;
+        .h-stat-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 4px;
         }
 
-        .stat-label {
-            color: #94A3B8;
+        .h-stat-label {
             font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
         }
 
-        .stat-total .stat-number { color: #00D4FF; }
-        .stat-real .stat-number { color: #10B981; }
-        .stat-fake .stat-number { color: #EF4444; }
-        .stat-suspicious .stat-number { color: #F59E0B; }
+        .stat-cyan { color: #38bdf8; }
+        .stat-emerald { color: #10b981; }
+        .stat-crimson { color: #f43f5e; }
+        .stat-amber { color: #f59e0b; }
 
-        /* Filter Controls */
-        .controls-bar {
+        /* Toolbar Filter & Search */
+        .history-toolbar {
+            background: rgba(14, 20, 38, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-            background: rgba(18, 24, 41, 0.6);
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 16px;
+            margin-bottom: 28px;
         }
 
-        .filter-group {
+        .filter-buttons {
             display: flex;
-            gap: 6px;
             flex-wrap: wrap;
+            gap: 8px;
         }
 
-        .filter-pill {
-            padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94A3B8;
-            border-radius: 20px;
-            font-size: 12px;
+        .h-filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
-        .filter-pill:hover, .filter-pill.active {
-            background: rgba(0, 212, 255, 0.15);
-            color: #00D4FF;
-            border-color: #00D4FF;
+        .h-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
         }
 
-        .search-input {
-            padding: 8px 14px;
-            background: rgba(10, 14, 26, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            color: #F8FAFC;
+        .h-filter-btn.active {
+            background: linear-gradient(135deg, #0284c7, #6366f1);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .search-box-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-history-input {
+            background: rgba(9, 14, 28, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 9px 14px;
+            color: #ffffff;
             font-size: 13px;
+            width: 220px;
             outline: none;
-            width: 240px;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
         }
 
-        .search-input:focus {
-            border-color: #00D4FF;
+        .search-history-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-clear-all {
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            color: #f43f5e;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-clear-all:hover {
+            background: rgba(244, 63, 94, 0.25);
         }
 
         /* History Items List */
         .history-list {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
         }
 
-        .history-item {
-            background: rgba(18, 24, 41, 0.75);
-            backdrop-filter: blur(12px);
+        .history-item-card {
+            background: rgba(14, 20, 38, 0.75);
+            backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 18px 20px;
+            border-radius: 18px;
+            padding: 22px 26px;
             display: grid;
             grid-template-columns: auto 1fr auto;
-            gap: 18px;
+            gap: 20px;
             align-items: center;
-            transition: all 0.2s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: all 0.25s ease;
         }
 
-        .history-item:hover {
-            transform: translateX(3px);
-            border-color: rgba(0, 212, 255, 0.25);
-            background: rgba(22, 30, 52, 0.85);
+        .history-item-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.18);
         }
 
-        .history-type-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+        .h-type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            flex-shrink: 0;
+            font-size: 22px;
         }
 
-        .type-image { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); }
-        .type-url { background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); }
-        .type-text { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); }
-
-        .history-info {
-            min-width: 0;
+        .h-info-main {
+            overflow: hidden;
         }
 
-        .history-info-header {
+        .h-title-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 10px;
+            margin-bottom: 6px;
         }
 
-        .history-title {
-            color: #F8FAFC;
-            font-size: 15px;
+        .h-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 17px;
             font-weight: 700;
+            color: #ffffff;
             margin: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .history-badge {
+        .h-badge {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
             text-transform: uppercase;
-            padding: 2px 8px;
-            border-radius: 10px;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
         }
 
-        .badge-real { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-fake { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .badge-suspicious { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-real { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-fake { background: rgba(244, 63, 94, 0.2); color: #f43f5e; }
+        .badge-suspicious { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
 
-        .history-snippet {
-            color: #94A3B8;
-            font-size: 12px;
-            margin: 4px 0 6px 0;
+        .h-snippet {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0 0 10px 0;
+            line-height: 1.5;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            line-height: 1.4;
         }
 
-        .history-meta {
+        .h-meta-row {
             display: flex;
-            gap: 12px;
-            color: #64748B;
-            font-size: 11px;
             flex-wrap: wrap;
+            gap: 16px;
+            font-size: 12px;
+            color: #64748b;
         }
 
-        .history-actions {
+        .h-meta-row span {
             display: flex;
-            gap: 12px;
             align-items: center;
+            gap: 4px;
         }
 
-        .history-score {
-            font-size: 20px;
-            font-weight: 800;
-            padding: 8px 14px;
-            border-radius: 10px;
-            min-width: 68px;
+        .h-score-column {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .h-score-box {
             text-align: center;
+            min-width: 60px;
         }
 
-        .score-REAL { color: #10B981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); }
-        .score-FAKE { color: #EF4444; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); }
-        .score-SUSPICIOUS { color: #F59E0B; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25); }
+        .h-score-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: 800;
+            display: block;
+        }
 
-        .delete-btn {
-            background: rgba(239, 68, 68, 0.1);
-            color: #EF4444;
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+        .h-score-lbl {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .btn-delete-item {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            color: #f43f5e;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -311,318 +365,349 @@
             transition: all 0.2s ease;
         }
 
-        .delete-btn:hover {
-            background: rgba(239, 68, 68, 0.25);
-            transform: scale(1.05);
+        .btn-delete-item:hover {
+            background: rgba(244, 63, 94, 0.25);
+            transform: scale(1.08);
         }
 
-        .empty-state {
+        .empty-history-box {
             text-align: center;
-            padding: 60px 20px;
-            color: #94A3B8;
-            background: rgba(18, 24, 41, 0.5);
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            padding: 60px 24px;
+            background: rgba(14, 20, 38, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
         }
 
-        .empty-state h2 {
-            color: #F8FAFC;
-            margin: 0 0 10px;
+        .empty-history-box h3 {
+            font-family: 'Outfit', sans-serif;
             font-size: 22px;
+            color: #ffffff;
+            margin: 0 0 8px 0;
         }
 
-        .loading-state {
-            text-align: center;
-            padding: 40px;
-            color: #94A3B8;
+        .empty-history-box p {
+            color: #94a3b8;
             font-size: 14px;
+            margin: 0 0 20px 0;
         }
 
         @media (max-width: 768px) {
-            .history-item {
+            .history-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .history-item-card {
                 grid-template-columns: 1fr;
-                gap: 12px;
+                gap: 14px;
             }
-            .history-actions {
+            .h-score-column {
                 justify-content: space-between;
-            }
-            .search-input {
                 width: 100%;
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+                padding-top: 12px;
+            }
+            .search-history-input {
+                width: 100%;
+            }
+            .history-toolbar {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
 </head>
 <body>
-<div class="history-container">
-    <div class="top-nav-bar">
-        <a href="/" class="back-btn">← Back to FakeShield</a>
-        <button class="back-btn" onclick="refreshHistory()" style="cursor: pointer;">🔄 Refresh</button>
+    <div class="history-wrapper">
+        <div class="history-nav-top">
+            <a href="/index.html" class="btn-back">← Back to Fact Shield</a>
+            <div id="userBadge" class="user-status-pill">👤 Guest Session</div>
+        </div>
+
+        <div class="history-header-card">
+            <span class="history-tag">Intelligence Log</span>
+            <h1>📜 Fact-Check & Analysis History</h1>
+            <p>Complete record of news articles, web links, screenshots, and audio claims verified with FakeShield AI.</p>
+        </div>
+
+        <!-- Real-Time Computed Stats -->
+        <div class="history-stats-grid">
+            <div class="h-stat-card">
+                <div class="h-stat-number stat-cyan" id="totalCount">0</div>
+                <div class="h-stat-label">Total Analyzed</div>
+            </div>
+            <div class="h-stat-card">
+                <div class="h-stat-number stat-emerald" id="realCount">0</div>
+                <div class="h-stat-label">Verified Real</div>
+            </div>
+            <div class="h-stat-card">
+                <div class="h-stat-number stat-crimson" id="fakeCount">0</div>
+                <div class="h-stat-label">Fake News Debunked</div>
+            </div>
+            <div class="h-stat-card">
+                <div class="h-stat-number stat-amber" id="suspiciousCount">0</div>
+                <div class="h-stat-label">Suspicious / Alert</div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="history-toolbar">
+            <div class="filter-buttons">
+                <button class="h-filter-btn active" onclick="setFilter('ALL', this)">All</button>
+                <button class="h-filter-btn" onclick="setFilter('TEXT', this)">📝 Text</button>
+                <button class="h-filter-btn" onclick="setFilter('URL', this)">🔗 URL</button>
+                <button class="h-filter-btn" onclick="setFilter('IMAGE', this)">🖼️ Image</button>
+                <button class="h-filter-btn" onclick="setFilter('REAL', this)">✅ Verified</button>
+                <button class="h-filter-btn" onclick="setFilter('FAKE', this)">❌ Fake</button>
+                <button class="h-filter-btn" onclick="setFilter('SUSPICIOUS', this)">⚠️ Suspicious</button>
+            </div>
+            <div class="search-box-wrap">
+                <input type="text" id="searchInput" class="search-history-input" placeholder="🔍 Search history..." oninput="applyFilters()">
+                <button class="btn-clear-all" onclick="clearAllHistory()">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <!-- History Records Container -->
+        <div class="history-list" id="historyList">
+            <div class="empty-history-box">
+                <h3>Loading analysis history...</h3>
+            </div>
+        </div>
     </div>
 
-    <div class="history-header">
-        <h1>📜 Analysis History</h1>
-        <p>Comprehensive record of all analyzed news, URLs, and images</p>
-        <div class="user-badge" id="userBadge">Checking status...</div>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card stat-total">
-            <div class="stat-number" id="totalCount">0</div>
-            <div class="stat-label">Total Analyzed</div>
-        </div>
-        <div class="stat-card stat-real">
-            <div class="stat-number" id="realCount">0</div>
-            <div class="stat-label">✅ Verified Real</div>
-        </div>
-        <div class="stat-card stat-fake">
-            <div class="stat-number" id="fakeCount">0</div>
-            <div class="stat-label">❌ Fake News</div>
-        </div>
-        <div class="stat-card stat-suspicious">
-            <div class="stat-number" id="suspiciousCount">0</div>
-            <div class="stat-label">⚠️ Suspicious</div>
-        </div>
-    </div>
-
-    <div class="controls-bar">
-        <div class="filter-group">
-            <button class="filter-pill active" onclick="setFilter('ALL', this)">All</button>
-            <button class="filter-pill" onclick="setFilter('TEXT', this)">📝 Text</button>
-            <button class="filter-pill" onclick="setFilter('URL', this)">🔗 URL</button>
-            <button class="filter-pill" onclick="setFilter('IMAGE', this)">🖼️ Images</button>
-            <button class="filter-pill" onclick="setFilter('REAL', this)">✅ Real</button>
-            <button class="filter-pill" onclick="setFilter('FAKE', this)">❌ Fake</button>
-            <button class="filter-pill" onclick="setFilter('SUSPICIOUS', this)">⚠️ Suspicious</button>
-        </div>
-        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search history..." oninput="applyFilters()">
-    </div>
-
-    <div class="history-list" id="historyList">
-        <div class="loading-state">Loading analysis history...</div>
-    </div>
-</div>
-
-<script>
-    const token = localStorage.getItem('token');
-    const userRaw = localStorage.getItem('user');
-    let currentUser = null;
-    let allAnalyses = [];
-    let currentFilter = 'ALL';
-
-    try {
-        currentUser = userRaw ? JSON.parse(userRaw) : null;
-    } catch (e) {
-        currentUser = null;
-    }
-
-    const userBadge = document.getElementById('userBadge');
-    if (token && currentUser) {
-        userBadge.textContent = `👤 ${currentUser.fullName || currentUser.username || 'User'} (Synced Account)`;
-    } else {
-        userBadge.textContent = '👥 Public & Guest History (Log in to sync)';
-    }
-
-    function formatDate(value) {
-        if (!value) return 'Just now';
-        try {
-            return new Date(value).toLocaleString();
-        } catch (e) {
-            return 'Just now';
-        }
-    }
-
-    async function loadStats() {
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            const response = await fetch('/api/history/my-stats', { headers });
-            if (response.ok) {
-                const stats = await response.json();
-                document.getElementById('totalCount').textContent = stats.total ?? 0;
-                document.getElementById('realCount').textContent = stats.real ?? 0;
-                document.getElementById('fakeCount').textContent = stats.fake ?? 0;
-                document.getElementById('suspiciousCount').textContent = stats.suspicious ?? 0;
+    <script>
+        // Default Sample Seed if user has no past history
+        const DEFAULT_SEED_HISTORY = [
+            {
+                id: 1001,
+                type: "text",
+                title: "NASA Webb Telescope Detects Water Vapor on Exoplanet WASP-96b",
+                content: "Data collected from the James Webb Space Telescope confirms atmospheric water vapor on exoplanet WASP-96b. Researchers found distinct spectral fingerprints.",
+                sourceUrl: "https://nasa.gov/news/webb-water-vapor-discovery",
+                platform: "News Website",
+                credibilityScore: 94,
+                status: "REAL",
+                createdAt: new Date(Date.now() - 3600000).toISOString(),
+                explanation: "Verified by official NASA scientific data release and peer-reviewed spectroscopic analysis."
+            },
+            {
+                id: 1002,
+                type: "text",
+                title: "Urgent Warning: Government Shutting Down All Internet Tonight",
+                content: "Forwarded message claiming nationwide 5G and Wi-Fi blackout starting 12:00 AM tonight.",
+                sourceUrl: "",
+                platform: "WhatsApp",
+                credibilityScore: 16,
+                status: "FAKE",
+                createdAt: new Date(Date.now() - 7200000).toISOString(),
+                explanation: "Unverified viral chain message exhibiting extreme urgency manipulation and panic induction."
+            },
+            {
+                id: 1003,
+                type: "url",
+                title: "BBC News - Global Technology & Science Investigation",
+                content: "Deep investigation into global cyber security threats and misinformation trends.",
+                sourceUrl: "https://bbc.com/news/technology",
+                platform: "bbc.com",
+                credibilityScore: 91,
+                status: "REAL",
+                createdAt: new Date(Date.now() - 14400000).toISOString(),
+                explanation: "Published by accredited international editorial source with verified domain trust."
             }
-        } catch (error) {
-            console.error('Failed to load stats:', error);
-        }
-    }
+        ];
 
-    async function loadHistory() {
-        const list = document.getElementById('historyList');
+        let allHistory = [];
+        let currentFilter = 'ALL';
 
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            const response = await fetch('/api/history/my-analyses', { headers });
-
-            if (!response.ok) {
-                // Fallback to all public news if unauthorized
-                const altRes = await fetch('/api/news/all');
-                if (altRes.ok) {
-                    allAnalyses = await altRes.json();
-                    renderList();
-                    return;
+        function initUserSession() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                const badge = document.getElementById('userBadge');
+                if (user && (user.fullName || user.username)) {
+                    badge.textContent = `👤 ${user.fullName || user.username}`;
+                } else {
+                    badge.textContent = '👥 Local Session';
                 }
-                throw new Error(`Server error ${response.status}`);
+            } catch (e) {}
+        }
+
+        async function loadHistoryData() {
+            let localRecords = [];
+            try {
+                localRecords = JSON.parse(localStorage.getItem('fakeshield_history') || '[]');
+                if (!Array.isArray(localRecords)) localRecords = [];
+            } catch (e) {
+                localRecords = [];
             }
 
-            allAnalyses = await response.json();
-            if (!Array.isArray(allAnalyses)) allAnalyses = [];
-
-            renderList();
-        } catch (error) {
-            console.error('Failed to load history:', error);
-            list.innerHTML = `
-                <div class="empty-state">
-                    <h2>❌ Could not load history</h2>
-                    <p>${error.message || 'Please verify server connection.'}</p>
-                    <a href="/" class="back-btn">Return Home</a>
-                </div>
-            `;
-        }
-    }
-
-    function setFilter(filter, btn) {
-        currentFilter = filter;
-        document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        applyFilters();
-    }
-
-    function applyFilters() {
-        renderList();
-    }
-
-    function renderList() {
-        const list = document.getElementById('historyList');
-        const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-
-        let filtered = allAnalyses.filter(item => {
-            const type = (item.type || (item.imageType ? 'image' : (item.sourceUrl ? 'url' : 'text'))).toUpperCase();
-            const status = (item.status || 'SUSPICIOUS').toUpperCase();
-
-            // Filter match
-            if (currentFilter === 'TEXT' && type !== 'TEXT') return false;
-            if (currentFilter === 'URL' && type !== 'URL') return false;
-            if (currentFilter === 'IMAGE' && type !== 'IMAGE') return false;
-            if (currentFilter === 'REAL' && status !== 'REAL') return false;
-            if (currentFilter === 'FAKE' && status !== 'FAKE') return false;
-            if (currentFilter === 'SUSPICIOUS' && status !== 'SUSPICIOUS') return false;
-
-            // Search query match
-            if (query) {
-                const title = (item.title || item.filename || '').toLowerCase();
-                const content = (item.content || item.extractedText || '').toLowerCase();
-                const exp = (item.explanation || '').toLowerCase();
-                if (!title.includes(query) && !content.includes(query) && !exp.includes(query)) {
-                    return false;
+            // Also try fetching server history
+            let serverRecords = [];
+            try {
+                const token = localStorage.getItem('token');
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                const res = await fetch('/api/history/my-analyses', { headers });
+                if (res.ok) {
+                    serverRecords = await res.json();
+                    if (!Array.isArray(serverRecords)) serverRecords = [];
                 }
-            }
+            } catch (e) {}
 
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            list.innerHTML = `
-                <div class="empty-state">
-                    <h2>📭 No analyses found</h2>
-                    <p>Try submitting text, a URL, or an image on the analyzer page.</p>
-                    <a href="/" class="back-btn">Go to Analyzer →</a>
-                </div>
-            `;
-            return;
-        }
-
-        list.innerHTML = filtered.map(item => {
-            const status = (item.status || 'SUSPICIOUS').toUpperCase();
-            const score = Math.round(item.credibilityScore ?? item.overallScore ?? 0);
-            const isImage = item.type === 'image' || item.imageType || item.filename;
-            const isUrl = item.type === 'url' || (item.sourceUrl && item.sourceUrl.length > 0);
-            const typeClass = isImage ? 'type-image' : isUrl ? 'type-url' : 'type-text';
-            const typeIcon = isImage ? '🖼️' : isUrl ? '🔗' : '📝';
-            const typeName = isImage ? 'Image Analysis' : isUrl ? 'URL Analysis' : 'Text Analysis';
-
-            const title = item.title || item.filename || 'Untitled News';
-            const snippet = item.content || item.extractedText || item.explanation || 'No preview available.';
-            const badgeClass = status === 'REAL' ? 'badge-real' : status === 'FAKE' ? 'badge-fake' : 'badge-suspicious';
-            const badgeText = status === 'REAL' ? '✅ Verified Real' : status === 'FAKE' ? '❌ Fake News' : '⚠️ Suspicious';
-
-            return `
-                <div class="history-item">
-                    <div class="history-type-icon ${typeClass}">
-                        ${typeIcon}
-                    </div>
-                    <div class="history-info">
-                        <div class="history-info-header">
-                            <h3 class="history-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3>
-                            <span class="history-badge ${badgeClass}">${badgeText}</span>
-                        </div>
-                        <p class="history-snippet">${escapeHtml(snippet)}</p>
-                        <div class="history-meta">
-                            <span>🏷️ ${typeName}</span>
-                            <span>📅 ${formatDate(item.createdAt || item.uploadedAt || item.submittedAt)}</span>
-                            ${item.fileSize ? `<span>📦 ${(Number(item.fileSize)/1024).toFixed(1)} KB</span>` : ''}
-                            ${item.platform ? `<span>🌐 ${escapeHtml(item.platform)}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="history-actions">
-                        <div class="history-score score-${status}">
-                            ${score}%
-                        </div>
-                        <button class="delete-btn" onclick="deleteItem(${item.id}, '${isImage ? 'image' : 'news'}')" title="Delete entry">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    async function deleteItem(id, type) {
-        if (!id) return;
-        if (!confirm('Are you sure you want to delete this analysis record?')) return;
-
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            const response = await fetch(`/api/history/${id}?type=${type}`, {
-                method: 'DELETE',
-                headers: headers
+            // Combine and deduplicate
+            const combinedMap = new Map();
+            [...localRecords, ...serverRecords].forEach(item => {
+                if (item && item.id) {
+                    combinedMap.set(String(item.id), item);
+                }
             });
 
-            if (response.ok) {
-                allAnalyses = allAnalyses.filter(a => a.id !== id);
-                renderList();
-                loadStats();
-            } else {
-                alert('Could not delete record.');
+            allHistory = Array.from(combinedMap.values());
+
+            // If completely empty, load the default seeds into storage
+            if (allHistory.length === 0) {
+                allHistory = DEFAULT_SEED_HISTORY;
+                localStorage.setItem('fakeshield_history', JSON.stringify(DEFAULT_SEED_HISTORY));
             }
-        } catch (e) {
-            alert('Error deleting record: ' + e.message);
+
+            updateStats();
+            renderHistoryList();
         }
-    }
 
-    function refreshHistory() {
-        loadStats();
-        loadHistory();
-    }
+        function updateStats() {
+            const total = allHistory.length;
+            const real = allHistory.filter(i => (i.status || '').toUpperCase() === 'REAL').length;
+            const fake = allHistory.filter(i => (i.status || '').toUpperCase() === 'FAKE').length;
+            const susp = allHistory.filter(i => (i.status || '').toUpperCase() === 'SUSPICIOUS').length;
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('realCount').textContent = real;
+            document.getElementById('fakeCount').textContent = fake;
+            document.getElementById('suspiciousCount').textContent = susp;
+        }
 
-    // Initial Load
-    loadStats();
-    loadHistory();
-</script>
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.h-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderHistoryList();
+        }
+
+        function applyFilters() {
+            renderHistoryList();
+        }
+
+        function formatDate(val) {
+            if (!val) return 'Just now';
+            try {
+                const d = new Date(val);
+                return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return 'Recent';
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function renderHistoryList() {
+            const listEl = document.getElementById('historyList');
+            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+            let filtered = allHistory.filter(item => {
+                const type = (item.type || (item.imageType ? 'image' : (item.sourceUrl ? 'url' : 'text'))).toUpperCase();
+                const status = (item.status || 'SUSPICIOUS').toUpperCase();
+
+                if (currentFilter === 'TEXT' && type !== 'TEXT') return false;
+                if (currentFilter === 'URL' && type !== 'URL') return false;
+                if (currentFilter === 'IMAGE' && type !== 'IMAGE') return false;
+                if (currentFilter === 'REAL' && status !== 'REAL') return false;
+                if (currentFilter === 'FAKE' && status !== 'FAKE') return false;
+                if (currentFilter === 'SUSPICIOUS' && status !== 'SUSPICIOUS') return false;
+
+                if (searchVal) {
+                    const title = (item.title || item.filename || '').toLowerCase();
+                    const content = (item.content || item.extractedText || item.explanation || '').toLowerCase();
+                    if (!title.includes(searchVal) && !content.includes(searchVal)) return false;
+                }
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-history-box">
+                        <h3>📭 No analyses found</h3>
+                        <p>No matching fact-check records match your filter criteria.</p>
+                        <a href="/index.html#analyzer" class="btn-back">🔍 Scan News Now →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = filtered.map(item => {
+                const status = (item.status || 'SUSPICIOUS').toUpperCase();
+                const score = Math.round(item.credibilityScore ?? item.overallScore ?? 0);
+                const isImage = item.type === 'image' || item.imageType || item.filename;
+                const isUrl = item.type === 'url' || (item.sourceUrl && item.sourceUrl.length > 0);
+                const typeIcon = isImage ? '🖼️' : isUrl ? '🔗' : '📝';
+                const typeName = isImage ? 'Image Forensics' : isUrl ? 'URL Article' : 'Text & Claim';
+
+                const title = item.title || item.filename || 'Untitled Claim';
+                const snippet = item.content || item.extractedText || item.explanation || 'No content snippet available.';
+                const badgeClass = status === 'REAL' ? 'badge-real' : status === 'FAKE' ? 'badge-fake' : 'badge-suspicious';
+                const badgeText = status === 'REAL' ? '✅ Verified' : status === 'FAKE' ? '❌ Fake' : '⚠️ Suspicious';
+                const scoreColorClass = status === 'REAL' ? 'stat-emerald' : status === 'FAKE' ? 'stat-crimson' : 'stat-amber';
+
+                return `
+                    <div class="history-item-card">
+                        <div class="h-type-icon">
+                            ${typeIcon}
+                        </div>
+                        <div class="h-info-main">
+                            <div class="h-title-row">
+                                <h3 class="h-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3>
+                                <span class="h-badge ${badgeClass}">${badgeText}</span>
+                            </div>
+                            <p class="h-snippet">${escapeHtml(snippet)}</p>
+                            <div class="h-meta-row">
+                                <span>🏷️ ${typeName}</span>
+                                <span>📅 ${formatDate(item.createdAt)}</span>
+                                ${item.platform ? `<span>🌐 ${escapeHtml(item.platform)}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="h-score-column">
+                            <div class="h-score-box">
+                                <span class="h-score-num ${scoreColorClass}">${score}%</span>
+                                <span class="h-score-lbl">Score</span>
+                            </div>
+                            <button class="btn-delete-item" onclick="deleteHistoryItem(${item.id})" title="Delete Record">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteHistoryItem(id) {
+            allHistory = allHistory.filter(item => String(item.id) !== String(id));
+            localStorage.setItem('fakeshield_history', JSON.stringify(allHistory));
+            updateStats();
+            renderHistoryList();
+        }
+
+        function clearAllHistory() {
+            if (!confirm('Are you sure you want to clear your entire analysis history?')) return;
+            allHistory = [];
+            localStorage.setItem('fakeshield_history', JSON.stringify([]));
+            updateStats();
+            renderHistoryList();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initUserSession();
+            loadHistoryData();
+        });
+    </script>
 </body>
 </html>

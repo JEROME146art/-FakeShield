@@ -452,11 +452,43 @@ let currentFilter = 'ALL';
 let lastAnalyzedData = null;
 
 // ============================================
+// LOCAL HISTORY RECORDER
+// ============================================
+
+function saveToHistory(record) {
+    if (!record) return;
+    try {
+        let history = JSON.parse(localStorage.getItem('fakeshield_history') || '[]');
+        if (!Array.isArray(history)) history = [];
+        
+        const entry = {
+            id: record.id || Date.now(),
+            type: record.type || (record.imageType ? 'image' : (record.sourceUrl ? 'url' : 'text')),
+            title: record.title || record.filename || (record.analysisDetails && record.analysisDetails.title) || 'News Analysis',
+            content: record.content || record.extractedText || record.explanation || '',
+            sourceUrl: record.sourceUrl || '',
+            platform: record.platform || 'Web',
+            credibilityScore: Math.round(record.credibilityScore ?? record.overallScore ?? 0),
+            status: (record.status || 'SUSPICIOUS').toUpperCase(),
+            createdAt: new Date().toISOString(),
+            explanation: record.explanation || (record.analysisDetails && record.analysisDetails.explanation) || 'Verified with FakeShield AI engine.'
+        };
+        
+        history = [entry, ...history.filter(h => h.id !== entry.id)].slice(0, 50);
+        localStorage.setItem('fakeshield_history', JSON.stringify(history));
+        console.log('📜 Saved analysis to local history:', entry.title);
+    } catch (e) {
+        console.warn('Failed to save to history:', e);
+    }
+}
+
+// ============================================
 // RESULTS UI & CIRCLE SCORE
 // ============================================
 
 function showResults(data) {
     lastAnalyzedData = data;
+    saveToHistory(data);
     const resultCard = document.getElementById('resultCard');
     if (!resultCard) return;
 
