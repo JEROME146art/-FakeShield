@@ -862,12 +862,20 @@
                         </div>
 
                         <div class="bot-cta-row">
-                            <a href="https://wa.me/?text=Hi%20FakeShield%20AI!%20Please%20verify%20this%20news" target="_blank" class="btn-whatsapp-bot">
-                                💬 Add FakeShield on WhatsApp
-                            </a>
-                            <button class="btn-try-simulation" onclick="simulateWhatsAppBotDebunk()">
-                                ⚡ Simulate Live Forward
+                            <button class="btn-whatsapp-bot" onclick="openWhatsAppDirect()">
+                                💬 Open WhatsApp Fact-Checker
                             </button>
+                            <button class="btn-try-simulation" onclick="simulateWhatsAppBotDebunk()">
+                                ⚡ Simulate AI Forward
+                            </button>
+                        </div>
+
+                        <div class="bot-quick-chips">
+                            <span class="bqc-label">Try instant samples:</span>
+                            <button class="bqc-btn" onclick="sendWhatsAppQuickSample('laptop')">💻 Free Laptops</button>
+                            <button class="bqc-btn" onclick="sendWhatsAppQuickSample('lemon')">🍋 Lemon Cure</button>
+                            <button class="bqc-btn" onclick="sendWhatsAppQuickSample('blackout')">⚡ Power Blackout</button>
+                            <button class="bqc-btn" onclick="sendWhatsAppQuickSample('isro')">🚀 ISRO Mission</button>
                         </div>
                     </div>
 
@@ -877,9 +885,9 @@
                             <div class="phone-notch"></div>
                             <div class="phone-chat-header">
                                 <span class="chat-avatar">🛡️</span>
-                                <div>
+                                <div class="chat-header-info">
                                     <div class="chat-name">FakeShield AI Bot ✓</div>
-                                    <div class="chat-status">Online • Instant Fact Shield</div>
+                                    <div class="chat-status"><span class="chat-status-dot"></span> Online • Instant Fact Shield</div>
                                 </div>
                             </div>
                             <div class="phone-chat-body" id="phoneChatBody">
@@ -893,11 +901,19 @@
                                         <span class="tag-fake">❌ DEBUNKED HOAX (14%)</span>
                                     </div>
                                     <p><strong>Verdict:</strong> Fabricated Rumor. Department of Telecommunications confirms standard operations with zero shutdown.</p>
-                                    <div class="voice-audio-pill">
-                                        <span>▶️ 🎙️ Spoken Debunk (0:15)</span>
-                                    </div>
+                                    <button class="voice-audio-pill" onclick="speakWhatsAppAudio('Fabricated Rumor. Department of Telecommunications confirms standard operations with zero shutdown.')">
+                                        ▶️ 🎙️ Listen Spoken Debunk (0:15)
+                                    </button>
                                     <span class="chat-time">19:42 • Verified by FakeShield</span>
                                 </div>
+                            </div>
+
+                            <!-- Interactive WhatsApp Chat Input Footer -->
+                            <div class="phone-chat-footer">
+                                <input type="text" id="phoneChatInput" class="phone-chat-input" placeholder="Type or paste any rumor..." onkeydown="handlePhoneChatKeyDown(event)">
+                                <button class="phone-chat-send" id="btnPhoneChatSend" onclick="sendWhatsAppBotMessage()" title="Verify Claim with AI">
+                                    ➤
+                                </button>
                             </div>
                         </div>
                     </div>

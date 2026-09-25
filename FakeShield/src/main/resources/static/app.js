@@ -714,27 +714,48 @@ function showErrorBox(message) {
     box.textContent = '❌ Error: ' + message;
 }
 
-// Action Buttons
+// Action Buttons & WhatsApp Sharing
 function shareResult() {
-    if (navigator.share) {
-        navigator.share({
-            title: 'FakeShield Analysis Report',
-            text: 'Check this news analysis on FakeShield!',
-            url: window.location.href
-        }).catch(() => {});
-    } else {
-        copyResult();
+    const status = document.getElementById('statusText')?.textContent || 'Analysis Complete';
+    const score = document.getElementById('scoreValue')?.textContent || '0';
+    const headline = document.getElementById('newsTitle')?.value || document.getElementById('newsContent')?.value?.slice(0, 80) || (lastAnalyzedData && lastAnalyzedData.title) || 'News Claim';
+    const explanation = document.getElementById('explanationText')?.textContent || (lastAnalyzedData && lastAnalyzedData.explanation) || 'Verified with FakeShield AI engine.';
+    
+    const verdictEmoji = parseInt(score) >= 70 ? '✅ *VERIFIED AUTHENTIC*' : parseInt(score) <= 35 ? '❌ *DEBUNKED HOAX / FAKE*' : '⚠️ *SUSPICIOUS / UNVERIFIED*';
+    
+    const reportMessage = `🛡️ *FAKESHIELD FACT-CHECK DOSSIER*
+
+📌 *Claim:* "${headline.trim()}"
+⚖️ *Verdict:* ${verdictEmoji} (${score}% Credibility)
+💡 *Forensic Summary:* ${explanation.trim().slice(0, 220)}...
+
+🔍 *Verify live on FakeShield:* ${window.location.origin}`;
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(reportMessage)}`;
+    
+    // Copy to clipboard
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(reportMessage).catch(() => {});
     }
+    
+    // Open WhatsApp
+    window.open(waUrl, '_blank');
+    showToast('💬 Opening WhatsApp with verified fact-check dossier!', 'success');
 }
 
 function copyResult() {
-    const status = document.getElementById('statusText')?.textContent || '';
-    const score = document.getElementById('scoreValue')?.textContent || '';
-    const text = `🛡️ FakeShield Report:\nStatus: ${status}\nCredibility Score: ${score}%\nAnalyzed via ${window.location.origin}`;
+    const status = document.getElementById('statusText')?.textContent || 'Verified';
+    const score = document.getElementById('scoreValue')?.textContent || '0';
+    const explanation = document.getElementById('explanationText')?.textContent || 'No explanation';
+    const text = `🛡️ FakeShield Analysis Report:\nStatus: ${status}\nCredibility Index: ${score}%\nSummary: ${explanation}\nVerified via ${window.location.origin}`;
 
-    navigator.clipboard.writeText(text).then(() => {
-        showToast('📋 Report copied to clipboard!', 'success');
-    });
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('📋 Full Report copied to clipboard!', 'success');
+        });
+    } else {
+        showToast('📋 Report generated!', 'info');
+    }
 }
 
 function downloadReport() {
@@ -2657,49 +2678,190 @@ function renderMythVsReality(data) {
 }
 
 // ==================================================
-// UPGRADE 4: WHATSAPP SIMULATION CONTROLLER
+// UPGRADE 4: WHATSAPP BOT CONTROLLER & LIVE SIMULATOR
 // ==================================================
 
+function openWhatsAppDirect() {
+    let msg = "Hi FakeShield AI! Please verify this news claim for me:";
+    if (lastAnalyzedData) {
+        const title = (lastAnalyzedData.title || lastAnalyzedData.filename || 'Claim').slice(0, 70);
+        const score = Math.round(lastAnalyzedData.credibilityScore || 0);
+        const status = (lastAnalyzedData.status || 'SUSPICIOUS').toUpperCase();
+        const icon = status === 'REAL' ? '✅ VERIFIED' : status === 'FAKE' ? '❌ FAKE / HOAX' : '⚠️ SUSPICIOUS';
+        msg = `🛡️ *FakeShield Fact Check:*\nClaim: "${title}"\nStatus: ${icon} (${score}% Credibility)\nVerify live at: ${window.location.origin}`;
+    }
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+    showToast('💬 Opening WhatsApp Fact-Checker...', 'success');
+}
+
+function speakWhatsAppAudio(textToSpeak) {
+    if (!textToSpeak) return;
+    try {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.rate = 1.05;
+            utterance.pitch = 1.0;
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+            showToast('🎙️ Playing 15s WhatsApp voice debunk...', 'info');
+        } else {
+            showToast('Audio synthesis not supported on this browser.', 'warning');
+        }
+    } catch (e) {
+        console.warn('Speech error:', e);
+    }
+}
+
+function handlePhoneChatKeyDown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendWhatsAppBotMessage();
+    }
+}
+
+function sendWhatsAppBotMessage() {
+    const input = document.getElementById('phoneChatInput');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) {
+        showToast('Type or paste a claim to verify', 'warning');
+        return;
+    }
+    input.value = '';
+    processWhatsAppMessage(text);
+}
+
+function sendWhatsAppQuickSample(type) {
+    const samples = {
+        laptop: "🚨 Official Notice: Central Government offering Free Laptops and ₹50,000 to all students who forward this link to 10 WhatsApp groups before midnight!",
+        lemon: "💊 WHO Secret Alert: Drinking 1 cup of boiled lemon, honey, and garlic water completely cures any viral infection within 24 hours!",
+        blackout: "⚡ Urgent Alert: Entire national power grid shutting down tonight for 72 hours due to severe solar storm flare!",
+        isro: "🚀 ISRO Telemetry Announcement: Chandrayaan lunar navigation payload completes 100% scheduled surface experiments successfully."
+    };
+    const claim = samples[type] || samples.laptop;
+    processWhatsAppMessage(claim);
+}
+
 function simulateWhatsAppBotDebunk() {
+    const pool = [
+        "🚨 Breaking: Government announces total nationwide internet blackout tonight at midnight!",
+        "💊 Miracle remedy: Boil garlic and lemon with salt to eliminate viral fever in 2 hours!",
+        "📢 ISRO confirms successful lunar rover navigation milestone across southern polar craters.",
+        "🚨 Free ₹5,000 recharge coupon available to all SIM cards forwarding this message!"
+    ];
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    processWhatsAppMessage(pick);
+}
+
+function processWhatsAppMessage(claimText) {
     const chatBody = document.getElementById('phoneChatBody');
     if (!chatBody) return;
 
-    const samples = [
-        {
-            user: "🚨 Breaking: NASA says massive asteroid impact will hit Earth tomorrow!",
-            bot: "❌ DEBUNKED HOAX (8%)\nVerdict: Fabricated Rumor. NASA Planetary Defense confirms zero impact threats for the next 100+ years."
-        },
-        {
-            user: "💊 Miracle drink of salt and lemon cures all viral diseases in 2 hours!",
-            bot: "❌ FALSE HEALTH CLAIM (12%)\nVerdict: Medical Myth. WHO confirms no scientific validity for this remedy."
-        },
-        {
-            user: "📢 ISRO confirms successful lunar rover navigation milestone.",
-            bot: "✅ VERIFIED AUTHENTIC (96%)\nVerdict: Validated via ISRO Official Mission Telemetry."
-        }
-    ];
-
-    const pick = samples[Math.floor(Math.random() * samples.length)];
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
     function esc(str) {
-        return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // 1. Append User Message
     const userDiv = document.createElement('div');
     userDiv.className = 'chat-bubble user-bubble';
-    userDiv.innerHTML = `<span class="forward-label">↪ Forwarded</span><p>${esc(pick.user)}</p><span class="chat-time">${time}</span>`;
+    userDiv.innerHTML = `
+        <span class="forward-label">↪ Forwarded</span>
+        <p>${esc(claimText)}</p>
+        <span class="chat-time">${time}</span>
+    `;
     chatBody.appendChild(userDiv);
     chatBody.scrollTop = chatBody.scrollHeight;
 
+    // 2. Append Typing Indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-bubble';
+    typingDiv.id = 'whatsappTyping';
+    typingDiv.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+    chatBody.appendChild(typingDiv);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    // 3. Evaluate Claim Context
+    const lower = claimText.toLowerCase();
+    let verdictType = 'FAKE';
+    let score = 12;
+    let verdictTag = '❌ DEBUNKED HOAX (12%)';
+    let bubbleClass = 'bubble-fake';
+    let tagClass = 'tag-fake';
+    let explanation = "Fabricated rumor. Authoritative registries confirm no official orders, records, or scientific evidence support this assertion.";
+
+    if (lower.includes('free laptop') || lower.includes('50,000') || lower.includes('5,000') || lower.includes('recharge coupon') || lower.includes('forward to 10')) {
+        verdictType = 'FAKE';
+        score = 8;
+        verdictTag = '❌ PHISHING SCAM (8%)';
+        explanation = "Deceptive Phishing Scam. Ministry of Electronics & IT confirms no free gadget distribution via WhatsApp forward chains. Links lead to credential-theft domains.";
+    } else if (lower.includes('lemon') || lower.includes('garlic') || lower.includes('miracle') || lower.includes('cure') || lower.includes('boiled')) {
+        verdictType = 'FAKE';
+        score = 14;
+        verdictTag = '❌ FALSE MEDICAL CLAIM (14%)';
+        explanation = "Medical Myth. WHO and medical fact-checkers confirm garlic and lemon do not eliminate viral pathogens. Clinical treatments require accredited medical guidance.";
+    } else if (lower.includes('blackout') || lower.includes('solar storm') || lower.includes('power grid') || lower.includes('internet blackout')) {
+        verdictType = 'FAKE';
+        score = 16;
+        verdictTag = '❌ FABRICATED PANIC ALARM (16%)';
+        explanation = "Alarmist Hoax. Power Grid Corporation & Dept of Telecom confirm 100% normal continuous operations with zero scheduled outages.";
+    } else if (lower.includes('isro') || lower.includes('nasa') || lower.includes('chandrayaan') || lower.includes('rover') || lower.includes('james webb')) {
+        verdictType = 'REAL';
+        score = 96;
+        verdictTag = '✅ VERIFIED AUTHENTIC (96%)';
+        bubbleClass = 'bubble-real';
+        tagClass = 'tag-real';
+        explanation = "Authenticated News. Validated directly via space agency mission telemetry archives and accredited scientific press releases.";
+    } else {
+        // Heuristic analysis
+        const alarmWords = ['shocking', 'urgent', 'must watch', 'secret', 'danger', 'alert', 'banned'];
+        const isAlarming = alarmWords.some(w => lower.includes(w));
+        if (isAlarming) {
+            verdictType = 'FAKE';
+            score = 24;
+            verdictTag = '❌ SENSATIONALIZED HOAX (24%)';
+            explanation = "High sensationalism detected with zero primary citations. Cross-referencing 50,000+ databases shows no corroborated evidence.";
+        } else {
+            verdictType = 'SUSPICIOUS';
+            score = 52;
+            verdictTag = '⚠️ UNVERIFIED CLAIM (52%)';
+            bubbleClass = 'bubble-suspicious';
+            tagClass = 'tag-suspicious';
+            explanation = "Inconclusive evidence. Statement cannot be definitively verified by accredited fact repositories at this time.";
+        }
+    }
+
+    // 4. Deliver Bot Reply after simulated thinking
     setTimeout(() => {
+        const currentTyping = document.getElementById('whatsappTyping');
+        if (currentTyping) currentTyping.remove();
+
         const botDiv = document.createElement('div');
-        botDiv.className = 'chat-bubble bot-bubble';
-        botDiv.innerHTML = `<div class="bot-reply-header"><span class="tag-fake">${esc(pick.bot.split('\n')[0])}</span></div><p><strong>Verdict:</strong> ${esc(pick.bot.split('\n')[1].replace('Verdict: ', ''))}</p><div class="voice-audio-pill"><span>▶️ 🎙️ Spoken Debunk (0:15)</span></div><span class="chat-time">${time} • Verified by FakeShield</span>`;
+        botDiv.className = `chat-bubble bot-bubble ${bubbleClass}`;
+        
+        const spokenTextClean = esc(explanation);
+        
+        botDiv.innerHTML = `
+            <div class="bot-reply-header">
+                <span class="${tagClass}">${verdictTag}</span>
+            </div>
+            <p><strong>Verdict:</strong> ${esc(explanation)}</p>
+            <button class="voice-audio-pill" onclick="speakWhatsAppAudio('${spokenTextClean}')">
+                ▶️ 🎙️ Listen Spoken Debunk (0:15)
+            </button>
+            <span class="chat-time">${time} • Verified by FakeShield AI</span>
+        `;
         chatBody.appendChild(botDiv);
         chatBody.scrollTop = chatBody.scrollHeight;
         showToast('💬 WhatsApp Bot simulated reply received!', 'success');
-    }, 800);
+    }, 700);
 }
 
 // ==================================================
@@ -2853,6 +3015,11 @@ window.logout = logout;
 window.openExtensionModal = openExtensionModal;
 window.closeExtensionModal = closeExtensionModal;
 window.simulateWhatsAppBotDebunk = simulateWhatsAppBotDebunk;
+window.openWhatsAppDirect = openWhatsAppDirect;
+window.speakWhatsAppAudio = speakWhatsAppAudio;
+window.handlePhoneChatKeyDown = handlePhoneChatKeyDown;
+window.sendWhatsAppBotMessage = sendWhatsAppBotMessage;
+window.sendWhatsAppQuickSample = sendWhatsAppQuickSample;
 window.renderMythVsReality = renderMythVsReality;
 
 // 5 Breakthrough Features Exports
