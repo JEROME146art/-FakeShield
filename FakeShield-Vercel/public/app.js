@@ -2217,9 +2217,159 @@ function showToast(message, type = 'info') {
     }, 3500);
 }
 
+// ============================================
+// 11. INTERACTIVE PARTICLE BACKDROP & ANIMATIONS
+// ============================================
+
+function initParticleCanvas() {
+    const canvas = document.getElementById('bgParticleCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const particleCount = Math.min(65, Math.floor((width * height) / 22000));
+
+    let mouse = { x: null, y: null, radius: 150 };
+
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    window.addEventListener('mouseout', () => {
+        mouse.x = null;
+        mouse.y = null;
+    });
+
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.45,
+            vy: (Math.random() - 0.5) * 0.45,
+            size: Math.random() * 2 + 1,
+            color: Math.random() > 0.5 ? 'rgba(56, 189, 248, ' : 'rgba(129, 140, 248, '
+        });
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0) p.x = width;
+            if (p.x > width) p.x = 0;
+            if (p.y < 0) p.y = height;
+            if (p.y > height) p.y = 0;
+
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = p.color + '0.6)';
+            ctx.fill();
+
+            // Connect nearby particles
+            for (let j = i + 1; j < particles.length; j++) {
+                const p2 = particles[j];
+                const dx = p.x - p2.x;
+                const dy = p.y - p2.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = `rgba(56, 189, 248, ${0.15 * (1 - dist / 120)})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                }
+            }
+
+            // Mouse interaction
+            if (mouse.x !== null && mouse.y !== null) {
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < mouse.radius) {
+                    const force = (1 - dist / mouse.radius) * 1.5;
+                    p.x += (dx / dist) * force;
+                    p.y += (dy / dist) * force;
+                }
+            }
+        }
+
+        requestAnimationFrame(animateParticles);
+    }
+
+    animateParticles();
+}
+
+function initSpotlightCards() {
+    const cards = document.querySelectorAll('.analyzer-card, .dashboard-card, .floating-card, .result-card, .timeline-node, .step');
+    cards.forEach(card => {
+        card.classList.add('spotlight-card');
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+}
+
+function initScrollReveal() {
+    const targets = document.querySelectorAll('.hero-content, .hero-visual, .analyzer-card, .dashboard-grid, .recent-news-card, .step, .footer-content');
+    targets.forEach(t => t.classList.add('reveal-on-scroll'));
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        targets.forEach(t => observer.observe(t));
+    } else {
+        targets.forEach(t => t.classList.add('is-revealed'));
+    }
+}
+
+function animateNumber(element, start, end, duration = 1200) {
+    if (!element) return;
+    let startTime = null;
+
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+        const current = Math.floor(start + (end - start) * easeOutQuad);
+        element.textContent = current.toLocaleString();
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        } else {
+            element.textContent = end.toLocaleString();
+        }
+    }
+    requestAnimationFrame(step);
+}
+
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🛡️ FakeShield v2.0 Initialized with 5 Breakthrough Features');
+    console.log('🛡️ FakeShield v3.0 Luxury Animated Edition Initialized');
     const savedLang = localStorage.getItem('fakeshield_lang') || 'en';
     const savedFlag = localStorage.getItem('fakeshield_lang_flag') || '🇬🇧';
     const savedName = localStorage.getItem('fakeshield_lang_name') || 'English';
@@ -2228,6 +2378,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initNavbarAuth();
     loadDashboardData();
+    initParticleCanvas();
+    initSpotlightCards();
+    initScrollReveal();
 });
 
 // ============================================

@@ -109,8 +109,19 @@ body {
 }
 
 /* ================================
-   3. AMBIENT GLOW MESH BACKDROP
+   3. BACKGROUND CANVAS & PARTICLES
 ================================ */
+.bg-particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+}
+
 .ambient-glow-mesh {
     position: fixed;
     top: 0;
@@ -120,6 +131,45 @@ body {
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
+}
+
+/* Scroll-Driven Reveal Animations */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(35px) scale(0.98);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Interactive Spotlight Card Glow */
+.spotlight-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.spotlight-card::before {
+    content: '';
+    position: absolute;
+    top: var(--mouse-y, -1000px);
+    left: var(--mouse-x, -1000px);
+    width: 450px;
+    height: 450px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.14) 0%, rgba(129, 140, 248, 0.05) 50%, transparent 75%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    z-index: 0;
+}
+
+.spotlight-card:hover::before {
+    opacity: 1;
 }
 
 .ambient-orb {
@@ -446,11 +496,49 @@ body {
 }
 
 .gradient-text {
-    background: var(--gradient-hero);
+    background: linear-gradient(135deg, #38BDF8 0%, #818CF8 25%, #C084FC 50%, #EC4899 75%, #38BDF8 100%);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     display: inline-block;
+    animation: gradientFlow 5s linear infinite;
+}
+
+@keyframes gradientFlow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+/* Cyber Scanning Laser Beam */
+.scanning-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+    z-index: 10;
+}
+
+.scanning-laser-beam {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent 0%, #38BDF8 50%, transparent 100%);
+    box-shadow: 0 0 20px 4px rgba(56, 189, 248, 0.7);
+    animation: laserSweep 1.8s infinite ease-in-out;
+}
+
+@keyframes laserSweep {
+    0% { top: 0%; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
 }
 
 .hero-subtitle {
