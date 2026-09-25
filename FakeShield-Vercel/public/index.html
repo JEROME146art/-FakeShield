@@ -170,10 +170,10 @@
             <div class="section-header text-center">
                 <span class="section-tag">AI Forensics Console</span>
                 <h2>Multi-Vector Misinformation Analyzer</h2>
-                <p>Analyze text, URLs, images, or audio voice notes with military-grade AI fact verification.</p>
+                <p>Analyze text, URLs, images, voice notes, recycled footage, or bot farms with deep AI fact verification.</p>
             </div>
 
-            <!-- Tab Switcher -->
+            <!-- Tab Switcher (All 6 Breakthrough Modes) -->
             <div class="tab-switcher-wrapper">
                 <div class="tab-switcher">
                     <button class="tab-btn active" onclick="switchTab('text', this)">
@@ -190,7 +190,15 @@
                     </button>
                     <button class="tab-btn" onclick="switchTab('voice', this)">
                         <span class="tab-icon">🎙️</span>
-                        <span class="tab-label">Voice & Audio</span>
+                        <span class="tab-label">Voice Debunk</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('timeline', this)">
+                        <span class="tab-icon">⏳</span>
+                        <span class="tab-label">Recycled Media</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('bots', this)">
+                        <span class="tab-icon">🤖</span>
+                        <span class="tab-label">Bot Farm Scanner</span>
                     </button>
                 </div>
             </div>
@@ -356,6 +364,11 @@
                             <h3>🎙️ Voice Debunk & Spoken Audio Buster</h3>
                             <p>Verify viral audio notes and generate 15-second regional voice debunks in 6 languages.</p>
                         </div>
+                        <div class="sample-pills-row">
+                            <span class="pills-hint">Voice samples:</span>
+                            <button class="mini-pill pill-fake" onclick="loadVoiceSample('health')">💊 Health Cure</button>
+                            <button class="mini-pill pill-fake" onclick="loadVoiceSample('lottery')">🎁 Free Scheme</button>
+                        </div>
                     </div>
 
                     <div class="voice-hero-box">
@@ -408,6 +421,113 @@
                 </div>
             </div>
 
+            <!-- TAB 5: RECYCLED MEDIA & TIMELINE EXPOSER -->
+            <div id="tab-timeline" class="tab-content">
+                <div class="analyzer-card spotlight-card">
+                    <div class="card-inner-header">
+                        <div>
+                            <h3>⏳ Out-of-Context Recycled Footage & Timeline Exposer</h3>
+                            <p>Expose genuine historical footage deceptively recycled as modern breaking news.</p>
+                        </div>
+                        <div class="sample-pills-row">
+                            <span class="pills-hint">Samples:</span>
+                            <button class="mini-pill pill-fake" onclick="loadRecycledSample('blast')">💣 2018 Blast Hoax</button>
+                            <button class="mini-pill pill-fake" onclick="loadRecycledSample('protest')">📢 2020 Rally Hoax</button>
+                            <button class="mini-pill pill-real" onclick="loadRecycledSample('genuine')">✅ Fresh Event</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timelineClaimTitle">Claimed Current Event Title / Caption <span class="required">*</span></label>
+                        <input type="text" id="timelineClaimTitle" placeholder="e.g. Breaking: Massive gas explosion reported in downtown today!">
+                    </div>
+
+                    <div class="form-row-dual">
+                        <div class="form-group">
+                            <label for="timelineClaimLocation">Claimed Location</label>
+                            <input type="text" id="timelineClaimLocation" placeholder="e.g. Central City / Metropolis">
+                        </div>
+                        <div class="form-group">
+                            <label for="timelineClaimDate">Claimed Date</label>
+                            <input type="date" id="timelineClaimDate">
+                        </div>
+                    </div>
+
+                    <div class="upload-dropzone" id="timelineUploadArea" onclick="document.getElementById('timelineImageInput').click()">
+                        <div class="upload-content" id="timelineUploadContent">
+                            <div class="upload-icon-circle">🎞️</div>
+                            <h3>Upload Suspicious Media Image or Screenshot</h3>
+                            <p class="upload-sub">Perceptual hash will search historical visual archives</p>
+                        </div>
+                        <div class="preview-content" id="timelinePreviewContent" style="display:none;">
+                            <img id="timelinePreviewImage" src="" alt="Timeline Preview">
+                            <div class="preview-info">
+                                <p id="timelinePreviewName"></p>
+                            </div>
+                            <button class="btn-remove-file" onclick="removeTimelineImage(event)">❌ Remove</button>
+                        </div>
+                        <input type="file" id="timelineImageInput" accept="image/*" style="display:none;" onchange="handleTimelineImageSelect(event)">
+                    </div>
+
+                    <div class="analyzer-action-footer">
+                        <button class="btn-analyze" id="btnAnalyzeTimeline" onclick="analyzeRecycledMedia()">
+                            <span id="btnTimelineText">⏳ Expose Temporal Context Mismatch</span>
+                            <span id="btnTimelineLoader" style="display:none">
+                                <span class="loader-spinner"></span> Scanning Historical Visual Archives...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: BOT FARM & ASTROTURFING SCANNER -->
+            <div id="tab-bots" class="tab-content">
+                <div class="analyzer-card spotlight-card">
+                    <div class="card-inner-header">
+                        <div>
+                            <h3>🤖 Coordinated Bot Farm & Astroturfing Scanner</h3>
+                            <p>Detect coordinated copy-paste campaigns, astroturfing swarms, and synthetic viral waves.</p>
+                        </div>
+                        <div class="sample-pills-row">
+                            <span class="pills-hint">Waves:</span>
+                            <button class="mini-pill pill-fake" onclick="loadBotSample('crypto')">🚨 Crypto Bot Wave</button>
+                            <button class="mini-pill pill-fake" onclick="loadBotSample('astroturf')">🤖 Copy-Paste Swarm</button>
+                            <button class="mini-pill pill-real" onclick="loadBotSample('organic')">🌱 Organic Discussion</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="botSnippetInput">Viral Social Post Snippet or Text <span class="required">*</span></label>
+                        <textarea id="botSnippetInput" rows="4" placeholder="Paste the suspicious viral tweet, comment, or copy-paste text found on multiple accounts..."></textarea>
+                    </div>
+
+                    <div class="form-row-dual">
+                        <div class="form-group">
+                            <label for="botHashtagInput">Hashtag / Keyword</label>
+                            <input type="text" id="botHashtagInput" placeholder="#UrgentAlert, #BreakingGov, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label for="botNetworkTarget">Target Network</label>
+                            <select id="botNetworkTarget">
+                                <option value="Twitter/X Bot Ring">Twitter / X Bot Network</option>
+                                <option value="Telegram Broadcast Syndicate">Telegram Broadcast Syndicate</option>
+                                <option value="Facebook Mass Forward Ring">Facebook Mass Forward Ring</option>
+                                <option value="Reddit Astroturf Group">Reddit Astroturf Network</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="analyzer-action-footer">
+                        <button class="btn-analyze" id="btnAnalyzeBots" onclick="analyzeBotFarm()">
+                            <span id="btnBotText">🔍 Scan for Coordinated Bot Astroturfing</span>
+                            <span id="btnBotLoader" style="display:none">
+                                <span class="loader-spinner"></span> Tracing Bot Clusters & Copy-Paste Footprints...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- LIVE AI SCANNING PROGRESS MODAL / OVERLAY -->
             <div class="scanning-step-container" id="scanningProgressBox" style="display:none;">
                 <div class="scanning-card">
@@ -439,7 +559,7 @@
                 </div>
             </div>
 
-            <!-- RESULTS CARD -->
+            <!-- RESULTS CARD (COMPREHENSIVE SUITE) -->
             <div class="result-card spotlight-card" id="resultCard" style="display:none">
                 <!-- Top Result Verdict Banner -->
                 <div class="result-hero-banner">
@@ -499,13 +619,66 @@
                     </div>
                 </div>
 
+                <!-- Recycled Media Timeline Exposer Alert -->
+                <div class="timeline-verdict-section" id="timelineVerdictSection" style="display:none;">
+                    <div class="timeline-banner" id="timelineBanner">
+                        <div class="timeline-banner-header">
+                            <span class="timeline-icon">⏳</span>
+                            <span class="timeline-title" id="timelineVerdictTitle">Recycled Media Context Audit</span>
+                        </div>
+                        <p id="timelineVerdictDesc"></p>
+                    </div>
+                    <div class="timeline-compare-grid">
+                        <div class="timeline-node claimed-node">
+                            <div class="node-tag">🔴 Claimed Modern Context</div>
+                            <h4 id="timelineClaimEvent">Current Event</h4>
+                            <p><strong>Date:</strong> <span id="timelineClaimDateDisp">2026</span></p>
+                            <p><strong>Location:</strong> <span id="timelineClaimLocDisp">City</span></p>
+                        </div>
+                        <div class="timeline-node verified-node">
+                            <div class="node-tag">🟢 True Historical Origin</div>
+                            <h4 id="timelineOriginEvent">Original Archive</h4>
+                            <p><strong>True Date:</strong> <span id="timelineOriginDateDisp">2018</span></p>
+                            <p><strong>True Location:</strong> <span id="timelineOriginLocDisp">Historical Source</span></p>
+                            <p><strong>Source:</strong> <span id="timelineOriginSourceDisp">Archived Database</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bot Network Astroturfing Section -->
+                <div class="bot-analysis-section" id="botAnalysisSection" style="display:none;">
+                    <h4>🤖 Bot Astroturfing & Copy-Paste Cluster Map</h4>
+                    <div class="bot-grid">
+                        <div class="bot-stat-box">
+                            <div class="bot-stat-num" id="botCoordIndex">0%</div>
+                            <div class="bot-stat-lbl">Coordinated Astroturfing Index</div>
+                        </div>
+                        <div class="bot-stat-box">
+                            <div class="bot-stat-num" id="botDuplicationNum">0</div>
+                            <div class="bot-stat-lbl">Identical Copy-Paste Clusters</div>
+                        </div>
+                        <div class="bot-stat-box">
+                            <div class="bot-stat-num" id="botBurstRate">0/min</div>
+                            <div class="bot-stat-lbl">Propagation Burst Velocity</div>
+                        </div>
+                    </div>
+                    <div class="network-canvas-wrapper">
+                        <canvas id="botNetworkCanvas" width="600" height="200"></canvas>
+                        <div class="canvas-legend">
+                            <span><span class="dot-red"></span> Bot Seed Node</span>
+                            <span><span class="dot-yellow"></span> Relay Node</span>
+                            <span><span class="dot-cyan"></span> Organic User</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Voice Debunk Audio Player Bar -->
                 <div class="voice-player-card" id="voiceDebunkSection">
                     <div class="vp-left">
                         <div class="vp-icon">🎙️</div>
                         <div class="vp-info">
-                            <strong>Instant Audio Debunk</strong>
-                            <p>Listen to 15-second spoken fact-check in <span id="voiceActiveLangText">English</span></p>
+                            <strong>Instant Spoken Audio Debunk</strong>
+                            <p>15-second spoken fact-check in <span id="voiceActiveLangText">English</span></p>
                         </div>
                     </div>
                     <div class="vp-right">
@@ -515,9 +688,90 @@
                         <button class="btn-voice-play" id="btnVoicePlay" onclick="togglePlayVoiceDebunk()">
                             <span id="voicePlayIcon">▶</span> <span id="voicePlayText">Listen</span>
                         </button>
+                        <select id="voiceSpeedSelect" onchange="changeVoiceSpeed(this.value)" class="voice-speed-select">
+                            <option value="1">1.0x</option>
+                            <option value="1.2">1.2x</option>
+                            <option value="1.4">1.4x</option>
+                        </select>
                         <button class="btn-voice-share" onclick="shareVoiceDebunkToWhatsApp()" title="Forward Spoken Audio">
                             💬 Forward
                         </button>
+                    </div>
+                </div>
+
+                <!-- Psychological Manipulation Radar (5-Axis Spider Chart + Fallacy Bars) -->
+                <div class="psychological-radar-section">
+                    <div class="radar-header">
+                        <div>
+                            <h4>🧠 Psychological Manipulation & Fallacy Radar</h4>
+                            <p>Neurolinguistic breakdown of cognitive biases & propaganda weapons</p>
+                        </div>
+                        <div class="manipulation-badge" id="manipulationBadge">
+                            <span id="manipulationWeaponText">Low Manipulation</span>
+                        </div>
+                    </div>
+                    <div class="radar-content-grid">
+                        <div class="radar-chart-container">
+                            <canvas id="fallacyRadarCanvas" width="340" height="280"></canvas>
+                        </div>
+                        <div class="radar-fallacy-list">
+                            <div class="fallacy-item" id="fallacyFear">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">😱</span>
+                                    <span class="fallacy-name">Fear & Panic Induction</span>
+                                    <span class="fallacy-val" id="valFear">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barFear" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyUrgency">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">⚡</span>
+                                    <span class="fallacy-name">Urgency & Action Trap</span>
+                                    <span class="fallacy-val" id="valUrgency">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barUrgency" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyAuthority">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">🏛️</span>
+                                    <span class="fallacy-name">Authority Spoofing</span>
+                                    <span class="fallacy-val" id="valAuthority">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barAuthority" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyGreed">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">💰</span>
+                                    <span class="fallacy-name">Scarcity & Greed Bait</span>
+                                    <span class="fallacy-val" id="valGreed">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barGreed" style="width:0%"></div></div>
+                            </div>
+                            <div class="fallacy-item" id="fallacyPolarization">
+                                <div class="fallacy-meta">
+                                    <span class="fallacy-icon">⚔️</span>
+                                    <span class="fallacy-name">Polarization / Tribalism</span>
+                                    <span class="fallacy-val" id="valPolarization">0%</span>
+                                </div>
+                                <div class="fallacy-bar-bg"><div class="fallacy-bar-fill" id="barPolarization" style="width:0%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlighted Manipulative Clauses -->
+                    <div class="manipulation-clauses-box" id="manipulationClausesBox">
+                        <h5>🔍 Cognitive Weapons Identified in Text:</h5>
+                        <div id="manipulationHighlights" class="highlights-content">
+                            No severe psychological traps detected in this content.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OCR Extracted Text (if image) -->
+                <div class="extracted-text-section" id="extractedTextSection" style="display:none;">
+                    <h4>📝 Extracted Information</h4>
+                    <div class="extracted-text-box" id="extractedTextBox">
+                        No text extracted
                     </div>
                 </div>
 
@@ -677,13 +931,13 @@
                     <div class="step-num-pill">01</div>
                     <div class="step-icon">📝</div>
                     <h3>Multi-Modal Ingestion</h3>
-                    <p>Submits text, web URLs, images with OCR, or voice audio files into the pipeline.</p>
+                    <p>Submits text, web URLs, images with OCR, voice audio, or timeline clips into the pipeline.</p>
                 </div>
                 <div class="step-card spotlight-card">
                     <div class="step-num-pill">02</div>
                     <div class="step-icon">🧠</div>
                     <h3>Linguistic & Cognitive Scan</h3>
-                    <p>Detects emotional bait, sensationalism, urgency triggers, and manipulative phrasing.</p>
+                    <p>Detects emotional bait, sensationalism, urgency triggers, and cognitive fallacy weapons.</p>
                 </div>
                 <div class="step-card spotlight-card">
                     <div class="step-num-pill">03</div>

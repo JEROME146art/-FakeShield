@@ -716,8 +716,16 @@ body {
 /* ================================
    6. ANALYZER SECTION
 ================================ */
+section,
+.analyzer-section,
+.dashboard-section,
+.how-it-works,
+.hero {
+    scroll-margin-top: 100px;
+}
+
 .analyzer-section {
-    padding: 80px 0;
+    padding: 110px 0 80px 0;
     position: relative;
     z-index: 2;
 }
@@ -764,6 +772,8 @@ body {
     display: flex;
     justify-content: center;
     margin-bottom: 30px;
+    overflow-x: auto;
+    padding: 4px 0;
 }
 
 .tab-switcher {
@@ -773,6 +783,8 @@ body {
     padding: 6px;
     border-radius: var(--radius-xl);
     display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 6px;
     box-shadow: var(--shadow-sm);
 }
@@ -1521,6 +1533,315 @@ textarea {
 
 .btn-voice-share:hover {
     background: rgba(255, 255, 255, 0.12);
+}
+
+.voice-speed-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-white);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==================================================
+   TIMELINE RECYCLED MEDIA EXPOSER STYLES
+   ================================================== */
+.timeline-verdict-section {
+    background: rgba(244, 63, 94, 0.05);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.timeline-banner {
+    margin-bottom: 20px;
+}
+
+.timeline-banner-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 6px;
+}
+
+.timeline-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.timeline-node {
+    background: rgba(10, 15, 30, 0.7);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 18px;
+}
+
+.node-tag {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.claimed-node {
+    border-color: rgba(244, 63, 94, 0.3);
+}
+
+.verified-node {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.timeline-node h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 8px;
+}
+
+.timeline-node p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+/* ==================================================
+   BOT NETWORK ASTROTURFING SCANNER STYLES
+   ================================================== */
+.bot-analysis-section {
+    background: rgba(9, 14, 28, 0.8);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.bot-analysis-section h4 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 16px;
+}
+
+.bot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.bot-stat-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+}
+
+.bot-stat-num {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--danger);
+    margin-bottom: 4px;
+}
+
+.bot-stat-lbl {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.network-canvas-wrapper {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+}
+
+#botNetworkCanvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+}
+
+.canvas-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.dot-cyan { background: var(--primary); }
+
+/* ==================================================
+   PSYCHOLOGICAL MANIPULATION & RADAR STYLES
+   ================================================== */
+.psychological-radar-section {
+    background: rgba(9, 14, 28, 0.8);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.radar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.radar-header h4 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 2px;
+}
+
+.radar-header p {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+.manipulation-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--primary);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.radar-content-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.radar-chart-container {
+    display: flex;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+#fallacyRadarCanvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.radar-fallacy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fallacy-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+}
+
+.fallacy-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.fallacy-name {
+    flex: 1;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.fallacy-val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.fallacy-bar-bg {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.fallacy-bar-fill {
+    height: 100%;
+    background: var(--gradient-crimson);
+    border-radius: 5px;
+    transition: width 0.6s ease;
+}
+
+.manipulation-clauses-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.manipulation-clauses-box h5 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.highlights-content {
+    font-size: 13px;
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+.extracted-text-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 28px;
+}
+
+.extracted-text-section h4 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 10px;
+}
+
+.extracted-text-box {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 14px;
+    border-radius: var(--radius-md);
+    white-space: pre-wrap;
 }
 
 /* Explanation & Breakdown */
