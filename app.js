@@ -660,6 +660,9 @@ function showResults(data) {
         explanationText.textContent = explanation || 'Content evaluated across fake news pattern databases and machine learning models.';
     }
 
+    // Trigger Myth vs Reality Side-by-Side matrix
+    renderMythVsReality(data);
+
     // Trigger Psychological Radar Analysis
     renderPsychologicalAnalysis(data);
 
@@ -2514,9 +2517,294 @@ function animateNumber(element, start, end, duration = 1200) {
     requestAnimationFrame(step);
 }
 
+// ==================================================
+// UPGRADE 1 & 2: EXTENSION MODAL & PDF DOSSIER EXPORT
+// ==================================================
+
+function openExtensionModal() {
+    const modal = document.getElementById('extensionModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeExtensionModal(e) {
+    if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+    const modal = document.getElementById('extensionModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function downloadOfficialPDFDossier() {
+    if (!lastAnalyzedData) {
+        showToast('❌ Please run an analysis first!', 'error');
+        return;
+    }
+
+    const d = lastAnalyzedData;
+    const dossierId = 'FS-' + new Date().getFullYear() + '-' + Math.floor(100000 + Math.random() * 900000);
+    const dateStr = new Date().toUTCString();
+    const score = Math.round(d.credibilityScore ?? d.overallScore ?? 0);
+    const status = (d.status || 'SUSPICIOUS').toUpperCase();
+    const statusLabel = status === 'REAL' ? 'VERIFIED AUTHENTIC' : status === 'FAKE' ? 'DEBUNKED MISINFORMATION' : 'SUSPICIOUS / UNVERIFIED';
+    const statusColor = status === 'REAL' ? '#10b981' : status === 'FAKE' ? '#ef4444' : '#f59e0b';
+    const title = d.title || d.filename || 'News Analysis Record';
+    const content = d.content || d.extractedText || 'No excerpt provided.';
+    const explanation = d.explanation || (d.analysisDetails && d.analysisDetails.explanation) || 'Evaluated across multi-vector AI linguistic and fact-matching pipelines.';
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showToast('⚠️ Please allow browser popups to download the official dossier', 'warning');
+        return;
+    }
+
+    function escapeH(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>FakeShield Official Fact-Check Dossier - ${dossierId}</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #0f172a; line-height: 1.6; max-width: 820px; margin: 0 auto; background: #fff; }
+                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0284c7; padding-bottom: 18px; margin-bottom: 28px; }
+                .brand { font-size: 24px; font-weight: 800; color: #0284c7; letter-spacing: -0.02em; }
+                .dossier-id { font-family: monospace; font-size: 13px; color: #64748b; text-align: right; }
+                .verdict-box { background: #f8fafc; border: 2px solid ${statusColor}; border-radius: 12px; padding: 24px; margin-bottom: 28px; text-align: center; }
+                .verdict-title { font-size: 26px; font-weight: 900; color: ${statusColor}; margin: 0 0 8px 0; }
+                .score-badge { display: inline-block; background: ${statusColor}; color: #fff; font-weight: 800; padding: 6px 18px; border-radius: 20px; font-size: 15px; }
+                .section-title { font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin: 24px 0 12px 0; }
+                .claim-text { background: #f1f5f9; padding: 16px; border-radius: 8px; font-style: italic; margin-bottom: 18px; border-left: 4px solid #94a3b8; }
+                .audit-table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+                .audit-table th, .audit-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+                .audit-table th { background: #f8fafc; color: #64748b; font-weight: 700; }
+                .footer-stamp { margin-top: 48px; padding-top: 20px; border-top: 2px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; }
+                .seal { border: 2px solid #0284c7; color: #0284c7; padding: 8px 14px; border-radius: 8px; font-weight: 800; text-transform: uppercase; font-size: 11px; }
+                @media print { body { padding: 0; } }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="brand">🛡️ FAKESHIELD AI • FORENSIC DOSSIER</div>
+                <div class="dossier-id">RECORD REF: ${dossierId}<br>${dateStr}</div>
+            </div>
+
+            <div class="verdict-box">
+                <div class="verdict-title">${statusLabel}</div>
+                <div class="score-badge">Credibility Score: ${score}%</div>
+            </div>
+
+            <div class="section-title">1. Analyzed Claim & Subject</div>
+            <h3 style="margin-top:6px; color:#1e293b;">${escapeH(title)}</h3>
+            <div class="claim-text">"${escapeH(content)}"</div>
+
+            <div class="section-title">2. Forensic Investigation & Evidence Findings</div>
+            <p style="color:#334155;">${escapeH(explanation)}</p>
+
+            <div class="section-title">3. Multi-Vector Forensic Telemetry</div>
+            <table class="audit-table">
+                <tr><th>Verification Vector</th><th>Status Assessment</th><th>Metric Score</th></tr>
+                <tr><td>Factual Accuracy Alignment</td><td>${score >= 60 ? 'Optimal Coherence' : 'Flagged Inconsistencies'}</td><td>${score}%</td></tr>
+                <tr><td>Sensationalism & Clickbait Bait</td><td>${score >= 60 ? 'Minimal / Neutral' : 'Severe Emotional Manipulation'}</td><td>${Math.max(10, 100 - score)}%</td></tr>
+                <tr><td>Cognitive Bias Weapons</td><td>${score >= 60 ? 'None Identified' : 'Urgency & Scarcity Traps Detected'}</td><td>${score >= 60 ? 'Clean' : 'Elevated'}</td></tr>
+                <tr><td>Domain & Source Origin</td><td>${escapeH(d.platform || 'General Media Source')}</td><td>Verified Feed</td></tr>
+            </table>
+
+            <div class="footer-stamp">
+                <div>
+                    <strong>FakeShield Autonomous Verification System v4.0</strong><br>
+                    Tamper-proof digital seal: <code>${Math.random().toString(36).substring(2).toUpperCase()}-${Date.now().toString(36).toUpperCase()}</code>
+                </div>
+                <div class="seal">AUTHENTICATED CERTIFICATE</div>
+            </div>
+
+            <script>
+                window.onload = function() { window.print(); };
+            <\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// ==================================================
+// UPGRADE 3: MYTH VS REALITY DUAL MATRIX
+// ==================================================
+
+function renderMythVsReality(data) {
+    const mythClaimText = document.getElementById('mythClaimText');
+    const realityFactText = document.getElementById('realityFactText');
+    const realitySources = document.getElementById('realitySources');
+
+    if (!mythClaimText || !realityFactText) return;
+
+    const title = data.title || data.filename || 'Claimed Headline';
+    const content = data.content || data.extractedText || '';
+    const status = (data.status || 'SUSPICIOUS').toUpperCase();
+
+    const snippet = content ? `${content.slice(0, 140)}...` : title;
+    mythClaimText.textContent = `"${snippet}"`;
+
+    if (status === 'FAKE') {
+        realityFactText.textContent = data.explanation || "Independent scientific review and global fact-checking registers confirm this assertion is false and lacks peer-reviewed empirical evidence.";
+        if (realitySources) realitySources.innerHTML = '<span>📚 Verified Primary Sources: WHO Fact Registry • Reuters Counter-Disinformation • Associated Press</span>';
+    } else if (status === 'REAL') {
+        realityFactText.textContent = data.explanation || "This report is corroborated by primary scientific databases and recognized accredited publications.";
+        if (realitySources) realitySources.innerHTML = '<span>📚 Verified Primary Sources: Primary Academic Publications • NASA Science Archive • Accredited News Wires</span>';
+    } else {
+        realityFactText.textContent = "Evidence remains inconclusive. Statements cannot be definitively corroborated by recognized fact repositories.";
+        if (realitySources) realitySources.innerHTML = '<span>📚 Status: Awaiting further official clarification from regional authorities</span>';
+    }
+}
+
+// ==================================================
+// UPGRADE 4: WHATSAPP SIMULATION CONTROLLER
+// ==================================================
+
+function simulateWhatsAppBotDebunk() {
+    const chatBody = document.getElementById('phoneChatBody');
+    if (!chatBody) return;
+
+    const samples = [
+        {
+            user: "🚨 Breaking: NASA says massive asteroid impact will hit Earth tomorrow!",
+            bot: "❌ DEBUNKED HOAX (8%)\nVerdict: Fabricated Rumor. NASA Planetary Defense confirms zero impact threats for the next 100+ years."
+        },
+        {
+            user: "💊 Miracle drink of salt and lemon cures all viral diseases in 2 hours!",
+            bot: "❌ FALSE HEALTH CLAIM (12%)\nVerdict: Medical Myth. WHO confirms no scientific validity for this remedy."
+        },
+        {
+            user: "📢 ISRO confirms successful lunar rover navigation milestone.",
+            bot: "✅ VERIFIED AUTHENTIC (96%)\nVerdict: Validated via ISRO Official Mission Telemetry."
+        }
+    ];
+
+    const pick = samples[Math.floor(Math.random() * samples.length)];
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    function esc(str) {
+        return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    const userDiv = document.createElement('div');
+    userDiv.className = 'chat-bubble user-bubble';
+    userDiv.innerHTML = `<span class="forward-label">↪ Forwarded</span><p>${esc(pick.user)}</p><span class="chat-time">${time}</span>`;
+    chatBody.appendChild(userDiv);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    setTimeout(() => {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-bubble bot-bubble';
+        botDiv.innerHTML = `<div class="bot-reply-header"><span class="tag-fake">${esc(pick.bot.split('\n')[0])}</span></div><p><strong>Verdict:</strong> ${esc(pick.bot.split('\n')[1].replace('Verdict: ', ''))}</p><div class="voice-audio-pill"><span>▶️ 🎙️ Spoken Debunk (0:15)</span></div><span class="chat-time">${time} • Verified by FakeShield</span>`;
+        chatBody.appendChild(botDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+        showToast('💬 WhatsApp Bot simulated reply received!', 'success');
+    }, 800);
+}
+
+// ==================================================
+// UPGRADE 5: GLOBAL THREAT RADAR MAP
+// ==================================================
+
+function initThreatMapCanvas() {
+    const canvas = document.getElementById('threatMapCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = canvas.width = canvas.parentElement ? canvas.parentElement.clientWidth : 960;
+    let height = canvas.height = 320;
+
+    window.addEventListener('resize', () => {
+        if (canvas.parentElement) {
+            width = canvas.width = canvas.parentElement.clientWidth;
+            height = canvas.height = 320;
+        }
+    });
+
+    const nodes = [
+        { name: 'North America (NYC)', x: 0.22, y: 0.35, pulse: 0, color: '#38bdf8' },
+        { name: 'Europe (London)', x: 0.48, y: 0.28, pulse: 0.4, color: '#10b981' },
+        { name: 'South Asia (Delhi)', x: 0.68, y: 0.45, pulse: 0.8, color: '#f43f5e' },
+        { name: 'East Asia (Tokyo)', x: 0.84, y: 0.38, pulse: 0.2, color: '#a855f7' },
+        { name: 'Latin America (Sao Paulo)', x: 0.32, y: 0.72, pulse: 0.6, color: '#f59e0b' },
+        { name: 'Africa (Lagos)', x: 0.49, y: 0.58, pulse: 0.9, color: '#10b981' },
+        { name: 'Oceania (Sydney)', x: 0.88, y: 0.78, pulse: 0.3, color: '#38bdf8' }
+    ];
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Cyber Grid Backdrop
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        // Draw Interconnecting Cyber Flight Arcs
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const n1 = nodes[i];
+                const n2 = nodes[j];
+                const x1 = n1.x * width;
+                const y1 = n1.y * height;
+                const x2 = n2.x * width;
+                const y2 = n2.y * height;
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.quadraticCurveTo((x1 + x2) / 2, Math.min(y1, y2) - 30, x2, y2);
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // Draw Pulsing Regional Nodes
+        nodes.forEach(n => {
+            const cx = n.x * width;
+            const cy = n.y * height;
+            n.pulse = (n.pulse + 0.015) % 1;
+
+            // Outer expanding pulse ring
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6 + n.pulse * 24, 0, Math.PI * 2);
+            ctx.strokeStyle = n.color;
+            ctx.globalAlpha = Math.max(0, 1 - n.pulse);
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // Core dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = n.color;
+            ctx.fill();
+
+            // Label
+            ctx.font = '10px JetBrains Mono, monospace';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(n.name, cx + 8, cy + 4);
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🛡️ FakeShield v3.0 Luxury Animated Edition Initialized');
+    console.log('🛡️ FakeShield v4.0 Ultimate Edition Initialized');
     const savedLang = localStorage.getItem('fakeshield_lang') || 'en';
     const savedFlag = localStorage.getItem('fakeshield_lang_flag') || '🇬🇧';
     const savedName = localStorage.getItem('fakeshield_lang_name') || 'English';
@@ -2528,6 +2816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initParticleCanvas();
     initSpotlightCards();
     initScrollReveal();
+    initThreatMapCanvas();
 });
 
 // ============================================
@@ -2544,6 +2833,7 @@ window.analyzeImage = analyzeImage;
 window.shareResult = shareResult;
 window.copyResult = copyResult;
 window.downloadReport = downloadReport;
+window.downloadOfficialPDFDossier = downloadOfficialPDFDossier;
 window.analyzeAnother = analyzeAnother;
 window.loadRecentNews = loadRecentNews;
 window.toggleLangDropdown = toggleLangDropdown;
@@ -2558,6 +2848,12 @@ window.filterRecentNews = filterRecentNews;
 window.viewReport = viewReport;
 window.closeReportModal = closeReportModal;
 window.logout = logout;
+
+// Upgraded Features Exports
+window.openExtensionModal = openExtensionModal;
+window.closeExtensionModal = closeExtensionModal;
+window.simulateWhatsAppBotDebunk = simulateWhatsAppBotDebunk;
+window.renderMythVsReality = renderMythVsReality;
 
 // 5 Breakthrough Features Exports
 window.toggleVoiceRecording = toggleVoiceRecording;

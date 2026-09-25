@@ -2388,6 +2388,580 @@ textarea {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==================================================
+   UPGRADE 1: EXTENSION BUTTON & MODAL
+   ================================================== */
+.nav-link-ext {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(168, 85, 247, 0.15));
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 20px !important;
+    padding: 4px 12px !important;
+    color: var(--primary) !important;
+}
+
+.extension-modal-content {
+    max-width: 720px;
+}
+
+.ext-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.ext-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    text-align: center;
+}
+
+.ext-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.ext-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.ext-card p {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.4;
+}
+
+.ext-download-box {
+    background: rgba(9, 14, 28, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+}
+
+.ext-download-box h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 12px;
+}
+
+.ext-steps {
+    margin-left: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.ext-steps strong {
+    color: var(--primary);
+}
+
+.ext-steps code {
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-white);
+}
+
+/* ==================================================
+   UPGRADE 2: PDF DOSSIER BUTTON & STYLING
+   ================================================== */
+.btn-pdf-dossier {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(56, 189, 248, 0.15));
+    border-color: rgba(16, 185, 129, 0.35);
+    color: var(--success);
+    font-weight: 700;
+}
+
+.btn-pdf-dossier:hover {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.2);
+}
+
+/* ==================================================
+   UPGRADE 3: MYTH VS REALITY SIDE-BY-SIDE MATRIX
+   ================================================== */
+.myth-reality-section {
+    background: rgba(9, 14, 28, 0.85);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 26px;
+    margin-bottom: 28px;
+}
+
+.mr-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.mr-tag {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.mr-header h4 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-white);
+}
+
+.mr-comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.mr-card {
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.mr-hoax-card {
+    background: rgba(244, 63, 94, 0.06);
+    border-color: rgba(244, 63, 94, 0.3);
+}
+
+.mr-fact-card {
+    background: rgba(16, 185, 129, 0.06);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.mr-card-badge {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+}
+
+.mr-content {
+    font-size: 14px;
+    color: var(--text-main);
+    line-height: 1.65;
+    margin-bottom: 16px;
+}
+
+.mr-hoax-card .mr-content {
+    text-decoration: line-through;
+    color: #fca5a5;
+}
+
+.mr-flag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.mr-flag {
+    font-size: 11px;
+    background: rgba(244, 63, 94, 0.15);
+    color: #fda4af;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.mr-sources-list {
+    font-size: 12px;
+    color: #86efac;
+    background: rgba(16, 185, 129, 0.12);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* ==================================================
+   UPGRADE 4: WHATSAPP BOT INTEGRATION SECTION
+   ================================================== */
+.whatsapp-bot-section {
+    padding: 80px 0;
+    position: relative;
+    z-index: 2;
+}
+
+.bot-showcase-card {
+    background: var(--bg-surface);
+    backdrop-filter: blur(28px);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 48px;
+    box-shadow: var(--shadow-lg);
+}
+
+.bot-showcase-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 48px;
+    align-items: center;
+}
+
+.bot-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #25d366;
+    background: rgba(37, 211, 102, 0.12);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+.bot-info-column h2 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--text-white);
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.bot-info-column p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 24px;
+}
+
+.bot-feature-points {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.bfp-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.bfp-icon {
+    font-size: 22px;
+}
+
+.bfp-item strong {
+    font-size: 14px;
+    color: var(--text-white);
+    display: block;
+}
+
+.bfp-item p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0;
+}
+
+.bot-cta-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.btn-whatsapp-bot {
+    background: #25d366;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+    transition: var(--transition);
+}
+
+.btn-whatsapp-bot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.5);
+}
+
+.btn-try-simulation {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-white);
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-try-simulation:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Smartphone Live Chat Mockup */
+.phone-mockup-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.phone-frame {
+    width: 320px;
+    height: 480px;
+    background: #0b141a;
+    border: 6px solid #1f2c34;
+    border-radius: 36px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(37, 211, 102, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.phone-notch {
+    width: 100px;
+    height: 12px;
+    background: #1f2c34;
+    border-radius: 0 0 12px 12px;
+    margin: 0 auto;
+}
+
+.phone-chat-header {
+    background: #1f2c34;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-avatar {
+    font-size: 22px;
+    background: rgba(56, 189, 248, 0.15);
+    border-radius: 50%;
+    padding: 4px;
+}
+
+.chat-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.chat-status {
+    font-size: 10px;
+    color: #25d366;
+}
+
+.phone-chat-body {
+    flex: 1;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    background: #0b141a;
+}
+
+.chat-bubble {
+    max-width: 88%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    position: relative;
+}
+
+.user-bubble {
+    align-self: flex-end;
+    background: #005c4b;
+    color: #e9edef;
+    border-bottom-right-radius: 2px;
+}
+
+.bot-bubble {
+    align-self: flex-start;
+    background: #202c33;
+    color: #e9edef;
+    border-bottom-left-radius: 2px;
+    border-left: 3px solid #25d366;
+}
+
+.forward-label {
+    font-size: 10px;
+    color: #8696a0;
+    font-style: italic;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.tag-fake {
+    font-size: 10px;
+    font-weight: 800;
+    color: #f43f5e;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.voice-audio-pill {
+    background: rgba(37, 211, 102, 0.15);
+    border: 1px solid rgba(37, 211, 102, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #25d366;
+    font-weight: 600;
+}
+
+.chat-time {
+    font-size: 9px;
+    color: #8696a0;
+    text-align: right;
+    display: block;
+    margin-top: 4px;
+}
+
+/* ==================================================
+   UPGRADE 5: GLOBAL THREAT RADAR MAP
+   ================================================== */
+.threat-barometer-banner {
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.tbb-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.radar-pulse-icon {
+    font-size: 24px;
+    animation: pulse 1.5s infinite;
+}
+
+.tbb-left strong {
+    font-size: 14px;
+    color: var(--danger);
+    display: block;
+    letter-spacing: 0.02em;
+}
+
+.tbb-left p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.status-live-pill {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(56, 189, 248, 0.12);
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.threat-map-container {
+    background: rgba(14, 20, 40, 0.85);
+    backdrop-filter: blur(28px);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow-md);
+}
+
+.map-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.map-overlay-header h4 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+.map-coords {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--primary);
+}
+
+.threat-map-canvas-box {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 8px;
+    text-align: center;
+    overflow: hidden;
+}
+
+#threatMapCanvas {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    border-radius: var(--radius-md);
+}
+
+.threat-feed-ticker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.ticker-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.ticker-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-main);
+}
+
 /* ================================
    14. RESPONSIVE DESIGN
 ================================ */
