@@ -2419,14 +2419,25 @@ function initParticleCanvas() {
         mouse.y = null;
     });
 
+    const palette = [
+        { fill: 'rgba(0, 245, 255, ', glow: '#00f5ff' },
+        { fill: 'rgba(192, 132, 252, ', glow: '#c084fc' },
+        { fill: 'rgba(0, 255, 170, ', glow: '#00ffaa' },
+        { fill: 'rgba(255, 0, 127, ', glow: '#ff007f' }
+    ];
+
     for (let i = 0; i < particleCount; i++) {
+        const pal = palette[Math.floor(Math.random() * palette.length)];
         particles.push({
             x: Math.random() * width,
             y: Math.random() * height,
-            vx: (Math.random() - 0.5) * 0.45,
-            vy: (Math.random() - 0.5) * 0.45,
-            size: Math.random() * 2 + 1,
-            color: Math.random() > 0.5 ? 'rgba(56, 189, 248, ' : 'rgba(129, 140, 248, '
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 2.2 + 1.2,
+            baseAlpha: Math.random() * 0.4 + 0.35,
+            color: pal.fill,
+            glow: pal.glow,
+            pulse: Math.random() * Math.PI
         });
     }
 
@@ -2437,48 +2448,56 @@ function initParticleCanvas() {
             const p = particles[i];
             p.x += p.vx;
             p.y += p.vy;
+            p.pulse += 0.02;
 
             if (p.x < 0) p.x = width;
             if (p.x > width) p.x = 0;
             if (p.y < 0) p.y = height;
             if (p.y > height) p.y = 0;
 
-            // Draw particle
+            const dynamicAlpha = p.baseAlpha + Math.sin(p.pulse) * 0.15;
+
+            // Draw glowing particle
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = p.glow;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = p.color + '0.6)';
+            ctx.fillStyle = `${p.color}${dynamicAlpha})`;
             ctx.fill();
 
-            // Connect nearby particles
+            // Connect nearby particles with luminous gradients
             for (let j = i + 1; j < particles.length; j++) {
                 const p2 = particles[j];
                 const dx = p.x - p2.x;
                 const dy = p.y - p2.y;
                 const dist = Math.hypot(dx, dy);
 
-                if (dist < 120) {
+                if (dist < 135) {
+                    ctx.shadowBlur = 0;
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
                     ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = `rgba(56, 189, 248, ${0.15 * (1 - dist / 120)})`;
-                    ctx.lineWidth = 0.8;
+                    const lineAlpha = (1 - dist / 135) * 0.22;
+                    ctx.strokeStyle = `rgba(0, 245, 255, ${lineAlpha})`;
+                    ctx.lineWidth = 0.85;
                     ctx.stroke();
                 }
             }
 
-            // Mouse interaction
+            // Interactive mouse physics
             if (mouse.x !== null && mouse.y !== null) {
                 const dx = p.x - mouse.x;
                 const dy = p.y - mouse.y;
                 const dist = Math.hypot(dx, dy);
                 if (dist < mouse.radius) {
-                    const force = (1 - dist / mouse.radius) * 1.5;
+                    const force = (1 - dist / mouse.radius) * 1.8;
                     p.x += (dx / dist) * force;
                     p.y += (dy / dist) * force;
                 }
             }
         }
 
+        ctx.shadowBlur = 0;
         requestAnimationFrame(animateParticles);
     }
 
@@ -2486,7 +2505,7 @@ function initParticleCanvas() {
 }
 
 function initSpotlightCards() {
-    const cards = document.querySelectorAll('.analyzer-card, .dashboard-card, .floating-card, .result-card, .timeline-node, .step');
+    const cards = document.querySelectorAll('.analyzer-card, .dashboard-card, .floating-card, .result-card, .timeline-node, .step-card, .bot-showcase-card, .myth-reality-section');
     cards.forEach(card => {
         card.classList.add('spotlight-card');
         card.addEventListener('mousemove', (e) => {
@@ -2495,6 +2514,17 @@ function initSpotlightCards() {
             const y = e.clientY - rect.top;
             card.style.setProperty('--mouse-x', `${x}px`);
             card.style.setProperty('--mouse-y', `${y}px`);
+
+            // 3D Tilt Parallax
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotX = ((y - centerY) / centerY) * -4;
+            const rotY = ((x - centerX) / centerX) * 4;
+            card.style.transform = `perspective(1200px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-2px)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) translateY(0px)';
         });
     });
 }
