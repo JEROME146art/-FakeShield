@@ -14,29 +14,27 @@
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Palette: Obsidian Deep Cyber Slate */
-    --bg-base: #050811;
-    --bg-surface: rgba(11, 18, 33, 0.78);
-    --bg-surface-elevated: rgba(16, 26, 48, 0.88);
-    --bg-surface-card: rgba(13, 21, 38, 0.7);
-    --bg-input: rgba(8, 13, 26, 0.9);
+    /* Palette: Executive Dark Onyx & Smoked Obsidian */
+    --bg-base: #030712;
+    --bg-surface: rgba(10, 16, 30, 0.72);
+    --bg-surface-elevated: rgba(15, 23, 42, 0.82);
+    --bg-surface-card: rgba(12, 19, 35, 0.68);
+    --bg-input: rgba(6, 11, 22, 0.9);
 
-    /* Luminescent Brand Accents (Vibrant & Enlightened) */
-    --primary: #00f5ff;           /* Electric Cyber Cyan */
-    --primary-glow: rgba(0, 245, 255, 0.4);
+    /* Professional Forensic Brand Accents */
+    --primary: #38bdf8;           /* Precision Cyan */
+    --primary-glow: rgba(56, 189, 248, 0.25);
     --primary-dark: #0284c7;
-    --secondary: #818cf8;         /* Hyper Indigo */
-    --accent: #c084fc;            /* Luminescent Orchid */
-    --accent-magenta: #ff007f;    /* Laser Magenta */
-    --neon-emerald: #00ffaa;      /* Bioluminescent Emerald */
+    --secondary: #6366f1;         /* Deep Indigo */
+    --accent: #a855f7;            /* Tech Violet */
 
     /* Status Indicators */
-    --success: #00ffaa;           /* Neon Emerald Real */
-    --success-glow: rgba(0, 255, 170, 0.35);
-    --danger: #ff2a5f;            /* Laser Crimson Fake */
-    --danger-glow: rgba(255, 42, 95, 0.35);
-    --warning: #fbbf24;           /* Radiant Amber Suspicious */
-    --warning-glow: rgba(251, 191, 36, 0.35);
+    --success: #10b981;           /* Verified Emerald */
+    --success-glow: rgba(16, 185, 129, 0.25);
+    --danger: #f43f5e;            /* Flagged Crimson */
+    --danger-glow: rgba(244, 63, 94, 0.25);
+    --warning: #f59e0b;           /* Alert Amber */
+    --warning-glow: rgba(245, 158, 11, 0.25);
 
     /* Text Colors */
     --text-main: #f8fafc;
@@ -44,32 +42,28 @@
     --text-dim: #64748b;
     --text-white: #ffffff;
 
-    /* Borders */
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-glass: rgba(255, 255, 255, 0.14);
-    --border-focus: rgba(0, 245, 255, 0.6);
-    --border-luminous: linear-gradient(135deg, rgba(0, 245, 255, 0.5), rgba(192, 132, 252, 0.3), rgba(255, 0, 127, 0.2));
+    /* Borders & Specular Lines */
+    --border-subtle: rgba(255, 255, 255, 0.07);
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --border-focus: rgba(56, 189, 248, 0.5);
 
-    /* Multi-Hue Gradients */
-    --gradient-hero: linear-gradient(135deg, #ffffff 0%, #00f5ff 25%, #c084fc 50%, #ff007f 75%, #00f5ff 100%);
-    --gradient-aurora: linear-gradient(135deg, #00f5ff 0%, #818cf8 35%, #c084fc 70%, #ff007f 100%);
-    --gradient-button: linear-gradient(135deg, #00b4d8 0%, #6366f1 50%, #a855f7 100%);
-    --gradient-emerald: linear-gradient(135deg, #00ffaa 0%, #10b981 50%, #0284c7 100%);
-    --gradient-crimson: linear-gradient(135deg, #ff2a5f 0%, #fb7185 100%);
+    /* Clean Gradients */
+    --gradient-hero: linear-gradient(135deg, #ffffff 0%, #f1f5f9 45%, #38bdf8 100%);
+    --gradient-button: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+    --gradient-emerald: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    --gradient-crimson: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
     --gradient-amber: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%);
 
     /* Shadows & Glows */
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.7);
-    --shadow-glow-cyan: 0 0 35px rgba(0, 245, 255, 0.25);
-    --shadow-glow-emerald: 0 0 35px rgba(0, 255, 170, 0.25);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.75);
     --radius-sm: 8px;
     --radius-md: 14px;
     --radius-lg: 20px;
     --radius-xl: 28px;
-    --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ================================
@@ -97,7 +91,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Cybernetic Grid Overlay */
+/* Realistic Subtle Perspective Grid */
 body::before {
     content: '';
     position: fixed;
@@ -106,9 +100,11 @@ body::before {
     width: 100vw;
     height: 100vh;
     background-image: 
-        linear-gradient(rgba(0, 245, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 245, 255, 0.02) 1px, transparent 1px);
-    background-size: 48px 48px;
+        linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 70% 50% at 50% 25%, rgba(0, 0, 0, 0.75) 0%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 25%, rgba(0, 0, 0, 0.75) 0%, transparent 85%);
     pointer-events: none;
     z-index: 0;
 }
@@ -130,7 +126,7 @@ body::before {
     background: var(--bg-base);
 }
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(0, 245, 255, 0.4), rgba(192, 132, 252, 0.4));
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 20px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -138,7 +134,7 @@ body::before {
 }
 
 /* ================================
-   3. BACKGROUND & AMBIENT GLOW
+   3. BACKGROUND & ATMOSPHERIC LIGHTING
 ================================ */
 .bg-particle-canvas {
     position: fixed;
@@ -148,7 +144,7 @@ body::before {
     height: 100vh;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.65;
+    opacity: 0.55;
 }
 
 .ambient-glow-mesh {
@@ -160,63 +156,21 @@ body::before {
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
+    background: 
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 165, 233, 0.12) 0%, transparent 65%),
+        radial-gradient(circle 700px at 85% 90%, rgba(99, 102, 241, 0.05) 0%, transparent 70%),
+        radial-gradient(circle 600px at 15% 70%, rgba(2, 132, 199, 0.04) 0%, transparent 65%);
 }
 
 .ambient-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(140px);
-    opacity: 0.32;
-    animation: orbFloat 20s infinite alternate ease-in-out;
-}
-
-.orb-1 {
-    width: 650px;
-    height: 650px;
-    background: radial-gradient(circle, #00f5ff 0%, #6366f1 65%, transparent 100%);
-    top: -120px;
-    left: 10%;
-}
-
-.orb-2 {
-    width: 700px;
-    height: 700px;
-    background: radial-gradient(circle, #a855f7 0%, #ff007f 60%, transparent 100%);
-    bottom: -150px;
-    right: 5%;
-    animation-delay: -5s;
-}
-
-.orb-3 {
-    width: 520px;
-    height: 520px;
-    background: radial-gradient(circle, #00ffaa 0%, #0284c7 65%, transparent 100%);
-    top: 35%;
-    left: 45%;
-    animation-delay: -10s;
-}
-
-.orb-4 {
-    width: 480px;
-    height: 480px;
-    background: radial-gradient(circle, #ff007f 0%, #7c3aed 70%, transparent 100%);
-    top: 70%;
-    left: 5%;
-    animation-delay: -15s;
-}
-
-@keyframes orbFloat {
-    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-    33% { transform: translate(60px, -40px) scale(1.1) rotate(4deg); }
-    66% { transform: translate(-50px, 50px) scale(0.92) rotate(-3deg); }
-    100% { transform: translate(30px, -20px) scale(1.05) rotate(2deg); }
+    display: none;
 }
 
 /* 3D Realistic Spotlight Card */
 .spotlight-card {
     position: relative;
     overflow: hidden;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
     transform-style: preserve-3d;
 }
 
@@ -225,10 +179,10 @@ body::before {
     position: absolute;
     top: var(--mouse-y, -1000px);
     left: var(--mouse-x, -1000px);
-    width: 450px;
-    height: 450px;
+    width: 380px;
+    height: 380px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(circle, rgba(0, 245, 255, 0.16) 0%, rgba(192, 132, 252, 0.06) 50%, transparent 75%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(99, 102, 241, 0.02) 50%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
     opacity: 0;
@@ -237,8 +191,8 @@ body::before {
 }
 
 .spotlight-card:hover {
-    border-color: rgba(0, 245, 255, 0.35) !important;
-    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 245, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 .spotlight-card:hover::before {
