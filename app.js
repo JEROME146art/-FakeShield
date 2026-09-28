@@ -68,6 +68,10 @@ function switchTab(tabName, btnElement) {
         btnElement.classList.add('active');
     }
 
+    if (tabName === 'spectrogram' && typeof initSpectrogramCanvas === 'function') {
+        setTimeout(initSpectrogramCanvas, 50);
+    }
+
     hideResults();
 }
 
