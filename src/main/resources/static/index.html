@@ -25,7 +25,8 @@
             <a href="#analyzer" class="nav-link">🔍 Analyze</a>
             <a href="#dashboard" class="nav-link">📊 Threat Radar</a>
             <a href="#bot-integration" class="nav-link">💬 WhatsApp Bot</a>
-            <a href="#how-it-works" class="nav-link">⚡ Architecture</a>
+            <a href="javascript:void(0)" onclick="openDebateChamberModal()" class="nav-link">⚖️ AI Debate</a>
+            <a href="javascript:void(0)" onclick="openCsiGameModal()" class="nav-link nav-link-game">🎮 CSI Game</a>
             <a href="/history.html" id="navHistoryLink" class="nav-link">📜 History</a>
             <a href="javascript:void(0)" onclick="openExtensionModal()" class="nav-link nav-link-ext">🧩 Extension</a>
         </div>
@@ -197,6 +198,10 @@
                     <button class="tab-btn" onclick="switchTab('bots', this)">
                         <span class="tab-icon">🤖</span>
                         <span class="tab-label">Bot Farm Scanner</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('spectrogram', this)">
+                        <span class="tab-icon">🎛️</span>
+                        <span class="tab-label">AI Voice Clone Scanner</span>
                     </button>
                 </div>
             </div>
@@ -526,6 +531,76 @@
                 </div>
             </div>
 
+            <!-- TAB 7: AI VOICE CLONE & SPECTROGRAM SCANNER -->
+            <div id="tab-spectrogram" class="tab-content">
+                <div class="analyzer-card spotlight-card">
+                    <div class="card-inner-header">
+                        <div>
+                            <h3>🎛️ AI Voice Clone & Acoustic Spectrogram Analyzer</h3>
+                            <p>Detect ElevenLabs, RVC, and Bark synthetic voice clones using harmonic frequency inspection.</p>
+                        </div>
+                        <div class="sample-pills-row">
+                            <span class="pills-hint">Acoustic Samples:</span>
+                            <button class="mini-pill pill-fake" onclick="loadCloneSample('politician')">🎙️ Politician AI Clone</button>
+                            <button class="mini-pill pill-fake" onclick="loadCloneSample('robocall')">📞 CEO Scam Robocall</button>
+                            <button class="mini-pill pill-real" onclick="loadCloneSample('human')">🌱 Authentic Human Speech</button>
+                        </div>
+                    </div>
+
+                    <div class="spectrogram-visualizer-box">
+                        <div class="spec-header">
+                            <div class="spec-live-pill"><span class="pulse-indicator"></span> 3D Acoustic Spectral FFT Active</div>
+                            <span class="spec-hz">FREQ: 20Hz - 22,050Hz (Nyquist Limit)</span>
+                        </div>
+                        <canvas id="spectrogramCanvas" width="800" height="180" class="spectrogram-canvas"></canvas>
+                        <div class="spec-controls-row">
+                            <button class="btn-audio-preview" id="btnSpectrogramPlay" onclick="togglePlayCloneAudio()">
+                                <span id="clonePlayIcon">▶</span> <span id="clonePlayText">Preview Audio Waveform</span>
+                            </button>
+                            <div class="audio-time-track" id="cloneTimeTrack">00:00 / 00:15</div>
+                        </div>
+                    </div>
+
+                    <!-- Synthetic Biomarker Gauges Grid -->
+                    <div class="clone-biomarker-grid" id="cloneBiomarkers">
+                        <div class="biomarker-box">
+                            <div class="bio-val text-red" id="bioPitchFlatness">88%</div>
+                            <div class="bio-lbl">Robotic Pitch Flatness</div>
+                            <div class="bio-sub">Unnatural F0 Fundamental Frequency</div>
+                        </div>
+                        <div class="biomarker-box">
+                            <div class="bio-val text-yellow" id="bioBreathPause">92%</div>
+                            <div class="bio-lbl">Breath Micro-Pause Anomaly</div>
+                            <div class="bio-sub">Missing physiological inhalation gaps</div>
+                        </div>
+                        <div class="biomarker-box">
+                            <div class="bio-val text-purple" id="bioPhaseJitter">79%</div>
+                            <div class="bio-lbl">Phase Discontinuity</div>
+                            <div class="bio-sub">Neural vocoder concatenation artifacts</div>
+                        </div>
+                        <div class="biomarker-box">
+                            <div class="bio-val text-emerald" id="bioModelMatch">ElevenLabs v2</div>
+                            <div class="bio-lbl">AI Architecture Match</div>
+                            <div class="bio-sub">Diffusion / Mel-Spectrogram match</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:20px;">
+                        <label for="cloneClipDescription">Audio Context / Origin Title <span class="required">*</span></label>
+                        <input type="text" id="cloneClipDescription" placeholder="e.g. Leaked private phone call of public official discussing emergency orders...">
+                    </div>
+
+                    <div class="analyzer-action-footer">
+                        <button class="btn-analyze" id="btnAnalyzeClone" onclick="analyzeVoiceClone()">
+                            <span id="btnCloneText">🎛️ Run Audio Biomarker & Spectrogram Forensics</span>
+                            <span id="btnCloneLoader" style="display:none">
+                                <span class="loader-spinner"></span> Inspecting Acoustic Harmonics & Vocoder Artifacts...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- LIVE AI SCANNING PROGRESS MODAL / OVERLAY -->
             <div class="scanning-step-container" id="scanningProgressBox" style="display:none;">
                 <div class="scanning-card">
@@ -806,16 +881,92 @@
                     </div>
                 </div>
 
+                <!-- UPGRADE 2: "PATIENT ZERO" VIRAL ORIGIN & PROPAGATION CHAIN -->
+                <div class="propagation-section" id="propagationSection">
+                    <div class="prop-header">
+                        <div>
+                            <h4>🕵️ "Patient Zero" Viral Lifecycle & Origin Trace</h4>
+                            <p>Forensic chronology tracking seed forum birth to social amplification</p>
+                        </div>
+                        <span class="prop-status-pill" id="propSpeedPill">⚡ Rapid Viral Spread</span>
+                    </div>
+                    <div class="propagation-stepper" id="propStepper">
+                        <div class="prop-node done">
+                            <div class="prop-dot">01</div>
+                            <div class="prop-meta">
+                                <span class="prop-stage">Origin Seed</span>
+                                <strong id="propSeedPlatform">Dark Web / Forum</strong>
+                                <span class="prop-time" id="propSeedTime">02:14 AM • Anonymous Post</span>
+                            </div>
+                        </div>
+                        <div class="prop-node done">
+                            <div class="prop-dot">02</div>
+                            <div class="prop-meta">
+                                <span class="prop-stage">Encrypted Relay</span>
+                                <strong>WhatsApp Forward Swarm</strong>
+                                <span class="prop-time">03:30 AM • 1,200+ Groups</span>
+                            </div>
+                        </div>
+                        <div class="prop-node done">
+                            <div class="prop-dot">03</div>
+                            <div class="prop-meta">
+                                <span class="prop-stage">Bot Swarm Wave</span>
+                                <strong>X / Twitter Bot Syndicate</strong>
+                                <span class="prop-time">05:45 AM • 18,400 Retweets</span>
+                            </div>
+                        </div>
+                        <div class="prop-node current">
+                            <div class="prop-dot">04</div>
+                            <div class="prop-meta">
+                                <span class="prop-stage">Neutralization</span>
+                                <strong class="text-emerald">FakeShield AI Interception</strong>
+                                <span class="prop-time">08:22 AM • Verified Debunk Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPGRADE 4: SANDBOXED PHISHING & DOMAIN SECURITY INSPECTOR -->
+                <div class="phishing-inspector-section" id="phishingInspectorSection">
+                    <div class="phishing-header">
+                        <div>
+                            <h4>🌐 Sandboxed Domain Security & Phishing Inspector</h4>
+                            <p>Deep WHOIS registration telemetry, SSL cipher audit, and typosquatting risk</p>
+                        </div>
+                        <div class="ssl-badge text-emerald" id="domainTrustBadge">🔒 SSL Grade: A+</div>
+                    </div>
+                    <div class="phishing-grid">
+                        <div class="phishing-metric-box">
+                            <span class="pm-lbl">Domain Age</span>
+                            <strong class="pm-val text-cyan" id="whoisAgeVal">8 Years, 4 Months</strong>
+                            <span class="pm-sub" id="whoisRegistrar">Registrar: MarkMonitor Inc.</span>
+                        </div>
+                        <div class="phishing-metric-box">
+                            <span class="pm-lbl">Typosquatting Risk</span>
+                            <strong class="pm-val text-emerald" id="typosquattingVal">0% (Legitimate)</strong>
+                            <span class="pm-sub">Exact official domain match</span>
+                        </div>
+                        <div class="phishing-metric-box">
+                            <span class="pm-lbl">Hidden Tracking Redirects</span>
+                            <strong class="pm-val text-purple" id="redirectCountVal">0 (Clean)</strong>
+                            <span class="pm-sub">Direct canonical destination</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Multi-Factor Progress Breakdown -->
                 <div class="score-breakdown-section">
                     <h4>📊 Multi-Factor Credibility Breakdown</h4>
                     <div class="breakdown-grid" id="breakdownGrid"></div>
                 </div>
 
-                <!-- Action Button Bar with PDF Dossier Export -->
+                <!-- Action Button Bar with PDF Dossier Export & Debate Launcher -->
                 <div class="result-actions-bar">
                     <button class="btn-action btn-pdf-dossier" onclick="downloadOfficialPDFDossier()">
                         📄 Official PDF Dossier
+                    </button>
+                    <button class="btn-action btn-debate-action" onclick="launchDebateForCurrentClaim()">
+                        ⚖️ Launch AI Debate
                     </button>
                     <button class="btn-action btn-social-card" onclick="openSocialCardModal()">
                         🎨 Generate Story Card
@@ -1135,6 +1286,183 @@
                             <button class="btn-whatsapp-card" onclick="shareSocialCardWhatsApp()">
                                 💬 Share on WhatsApp
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPGRADE 3: AI FORENSIC DEBATE CHAMBER MODAL -->
+    <div class="modal-overlay" id="debateChamberModal" onclick="closeDebateChamberModal(event)">
+        <div class="modal-content debate-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <h3>⚖️ Autonomous AI Forensic Debate Chamber</h3>
+                    <p class="modal-sub">Multi-agent cross-examination between Claim Advocate and Certified Fact-Checker</p>
+                </div>
+                <button class="modal-close" onclick="closeDebateChamberModal()">✕</button>
+            </div>
+            <div class="modal-body debate-modal-body">
+                <div class="debate-topic-banner">
+                    <span class="debate-topic-tag">EXAMINED CLAIM:</span>
+                    <strong id="debateClaimTopic">"Viral Claim under Forensic Examination"</strong>
+                </div>
+
+                <div class="debate-arena-grid">
+                    <!-- Advocate (Red) -->
+                    <div class="debate-agent-card agent-advocate">
+                        <div class="agent-profile">
+                            <div class="agent-avatar advocate-avatar">🤖🔴</div>
+                            <div class="agent-info">
+                                <h4>Advocate AI</h4>
+                                <span>Viral Narrative Defender</span>
+                            </div>
+                        </div>
+                        <div class="debate-speech-stream" id="advocateSpeechBox">
+                            <div class="speech-bubble advocate-bubble">
+                                <p id="advocateSpeechText">Presenting initial claim arguments...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fact-Checker (Green) -->
+                    <div class="debate-agent-card agent-checker">
+                        <div class="agent-profile">
+                            <div class="agent-avatar checker-avatar">🛡️🟢</div>
+                            <div class="agent-info">
+                                <h4>Fact-Checker AI</h4>
+                                <span>Empirical Evidence Cross-Examiner</span>
+                            </div>
+                        </div>
+                        <div class="debate-speech-stream" id="checkerSpeechBox">
+                            <div class="speech-bubble checker-bubble">
+                                <p id="checkerSpeechText">Reviewing factual citations and source veracity...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Round Indicator & Progress -->
+                <div class="debate-status-row">
+                    <div class="round-step-pills">
+                        <span class="round-pill active" id="roundPill1">Round 1: Initial Claims</span>
+                        <span class="round-pill" id="roundPill2">Round 2: Cross-Examination</span>
+                        <span class="round-pill" id="roundPill3">Round 3: Final Rebuttal</span>
+                    </div>
+                    <button class="btn-rerun-debate" onclick="startAiDebate()">⚡ Replay Debate</button>
+                </div>
+
+                <!-- Jury Gavel Strike Verdict Box -->
+                <div class="gavel-verdict-box" id="gavelVerdictBox">
+                    <div class="gavel-icon">🔨</div>
+                    <div class="gavel-details">
+                        <span class="gavel-tag">FINAL JURY FORENSIC VERDICT</span>
+                        <h4 id="gavelVerdictTitle">Claim Overwhelmingly Refuted by Empirical Evidence</h4>
+                        <p id="gavelVerdictSummary">Cross-examination identified 3 logical fallacies and 0 primary peer-reviewed sources supporting the advocate.</p>
+                    </div>
+                    <div class="gavel-score-badge" id="gavelVerdictScore">14% Credibility</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPGRADE 5: GAMIFIED DIGITAL CSI DETECTIVE MODAL -->
+    <div class="modal-overlay" id="csiGameModal" onclick="closeCsiGameModal(event)">
+        <div class="modal-content csi-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="csi-header-meta">
+                    <div class="csi-badge-icon">🎮</div>
+                    <div>
+                        <h3>Digital CSI Misinformation Inoculation Challenge</h3>
+                        <p class="modal-sub">Solve 5 real-world forensic cases and earn your Certified Truth Investigator badge</p>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeCsiGameModal()">✕</button>
+            </div>
+
+            <div class="modal-body csi-modal-body">
+                <!-- CSI Top Stats Bar -->
+                <div class="csi-stats-banner">
+                    <div class="csi-stat-item">
+                        <span class="csi-lbl">CASE PROGRESS</span>
+                        <strong class="csi-val" id="csiCaseProgressText">Case 1 of 5</strong>
+                    </div>
+                    <div class="csi-stat-item">
+                        <span class="csi-lbl">FORENSIC ACCURACY SCORE</span>
+                        <strong class="csi-val text-cyan" id="csiScoreText">0 XP</strong>
+                    </div>
+                    <div class="csi-stat-item">
+                        <span class="csi-lbl">INVESTIGATOR RANK</span>
+                        <strong class="csi-val text-emerald" id="csiRankText">Novice Fact Finder</strong>
+                    </div>
+                </div>
+
+                <!-- Case Investigation Stage -->
+                <div class="csi-case-container" id="csiCaseContainer">
+                    <div class="csi-dossier-card">
+                        <div class="csi-case-tag" id="csiCaseCategory">CASE #101: VIRAL MEDICAL HOAX</div>
+                        <h3 class="csi-case-title" id="csiCaseTitle">"Miracle 100% Cancer Cure Concealed by Hospitals"</h3>
+                        <p class="csi-case-desc" id="csiCaseDesc">A viral Telegram forward claims a common kitchen spice cures advanced lymphoma when consumed raw, backed by a purported Harvard memo.</p>
+
+                        <!-- Clue Inspection Drawers -->
+                        <div class="csi-clues-section">
+                            <h4>🔍 Forensic Evidence Locker (Click to Inspect Clues):</h4>
+                            <div class="csi-clue-buttons">
+                                <button class="btn-clue" onclick="revealCsiClue(1)">📂 Clue 1: Domain & WHOIS Trace</button>
+                                <button class="btn-clue" onclick="revealCsiClue(2)">🔬 Clue 2: Reverse Image / Perceptual Hash</button>
+                                <button class="btn-clue" onclick="revealCsiClue(3)">🧠 Clue 3: Linguistic Fallacy Analysis</button>
+                            </div>
+                            <div class="csi-clue-reveal-box" id="csiClueBox" style="display:none;">
+                                <div class="clue-tag" id="csiClueTitle">EVIDENCE ANALYSIS</div>
+                                <p id="csiClueContent">Inspection findings will appear here...</p>
+                            </div>
+                        </div>
+
+                        <!-- CSI Verdict Decision Action -->
+                        <div class="csi-decision-section">
+                            <h4>⚖️ Render Your Detective Verdict:</h4>
+                            <div class="csi-verdict-choices">
+                                <button class="btn-choice choice-real" onclick="submitCsiVerdict('REAL')">
+                                    ✅ Authentic & Verified
+                                </button>
+                                <button class="btn-choice choice-suspicious" onclick="submitCsiVerdict('SUSPICIOUS')">
+                                    ⚠️ Misleading / Unproven
+                                </button>
+                                <button class="btn-choice choice-fake" onclick="submitCsiVerdict('FAKE')">
+                                    ❌ Fabricated Disinformation
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Feedback Banner -->
+                        <div class="csi-feedback-box" id="csiFeedbackBox" style="display:none;">
+                            <div class="feedback-icon" id="csiFeedbackIcon">🎯</div>
+                            <div class="feedback-content">
+                                <strong id="csiFeedbackTitle">Accurate Forensic Deduction!</strong>
+                                <p id="csiFeedbackText">You identified the fabricated Harvard header and typosquatted WHOIS registration.</p>
+                            </div>
+                            <button class="btn-next-case" id="btnNextCsiCase" onclick="nextCsiCase()">
+                                Next Case ➔
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final CSI Graduation Certificate View (Shown after Case 5) -->
+                <div class="csi-completion-view" id="csiCompletionView" style="display:none;">
+                    <div class="csi-cert-card">
+                        <div class="cert-seal">🏅</div>
+                        <span class="cert-sub">CERTIFICATE OF FORENSIC EXCELLENCE</span>
+                        <h2>Chief Misinformation Investigator</h2>
+                        <p>Awarded to Investigator for demonstrating 100% accuracy in detecting synthetic deepfakes, bot swarms, temporal recycling, and phishing deception.</p>
+                        <div class="cert-meta-row">
+                            <div><strong>Final Score:</strong> <span id="finalCsiScore">500 XP</span></div>
+                            <div><strong>Verification Hash:</strong> <code>#FS-CSI-2026-9842</code></div>
+                        </div>
+                        <div class="cert-actions">
+                            <button class="btn-download-card" onclick="downloadCsiCertificate()">📜 Download Certificate</button>
+                            <button class="btn-whatsapp-bot" onclick="restartCsiGame()">🔄 Play Again</button>
                         </div>
                     </div>
                 </div>

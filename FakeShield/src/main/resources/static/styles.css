@@ -3246,3 +3246,839 @@ textarea {
         text-align: center;
     }
 }
+
+/* ==================================================
+   UPGRADE 1: AI VOICE CLONE & SPECTROGRAM ANALYZER
+   ================================================== */
+.spectrogram-visualizer-box {
+    background: rgba(3, 7, 18, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.spec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.spec-live-pill {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(56, 189, 248, 0.15);
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.spec-hz {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.spectrogram-canvas {
+    width: 100%;
+    height: 160px;
+    background: #020617;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: block;
+}
+
+.spec-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.btn-audio-preview {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: var(--primary);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.btn-audio-preview:hover {
+    background: rgba(56, 189, 248, 0.3);
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+
+.audio-time-track {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.clone-biomarker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.biomarker-box {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.biomarker-box:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.bio-val {
+    font-size: 20px;
+    font-weight: 800;
+    font-family: var(--font-display);
+    margin-bottom: 4px;
+}
+
+.bio-lbl {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.bio-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ==================================================
+   UPGRADE 2: "PATIENT ZERO" VIRAL ORIGIN TIMELINE
+   ================================================== */
+.propagation-section {
+    background: rgba(14, 20, 40, 0.7);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.prop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.prop-header h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.prop-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.prop-status-pill {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.propagation-stepper {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    position: relative;
+}
+
+.prop-node {
+    background: rgba(10, 15, 30, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    position: relative;
+    transition: var(--transition);
+}
+
+.prop-node.done {
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.prop-node.current {
+    border-color: rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+}
+
+.prop-dot {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 26px;
+    margin-bottom: 10px;
+}
+
+.prop-node.current .prop-dot {
+    background: rgba(16, 185, 129, 0.25);
+    color: var(--success);
+}
+
+.prop-stage {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.prop-meta strong {
+    font-size: 13px;
+    color: var(--text-white);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.prop-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+}
+
+/* ==================================================
+   UPGRADE 4: SANDBOXED PHISHING INSPECTOR
+   ================================================== */
+.phishing-inspector-section {
+    background: rgba(14, 20, 40, 0.7);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.phishing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.phishing-header h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.phishing-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.ssl-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.phishing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.phishing-metric-box {
+    background: rgba(10, 15, 30, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.pm-lbl {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.pm-val {
+    font-size: 16px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.pm-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+}
+
+/* ==================================================
+   UPGRADE 3: AI FORENSIC DEBATE CHAMBER MODAL
+   ================================================== */
+.debate-modal-content {
+    max-width: 900px;
+    width: 95%;
+}
+
+.debate-topic-banner {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.debate-topic-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--primary);
+    background: rgba(56, 189, 248, 0.15);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.debate-arena-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.debate-agent-card {
+    background: rgba(10, 15, 30, 0.85);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    height: 280px;
+}
+
+.agent-advocate {
+    border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.agent-checker {
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.agent-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.agent-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.advocate-avatar {
+    background: rgba(244, 63, 94, 0.2);
+}
+
+.checker-avatar {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.agent-info h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin: 0;
+}
+
+.agent-info span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.debate-speech-stream {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.speech-bubble {
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+}
+
+.advocate-bubble {
+    background: rgba(244, 63, 94, 0.1);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    color: #fecdd3;
+}
+
+.checker-bubble {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #a7f3d0;
+}
+
+.debate-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.round-step-pills {
+    display: flex;
+    gap: 10px;
+}
+
+.round-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    transition: var(--transition);
+}
+
+.round-pill.active {
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--primary);
+    border-color: rgba(56, 189, 248, 0.5);
+}
+
+.btn-rerun-debate {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-white);
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-rerun-debate:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.gavel-verdict-box {
+    background: rgba(3, 7, 18, 0.9);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.gavel-icon {
+    font-size: 32px;
+    animation: pulse 1.5s infinite;
+}
+
+.gavel-details {
+    flex: 1;
+}
+
+.gavel-tag {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.gavel-details h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.gavel-details p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.gavel-score-badge {
+    font-size: 14px;
+    font-weight: 800;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    background: rgba(244, 63, 94, 0.2);
+    color: var(--danger);
+    border: 1px solid rgba(244, 63, 94, 0.4);
+    white-space: nowrap;
+}
+
+.btn-debate-action {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: rgba(168, 85, 247, 0.4);
+    color: #c084fc;
+}
+
+.btn-debate-action:hover {
+    background: rgba(168, 85, 247, 0.3);
+}
+
+/* ==================================================
+   UPGRADE 5: GAMIFIED CSI DETECTIVE MODAL
+   ================================================== */
+.csi-modal-content {
+    max-width: 860px;
+    width: 95%;
+}
+
+.csi-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.csi-badge-icon {
+    font-size: 26px;
+}
+
+.csi-stats-banner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    background: rgba(10, 15, 30, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+
+.csi-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.csi-lbl {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.csi-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+.csi-dossier-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+}
+
+.csi-case-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.csi-case-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 8px;
+}
+
+.csi-case-desc {
+    font-size: 14px;
+    color: var(--text-main);
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.csi-clues-section {
+    margin-bottom: 24px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 16px;
+}
+
+.csi-clues-section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 12px;
+}
+
+.csi-clue-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.btn-clue {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-clue:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: var(--primary);
+}
+
+.csi-clue-reveal-box {
+    background: rgba(3, 7, 18, 0.8);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: var(--radius-md);
+    padding: 14px;
+}
+
+.clue-tag {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.csi-clue-reveal-box p {
+    font-size: 13px;
+    color: var(--text-white);
+    margin: 0;
+}
+
+.csi-decision-section {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 16px;
+    margin-bottom: 16px;
+}
+
+.csi-decision-section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 12px;
+}
+
+.csi-verdict-choices {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.btn-choice {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: var(--transition);
+}
+
+.choice-real {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34d399;
+}
+
+.choice-suspicious {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #fbbf24;
+}
+
+.choice-fake {
+    background: rgba(244, 63, 94, 0.12);
+    border-color: rgba(244, 63, 94, 0.35);
+    color: #fb7185;
+}
+
+.btn-choice:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.csi-feedback-box {
+    background: rgba(10, 15, 30, 0.9);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.feedback-icon {
+    font-size: 24px;
+}
+
+.feedback-content {
+    flex: 1;
+}
+
+.feedback-content strong {
+    font-size: 14px;
+    color: var(--text-white);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.feedback-content p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.btn-next-case {
+    background: var(--gradient-button);
+    border: none;
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.csi-completion-view {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.csi-cert-card {
+    background: rgba(10, 15, 30, 0.9);
+    border: 2px solid rgba(56, 189, 248, 0.4);
+    border-radius: var(--radius-xl);
+    padding: 36px 28px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.cert-seal {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.cert-sub {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.csi-cert-card h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-white);
+    margin-bottom: 12px;
+}
+
+.csi-cert-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 540px;
+    margin: 0 auto 24px auto;
+}
+
+.cert-meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text-main);
+}
+
+.cert-meta-row code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--primary);
+}
+
+.cert-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+
+@media (max-width: 768px) {
+    .clone-biomarker-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .propagation-stepper {
+        grid-template-columns: 1fr;
+    }
+    .phishing-grid {
+        grid-template-columns: 1fr;
+    }
+    .debate-arena-grid {
+        grid-template-columns: 1fr;
+    }
+    .csi-verdict-choices {
+        grid-template-columns: 1fr;
+    }
+}
