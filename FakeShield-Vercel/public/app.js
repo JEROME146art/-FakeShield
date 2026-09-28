@@ -3233,15 +3233,16 @@ function renderDomainSecurityAudit(data) {
 // UPGRADE 3: AI FORENSIC DEBATE CHAMBER
 // ==================================================
 let currentDebateClaim = '';
-let debateRoundIndex = 0;
+let debateTimerId = null;
 
-function openDebateChamberModal() {
+function openDebateChamberModal(customClaim) {
     const modal = document.getElementById('debateChamberModal');
     if (modal) {
+        modal.style.display = 'flex';
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
-    startAiDebate();
+    startAiDebate(customClaim);
 }
 
 function closeDebateChamberModal(e) {
@@ -3250,15 +3251,17 @@ function closeDebateChamberModal(e) {
     }
     const modal = document.getElementById('debateChamberModal');
     if (modal) {
+        modal.style.display = 'none';
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
+    if (debateTimerId) clearTimeout(debateTimerId);
 }
 
 function launchDebateForCurrentClaim() {
     const title = lastAnalyzedData?.title || lastAnalyzedData?.headline || "Viral Breaking Rumor Under Examination";
     currentDebateClaim = title;
-    openDebateChamberModal();
+    openDebateChamberModal(title);
 }
 
 function startAiDebate(customClaim) {
@@ -3274,64 +3277,57 @@ function startAiDebate(customClaim) {
     const p2 = document.getElementById('roundPill2');
     const p3 = document.getElementById('roundPill3');
     const gavelBox = document.getElementById('gavelVerdictBox');
+    const gavelTitle = document.getElementById('gavelVerdictTitle');
+    const gavelSummary = document.getElementById('gavelVerdictSummary');
+    const gavelScore = document.getElementById('gavelVerdictScore');
 
-    if (advocateBox) advocateBox.innerHTML = '<div class="speech-bubble advocate-bubble"><p>🤖 Advocate formulating opening defense...</p></div>';
+    if (advocateBox) advocateBox.innerHTML = '<div class="speech-bubble advocate-bubble"><p>🤖 Advocate synthesizing viral narrative defense...</p></div>';
     if (checkerBox) checkerBox.innerHTML = '<div class="speech-bubble checker-bubble"><p>🛡️ Fact-Checker retrieving empirical databases...</p></div>';
-    if (gavelBox) gavelBox.style.opacity = '0.3';
+    if (gavelBox) gavelBox.style.opacity = '0.2';
 
     // Round 1
     if (p1) p1.className = 'round-pill active';
     if (p2) p2.className = 'round-pill';
     if (p3) p3.className = 'round-pill';
 
+    const isRealClaim = claim.toLowerCase().includes('nasa') || claim.toLowerCase().includes('james webb') || claim.toLowerCase().includes('authentic') || claim.toLowerCase().includes('safety report');
+
     setTimeout(() => {
         if (advocateBox) {
-            advocateBox.innerHTML = `
-                <div class="speech-bubble advocate-bubble">
-                    <strong>Advocate (Round 1):</strong>
-                    <p>"This report is circulating widely among hundreds of thousands of users. Testimonials claim immediate physiological results and traditional remedies have historical precedent."</p>
-                </div>
-            `;
+            advocateBox.innerHTML = isRealClaim
+                ? `<div class="speech-bubble advocate-bubble"><strong>Advocate AI:</strong><p>"This observation is corroborated by primary scientific releases, spectroscopy telemetry from the James Webb space observatory, and official peer publications."</p></div>`
+                : `<div class="speech-bubble advocate-bubble"><strong>Advocate AI:</strong><p>"This claim has circulated across over 200,000 group chats. Hundreds of anecdotal user testimonies attest to its rapid effectiveness, appealing to traditional holistic mechanisms."</p></div>`;
         }
-    }, 800);
+    }, 600);
 
     setTimeout(() => {
         if (checkerBox) {
-            checkerBox.innerHTML = `
-                <div class="speech-bubble checker-bubble">
-                    <strong>Fact-Checker (Round 1):</strong>
-                    <p>"Cross-referencing PubMed and WHO epidemiological databases. There are zero double-blind clinical trials or peer-reviewed biochemical mechanisms supporting this claim."</p>
-                </div>
-            `;
+            checkerBox.innerHTML = isRealClaim
+                ? `<div class="speech-bubble checker-bubble"><strong>Fact-Checker AI:</strong><p>"Corroboration confirmed. Primary spectral absorption bands in the 1.4 to 1.8 micron wavelength demonstrate unambiguous H2O molecular signatures in Nature Astronomy."</p></div>`
+                : `<div class="speech-bubble checker-bubble"><strong>Fact-Checker AI:</strong><p>"Cross-referencing PubMed and WHO clinical trials database. Zero peer-reviewed double-blind studies exist. The claim commits the Anecdotal Fallacy and lacks pharmacological plausibility."</p></div>`;
         }
         if (p2) p2.className = 'round-pill active';
-    }, 2200);
+    }, 1800);
 
     // Round 2 Cross-Examination
     setTimeout(() => {
         if (advocateBox) {
-            advocateBox.innerHTML += `
-                <div class="speech-bubble advocate-bubble" style="margin-top:10px;">
-                    <strong>Advocate (Round 2 Rebuttal):</strong>
-                    <p>"The claim includes citations purportedly from university research centers and authoritative health specialists."</p>
-                </div>
-            `;
+            advocateBox.innerHTML += isRealClaim
+                ? `<div class="speech-bubble advocate-bubble" style="margin-top:10px;"><strong>Advocate AI (Cross-Exam):</strong><p>"Independent astrophysicists from ESO and Harvard Center for Astrophysics have identically verified the planetary transit data."</p></div>`
+                : `<div class="speech-bubble advocate-bubble" style="margin-top:10px;"><strong>Advocate AI (Cross-Exam):</strong><p>"The message explicitly cites an internal advisory attributed to premier medical research institutions and Nobel laureates."</p></div>`;
             advocateBox.scrollTop = advocateBox.scrollHeight;
         }
-    }, 3600);
+    }, 3000);
 
     setTimeout(() => {
         if (checkerBox) {
-            checkerBox.innerHTML += `
-                <div class="speech-bubble checker-bubble" style="margin-top:10px;">
-                    <strong>Fact-Checker (Cross-Examination):</strong>
-                    <p>"Authority spoofing confirmed. The mentioned university published an explicit advisory disowning this statement as a viral hoax."</p>
-                </div>
-            `;
+            checkerBox.innerHTML += isRealClaim
+                ? `<div class="speech-bubble checker-bubble" style="margin-top:10px;"><strong>Fact-Checker AI:</strong><p>"High source trust verified. Zero editorial sensationalism or financial extraction traps identified."</p></div>`
+                : `<div class="speech-bubble checker-bubble" style="margin-top:10px;"><strong>Fact-Checker AI:</strong><p>"Authority spoofing detected. The institution published an official public notice categorically disowning the fabricated memo."</p></div>`;
             checkerBox.scrollTop = checkerBox.scrollHeight;
         }
         if (p3) p3.className = 'round-pill active';
-    }, 5000);
+    }, 4200);
 
     // Final Gavel Strike
     setTimeout(() => {
@@ -3339,8 +3335,24 @@ function startAiDebate(customClaim) {
             gavelBox.style.opacity = '1';
             gavelBox.style.animation = 'fadeIn 0.5s ease';
         }
+        if (gavelTitle) {
+            gavelTitle.textContent = isRealClaim
+                ? 'Claim Overwhelmingly Validated by Empirical Consensus'
+                : 'Claim Overwhelmingly Refuted by Empirical Evidence';
+            gavelTitle.style.color = isRealClaim ? '#10b981' : '#f43f5e';
+        }
+        if (gavelSummary) {
+            gavelSummary.textContent = isRealClaim
+                ? 'Primary scientific citations authenticated. Multi-observatory telemetry confirms factual accuracy.'
+                : 'Cross-examination identified 3 cognitive fallacies and 0 primary peer-reviewed sources.';
+        }
+        if (gavelScore) {
+            gavelScore.textContent = isRealClaim ? '96% Credibility' : '14% Credibility';
+            gavelScore.style.background = isRealClaim ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)';
+            gavelScore.style.color = isRealClaim ? '#10b981' : '#f43f5e';
+        }
         showToast('🔨 Autonomous AI Debate concluded. Jury verdict rendered!', 'success');
-    }, 6200);
+    }, 5400);
 }
 
 // ==================================================
@@ -3420,12 +3432,13 @@ let csiScore = 0;
 function openCsiGameModal() {
     const modal = document.getElementById('csiGameModal');
     if (modal) {
+        modal.style.display = 'flex';
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
     csiCurrentCaseIndex = 0;
     csiScore = 0;
-    loadCsiCase(csiCurrentCaseIndex);
+    loadCsiCase(0);
 }
 
 function closeCsiGameModal(e) {
@@ -3434,6 +3447,7 @@ function closeCsiGameModal(e) {
     }
     const modal = document.getElementById('csiGameModal');
     if (modal) {
+        modal.style.display = 'none';
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
@@ -3548,12 +3562,84 @@ function restartCsiGame() {
 }
 
 function downloadCsiCertificate() {
-    showToast('📜 Downloading Certified Truth Investigator Certificate...', 'info');
+    showToast('📜 Rendering High-Resolution Forensic Certificate...', 'info');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+
+    // Background Gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 1200, 800);
+    bgGrad.addColorStop(0, '#060b18');
+    bgGrad.addColorStop(0.5, '#0a1628');
+    bgGrad.addColorStop(1, '#030712');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1200, 800);
+
+    // Gold Double Border
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(30, 30, 1140, 740);
+
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 40, 1120, 720);
+
+    // Seal & Header
+    ctx.font = '50px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🛡️', 600, 120);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 20px Outfit, sans-serif';
+    ctx.fillText('FAKESHIELD CYBER FORENSICS INTELLIGENCE ACADEMY', 600, 160);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 36px Outfit, sans-serif';
+    ctx.fillText('CERTIFICATE OF FORENSIC EXCELLENCE', 600, 220);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '16px Plus Jakarta Sans, sans-serif';
+    ctx.fillText('This official credential certifies that the forensic investigator has demonstrated distinction in detecting', 600, 270);
+    ctx.fillText('AI voice deepfakes, bot swarms, temporal media recycling, and phishing deception networks.', 600, 300);
+
+    // Name & Rank
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 32px Outfit, sans-serif';
+    ctx.fillText('CHIEF MISINFORMATION INVESTIGATOR', 600, 380);
+
+    // Score & Meta
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px Outfit, sans-serif';
+    ctx.fillText(`Final Forensic Score: ${csiScore} / 500 XP`, 600, 440);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '14px JetBrains Mono, monospace';
+    ctx.fillText(`VERIFICATION HASH: #FS-CSI-${Date.now().toString().slice(-8)} • ISSUED: ${new Date().toLocaleDateString()}`, 600, 490);
+
+    // Golden Seal
+    ctx.beginPath();
+    ctx.arc(600, 590, 50, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+    ctx.fill();
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 12px Outfit, sans-serif';
+    ctx.fillText('VERIFIED TRUTH', 600, 585);
+    ctx.fillText('ACCREDITED', 600, 605);
+
+    // Convert to PNG and trigger download
     setTimeout(() => {
         const link = document.createElement('a');
-        link.href = '#';
-        showToast('✅ Certificate downloaded successfully!', 'success');
-    }, 800);
+        link.download = 'FakeShield-Truth-Investigator-Certificate.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('✅ Certificate downloaded as high-res PNG!', 'success');
+    }, 400);
 }
 
 // ==================================================

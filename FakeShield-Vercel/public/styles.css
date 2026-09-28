@@ -2011,13 +2011,18 @@ textarea {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(12px);
-    z-index: 2000;
+    background: rgba(3, 7, 18, 0.88);
+    backdrop-filter: blur(16px);
+    z-index: 99999;
     display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-overlay.active {
+    display: flex !important;
 }
 
 .modal-content {
@@ -2027,7 +2032,9 @@ textarea {
     padding: 28px;
     max-width: 680px;
     width: 100%;
-    box-shadow: var(--shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
     animation: fadeInDown 0.3s ease-out;
 }
 
@@ -3575,10 +3582,18 @@ textarea {
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     padding: 14px 18px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.debate-preset-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 .debate-topic-tag {
