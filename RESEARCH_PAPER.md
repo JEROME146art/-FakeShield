@@ -1,6 +1,6 @@
 # FakeShield: Multimodal Autonomous Misinformation, Astroturfing & Deepfake Forensic Verification Engine with Spoken Debunking and Provenance Tracking
 
- | **Mrs. Amsavalli K**<br>Dept. of AI & Data Science<br>Easwari Engineering College<br>Chennai, India<br>`amsavalli.k@eec.srmrmp.edu.in` |
+**JEROME VICTOR PAULRAJ P**<br>Dept. of AI & Data Science<br>Easwari Engineering College<br>Chennai, India<br>`jeromepaul643@gmail.com` | **Mrs. Amsavalli K**<br>Dept. of AI & Data Science<br>Easwari Engineering College<br>Chennai, India<br>`amsavalli.k@eec.srmrmp.edu.in` |
 | :--- | :--- | :--- |
 | **Dr. Vijayaraj J**<br>Dept. of AI & Data Science<br>Easwari Engineering College<br>Chennai, India<br>`vijayaraj.j@eec.srmrmp.edu.in` | **Dr. Priya J**<br>Dept. of AI & Data Science<br>Easwari Engineering College<br>Chennai, India<br>`priya.j@eec.srmrmp.edu.in` | **Mrs. Sangeetha V**<br>Dept. of AI & Data Science<br>Easwari Engineering College<br>Chennai, India<br>`vsangeethacse@gmail.com` |
 
