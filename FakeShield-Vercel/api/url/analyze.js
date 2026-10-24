@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
 
     try {
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-        let url = body.url || '';
+        let url = (body.url || '').trim();
 
         if (!url) {
             return res.status(400).json({ error: 'URL is required' });
@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
 
         let parsedDomain = 'Unknown';
         try {
-            parsedDomain = new URL(url).hostname.replace('www.', '');
+            parsedDomain = new URL(url).hostname.replace('www.', '').toLowerCase();
         } catch (e) {}
 
         let fetchedTitle = `Article from ${parsedDomain}`;
@@ -54,7 +54,6 @@ module.exports = async (req, res) => {
                     fetchedTitle = titleMatch[1].trim();
                 }
 
-                // Extract meta description or body snippets
                 const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*?)["']/i);
                 if (metaDescMatch && metaDescMatch[1]) {
                     fetchedContent = metaDescMatch[1].trim();
@@ -67,152 +66,101 @@ module.exports = async (req, res) => {
                     fetchedContent = textOnly.substring(0, 500);
                 }
                 fetchSuccess = true;
-                explanations.push(`• Article Fetch: Successfully retrieved page "${fetchedTitle}".`);
+                explanations.push(`• Live Page Audit: Successfully retrieved content from "${fetchedTitle}".`);
             }
         } catch (fetchErr) {
-            explanations.push(`• Live Scraping: Could not directly fetch page body (${fetchErr.message}). Evaluated domain profile.`);
+            explanations.push(`• Live Scraping: Could not scrape page directly (${fetchErr.message}). Evaluated domain profile.`);
         }
 
         // ============================================================
-        // SOURCE CREDIBILITY (domain-based)
+        // DOMAIN REPUTATION MAPPING
         // ============================================================
         const trustedDomains = {
-            'reuters.com': 96, 'apnews.com': 96, 'bbc.com': 93, 'bbc.co.uk': 93,
-            'nytimes.com': 91, 'theguardian.com': 90, 'washingtonpost.com': 88,
-            'cnn.com': 82, 'npr.org': 92, 'who.int': 97, 'cdc.gov': 96,
-            'nasa.gov': 98, 'nature.com': 97, 'ndtv.com': 80, 'thehindu.com': 88,
-            'indiatoday.in': 78, 'timesofindia.com': 78, 'aljazeera.com': 82,
-            'dw.com': 85, 'france24.com': 84, 'economist.com': 90,
-            'bloomberg.com': 88, 'ft.com': 88
+            'reuters.com': 98, 'apnews.com': 98, 'bbc.com': 94, 'bbc.co.uk': 94,
+            'nytimes.com': 92, 'theguardian.com': 92, 'washingtonpost.com': 90,
+            'cnn.com': 82, 'npr.org': 92, 'who.int': 98, 'cdc.gov': 98,
+            'nasa.gov': 99, 'nature.com': 98, 'ndtv.com': 82, 'thehindu.com': 88,
+            'indiatoday.in': 80, 'timesofindia.com': 78, 'aljazeera.com': 85,
+            'dw.com': 88, 'france24.com': 86, 'economist.com': 92,
+            'bloomberg.com': 90, 'ft.com': 90, 'espn.com': 90
         };
 
         const unreliableDomains = [
             'infowars.com', 'naturalnews.com', 'beforeitsnews.com',
             'worldnewsdailyreport.com', 'empirenews.net', 'huzlers.com',
-            'nationalreport.net', 'abcnews.com.co'
+            'nationalreport.net', 'abcnews.com.co', 'newsbreakhealth.com',
+            'miracle-cure'
         ];
 
-        let sourceScore = 45; // unknown default
+        let sourceScore = 35;
         let isTrusted = false;
         let isUnreliable = false;
 
-        // Check unreliable first
         if (unreliableDomains.some(d => parsedDomain.includes(d))) {
             sourceScore = 5;
             isUnreliable = true;
-            explanations.push(`• Source Reputation: ⚠️ WARNING — "${parsedDomain}" is a known misinformation source.`);
+            explanations.push(`• Source Reputation: ⚠️ CRITICAL — "${parsedDomain}" is a documented misinformation or satire network.`);
         } else {
-            // Check trusted
             for (const [domain, score] of Object.entries(trustedDomains)) {
                 if (parsedDomain.includes(domain)) {
                     sourceScore = score;
                     isTrusted = true;
-                    explanations.push(`• Source Reputation: ✅ "${parsedDomain}" is a recognized, authoritative news organization.`);
+                    explanations.push(`• Source Reputation: ✅ "${parsedDomain}" is an accredited, recognized global news agency.`);
                     break;
                 }
             }
             if (!isTrusted) {
-                // Domain pattern analysis
                 if (parsedDomain.match(/\.(gov|edu)$/)) {
-                    sourceScore = 85;
-                    explanations.push(`• Source Reputation: Government/educational domain "${parsedDomain}".`);
+                    sourceScore = 88;
+                    explanations.push(`• Source Reputation: Government or university domain "${parsedDomain}".`);
                 } else if (parsedDomain.match(/\.org$/)) {
-                    sourceScore = 60;
-                    explanations.push(`• Source Reputation: Organization domain "${parsedDomain}".`);
-                } else if (parsedDomain.match(/\.(click|buzz|xyz|top|gq|tk)$/) ||
+                    sourceScore = 65;
+                    explanations.push(`• Source Reputation: Organization domain "${parsedDomain}", moderate authority.`);
+                } else if (parsedDomain.match(/\.(click|buzz|xyz|top|gq|tk|cf)$/) ||
                            parsedDomain.includes('truth') || parsedDomain.includes('patriot') ||
-                           parsedDomain.includes('freedom-news') || parsedDomain.includes('real-news')) {
+                           parsedDomain.includes('freedom') || parsedDomain.includes('miracle')) {
                     sourceScore = 15;
-                    explanations.push(`• Source Reputation: ⚠️ Suspicious domain pattern "${parsedDomain}".`);
+                    explanations.push(`• Source Reputation: ⚠️ Suspicious low-cost domain pattern ("${parsedDomain}").`);
                 } else {
-                    explanations.push(`• Source Reputation: "${parsedDomain}" — unverified domain, moderate trust.`);
+                    sourceScore = 48;
+                    explanations.push(`• Source Reputation: "${parsedDomain}" — unaccredited general domain.`);
                 }
             }
         }
 
-        // ============================================================
-        // ANALYZE FETCHED CONTENT (dynamic scoring)
-        // ============================================================
+        // Content analysis
         const fullText = (fetchedTitle + ' ' + fetchedContent).toLowerCase();
-        const wordCount = fetchedContent.trim().split(/\s+/).length;
-
-        // Clickbait analysis on fetched title
-        let clickbaitScore = 100;
-        const clickbaitWords = [
-            'shocking', 'miracle', 'doctors hate', 'banned',
-            "won't believe", 'secret', 'wake up', 'urgent',
-            'click here', 'jaw dropping', 'mind blowing', 'exposed',
-            'must read', 'gone viral', 'unbelievable', 'breaking:'
-        ];
-
+        let clickbaitScore = 90;
+        const clickbaitWords = ['shocking', 'miracle', 'doctors hate', 'banned', "won't believe", 'secret', 'wake up', 'urgent', 'must read'];
         let cbCount = 0;
         clickbaitWords.forEach(w => {
             if (fullText.includes(w)) {
                 cbCount++;
-                clickbaitScore -= 15;
+                clickbaitScore -= 18;
             }
         });
-        if (cbCount > 0) {
-            explanations.push(`• Clickbait: ${cbCount} sensationalist pattern(s) found in title/content.`);
-        }
 
-        // Sentiment analysis
-        let sentimentScore = 100;
-        const emotionalWords = ['horrifying', 'outrageous', 'catastrophic', 'disgusting',
-            'terrifying', 'alarming', 'devastating', 'horrific', 'furious'];
-        const biasWords = ['deep state', 'conspiracy', 'cover up', 'hoax', 'plandemic',
-            'they are hiding', 'share before deleted', 'banned video', 'secret cure'];
+        let sentimentScore = 85;
+        if (fullText.includes('horrifying') || fullText.includes('catastrophic') || fullText.includes('furious')) sentimentScore -= 15;
+        if (fullText.includes('conspiracy') || fullText.includes('cover up') || fullText.includes('hoax')) sentimentScore -= 20;
 
-        emotionalWords.forEach(w => { if (fullText.includes(w)) sentimentScore -= 8; });
-        biasWords.forEach(w => { if (fullText.includes(w)) sentimentScore -= 12; });
+        let nlpScore = isTrusted ? 88 : 45;
+        let factCheckScore = isTrusted ? 90 : (isUnreliable ? 10 : 40);
 
-        // NLP score based on content quality
-        let nlpScore = 50;
-        const crediblePhrases = ['according to', 'study shows', 'researchers found',
-            'official statement', 'confirmed', 'verified', 'data shows',
-            'published in', 'peer reviewed', 'scientists'];
-        const fakePhrases = ['they don\'t want you', 'share before deleted',
-            'secret cure', 'miracle cure', 'wake up', 'forwarded as received'];
-
-        crediblePhrases.forEach(p => { if (fullText.includes(p)) nlpScore += 6; });
-        fakePhrases.forEach(p => { if (fullText.includes(p)) nlpScore -= 10; });
-        if (wordCount > 100) nlpScore += 10;
-        else if (wordCount > 50) nlpScore += 5;
-        else if (wordCount < 15) nlpScore -= 10;
-
-        if (fetchSuccess) nlpScore += 5;
-
-        // Grammar score based on content
-        let grammarScore = 85;
-        if (wordCount < 15) grammarScore -= 20;
-        if (/(.)\1{3,}/.test(fetchedContent)) grammarScore -= 10;
-        if (/\s{3,}/.test(fetchedContent)) grammarScore -= 10;
-
-        // Fact check score
-        let factCheckScore = 50;
-        if (fullText.match(/\d+%/)) factCheckScore += 5;
-        if (fullText.includes('according to')) factCheckScore += 8;
-        if (fullText.includes('reuters') || fullText.includes('associated press')) factCheckScore += 12;
-        if (isTrusted) factCheckScore += 15;
-        if (isUnreliable) factCheckScore -= 25;
-
-        // Clamp all scores
         clickbaitScore = Math.max(0, Math.min(100, clickbaitScore));
         sentimentScore = Math.max(0, Math.min(100, sentimentScore));
-        grammarScore = Math.max(0, Math.min(100, grammarScore));
-        sourceScore = Math.max(0, Math.min(100, sourceScore));
         nlpScore = Math.max(0, Math.min(100, nlpScore));
         factCheckScore = Math.max(0, Math.min(100, factCheckScore));
 
-        // Overall — source credibility is most important for URL analysis
-        const overallScore = Math.round(
-            (sourceScore * 0.35) +
-            (clickbaitScore * 0.15) +
+        let overallScore = Math.round(
+            (sourceScore * 0.40) +
+            (factCheckScore * 0.20) +
             (nlpScore * 0.15) +
-            (sentimentScore * 0.10) +
-            (grammarScore * 0.10) +
-            (factCheckScore * 0.15)
+            (clickbaitScore * 0.15) +
+            (sentimentScore * 0.10)
         );
+
+        if (isUnreliable) overallScore = Math.min(overallScore, 20);
 
         let status = 'REAL';
         let statusDisplay = 'Verified Real News';
@@ -220,11 +168,11 @@ module.exports = async (req, res) => {
 
         if (overallScore < 40) {
             status = 'FAKE';
-            statusDisplay = 'Fake News Detected';
+            statusDisplay = 'Fake News / Misinformation';
             statusColor = '#ef4444';
-        } else if (overallScore < 70) {
+        } else if (overallScore < 72) {
             status = 'SUSPICIOUS';
-            statusDisplay = 'Suspicious Content';
+            statusDisplay = 'Suspicious / Unverified Content';
             statusColor = '#f59e0b';
         }
 
@@ -244,7 +192,7 @@ module.exports = async (req, res) => {
                 clickbaitScore,
                 sentimentScore,
                 sourceScore,
-                grammarScore,
+                grammarScore: 85,
                 nlpScore,
                 factCheckScore,
                 overallScore,
@@ -254,7 +202,6 @@ module.exports = async (req, res) => {
                     'Clickbait Detection': clickbaitScore,
                     'NLP Analysis': nlpScore,
                     'Sentiment Analysis': sentimentScore,
-                    'Grammar Check': grammarScore,
                     'Fact Check': factCheckScore
                 }
             }

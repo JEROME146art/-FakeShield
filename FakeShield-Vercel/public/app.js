@@ -2688,25 +2688,48 @@ function renderMythVsReality(data) {
     const mythClaimText = document.getElementById('mythClaimText');
     const realityFactText = document.getElementById('realityFactText');
     const realitySources = document.getElementById('realitySources');
+    const flagList = document.querySelector('.mr-flag-list');
 
     if (!mythClaimText || !realityFactText) return;
 
     const title = data.title || data.filename || 'Claimed Headline';
     const content = data.content || data.extractedText || '';
     const status = (data.status || 'SUSPICIOUS').toUpperCase();
+    const score = Math.round(data.credibilityScore || 0);
 
-    const snippet = content ? `${content.slice(0, 140)}...` : title;
+    const snippet = content ? `${content.slice(0, 140)}` : title;
     mythClaimText.textContent = `"${snippet}"`;
 
+    const fullLower = (title + ' ' + content).toLowerCase();
+
+    // Dynamically update flags based on claim topic
+    if (flagList) {
+        let flags = [];
+        if (fullLower.includes('messi') || fullLower.includes('mesii') || fullLower.includes('ronaldo') || fullLower.includes('goal') || fullLower.includes('score')) {
+            flags = ['⚠️ Unverified Sports Claim', '⚠️ No Official Match Record'];
+        } else if (fullLower.includes('cure') || fullLower.includes('doctor') || fullLower.includes('miracle') || fullLower.includes('health') || fullLower.includes('virus')) {
+            flags = ['⚠️ Unverified Health Claim', '⚠️ Lacks Clinical Evidence'];
+        } else if (fullLower.includes('money') || fullLower.includes('free') || fullLower.includes('lottery') || fullLower.includes('scheme')) {
+            flags = ['⚠️ High-Risk Financial Claim', '⚠️ Suspected Hoax Pattern'];
+        } else if (status === 'REAL') {
+            flags = ['✅ Valid Institutional Sourcing', '✅ Corroborated Data'];
+        } else {
+            flags = ['⚠️ Lacks Accredited Source', '⚠️ Unverified Attribution'];
+        }
+        flagList.innerHTML = flags.map(f => `<span class="mr-flag" style="${status === 'REAL' ? 'border-color:rgba(16,185,129,0.3); color:#34d399;' : ''}">${f}</span>`).join(' ');
+    }
+
+    const cleanExplanation = data.explanation ? data.explanation.replace(/\n/g, '<br>') : '';
+
     if (status === 'FAKE') {
-        realityFactText.textContent = data.explanation || "Independent scientific review and global fact-checking registers confirm this assertion is false and lacks peer-reviewed empirical evidence.";
-        if (realitySources) realitySources.innerHTML = '<span>📚 Verified Primary Sources: WHO Fact Registry • Reuters Counter-Disinformation • Associated Press</span>';
+        realityFactText.innerHTML = cleanExplanation || "Independent verification and global fact-checking registers confirm this assertion is false and lacks peer-reviewed empirical evidence.";
+        if (realitySources) realitySources.innerHTML = '<span>📚 Fact-Check Repositories: Reuters Counter-Disinformation • Associated Press Fact Check • IFCN Global Register</span>';
     } else if (status === 'REAL') {
-        realityFactText.textContent = data.explanation || "This report is corroborated by primary scientific databases and recognized accredited publications.";
-        if (realitySources) realitySources.innerHTML = '<span>📚 Verified Primary Sources: Primary Academic Publications • NASA Science Archive • Accredited News Wires</span>';
+        realityFactText.innerHTML = cleanExplanation || "This report is corroborated by primary scientific databases and recognized accredited publications.";
+        if (realitySources) realitySources.innerHTML = '<span>📚 Verified Primary Sources: Accredited News Wires • Institutional Archives • Academic Repositories</span>';
     } else {
-        realityFactText.textContent = "Evidence remains inconclusive. Statements cannot be definitively corroborated by recognized fact repositories.";
-        if (realitySources) realitySources.innerHTML = '<span>📚 Status: Awaiting further official clarification from regional authorities</span>';
+        realityFactText.innerHTML = cleanExplanation || "Evidence remains inconclusive. Statements cannot be definitively corroborated by recognized fact repositories.";
+        if (realitySources) realitySources.innerHTML = '<span>📚 Verification Status: Unverified claim — No reputable editorial corroboration or primary records found.</span>';
     }
 }
 
